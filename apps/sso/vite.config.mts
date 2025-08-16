@@ -1,19 +1,20 @@
 /// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/apps/recruiter',
+  cacheDir: '../../node_modules/.vite/apps/sso',
   server: {
-    port: 4400,
+    port: 4200,
     host: 'localhost',
   },
   preview: {
-    port: 4400,
+    port: 4300,
     host: 'localhost',
   },
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
@@ -27,7 +28,7 @@ export default defineConfig(() => ({
     },
   },
   test: {
-    name: '@abc-interview-support-frontend/recruiter',
+    name: '@abc-interview-support-frontend/sso',
     watch: false,
     globals: true,
     environment: 'jsdom',

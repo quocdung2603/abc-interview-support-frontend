@@ -2,12 +2,21 @@
   "name": "@abc-interview-support-frontend/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:sso": "nx serve sso",
+    "dev:admin": "nx serve admin",
+    "dev:student": "nx serve student",
+    "dev:recruiter": "nx serve recruiter",
+    "dev": "concurrently -k -n SSO,ADMIN,STUDENT,RECRUITER -c green,cyan,yellow,magenta \"npm run dev:sso\" \"npm run dev:admin\" \"npm run dev:student\" \"npm run dev:recruiter\""
+  },
   "private": true,
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
+    "concurrently": "^9.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-router-dom": "6.29.0"
+    "react-router-dom": "6.29.0",
+    "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
