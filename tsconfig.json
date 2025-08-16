@@ -5,6 +5,15 @@
   "references": [
     {
       "path": "./apps/sso"
+    },
+    {
+      "path": "./apps/student"
+    },
+    {
+      "path": "./apps/recruiter"
+    },
+    {
+      "path": "./apps/admin"
     }
   ]
 }
