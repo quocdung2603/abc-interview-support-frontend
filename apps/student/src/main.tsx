@@ -1,6 +1,9 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './app';
+import './styles.css';
+import '@ant-design/v5-patch-for-react-19';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -8,6 +11,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>
 );

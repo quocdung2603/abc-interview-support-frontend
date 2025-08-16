@@ -1,11 +1,22 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
+import { Route, Routes } from 'react-router-dom';
+import Layout from './layout/Layout';
+import { Routing } from './routes/Routing';
 
 export function App() {
   return (
-    <div className='text-red-500 hover:text-7xl'>
-      hello
-    </div>
+    <Routes>
+      <Route path="" element={<Layout />}>
+        {Routing.map((route, index) => {
+          return (
+            <Route
+              key={index + 0}
+              path={route.path}
+              element={<route.element />}
+            />
+          );
+        })}
+      </Route>
+    </Routes>
   );
 }
 
