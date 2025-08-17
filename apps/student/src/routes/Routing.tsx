@@ -10,6 +10,7 @@ import RecruitmentNewsDetail from '../pages/news/RecruitmentNewsDetail';
 import { TrendNews } from '../pages/news/TrendNews';
 import TrendNewsDetail from '../pages/news/TrendNewsDetail';
 import { RouterLink } from '../utils/RouterLink';
+import MockInterviewDetail from '../pages/mock-interview/MockInterviewDetail';
 
 export const Routing = [
   {
@@ -31,6 +32,10 @@ export const Routing = [
   {
     path: RouterLink.MockInterview,
     element: MockInterview,
+  },
+  {
+    path: RouterLink.MockInterviewDetail,
+    element: MockInterviewDetail,
   },
   {
     path: RouterLink.TrendNews,

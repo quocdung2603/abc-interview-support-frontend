@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ExamCreationForm from './components/ExamCreationForm';
 import ExamList from './components/ExamList';
+import { useNavigate } from 'react-router-dom';
 
 interface ExamFormData {
   field: string;
@@ -35,6 +36,8 @@ const MockInterview = () => {
   const [searchCriteria, setSearchCriteria] = useState<Partial<ExamFormData>>(
     {}
   );
+
+  const navigate = useNavigate();
 
   // Mock data cho available exams
   const mockAvailableExams: Exam[] = [
@@ -186,6 +189,7 @@ const MockInterview = () => {
   };
 
   const handleStartExam = (examId: string) => {
+    navigate(`/mock-interview-detail/${examId}`);
     // In real app, this would navigate to exam taking page
     alert(`Bắt đầu làm bài kiểm tra: ${examId}`);
     console.log('Starting exam:', examId);
