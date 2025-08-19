@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import ExamCreationForm from './components/ExamCreationForm';
-import ExamList from './components/ExamList';
+import ExamCreationForm from './components/mock-interview/ExamCreationForm';
+import ExamList from './components/mock-interview/ExamList';
 import { useNavigate } from 'react-router-dom';
 
 interface ExamFormData {

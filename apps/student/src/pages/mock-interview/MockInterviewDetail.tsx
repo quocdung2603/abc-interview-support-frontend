@@ -443,8 +443,20 @@ const MockInterviewDetail = () => {
       setIsExamActive(false);
       // Here you would typically submit to API
       console.log('Submitting exam with answers:', userAnswers);
+
+      // Store results in localStorage for the result page
+      const examResult = {
+        exam: mockExam,
+        questions: mockQuestions,
+        answers: mockAnswers,
+        userAnswers: userAnswers,
+        timeSpent: mockExam.duration * 60 - 120, // Simulate time spent
+        completedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(`examResult_${examId}`, JSON.stringify(examResult));
+
       // Navigate to results page
-      navigate(`/student/mock-interview/${examId}/result`);
+      navigate(`/mock-interview-result/${examId}`);
     }
   }, [userAnswers, examId, navigate]);
 
