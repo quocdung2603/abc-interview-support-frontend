@@ -12,4 +12,5 @@ export enum RouterLink {
   CommunityDiscussion = '/community-discussion',
   CommunityDiscussionDetail = '/community-discussion-details/:id',
   About = '/about-abc-interview-support',
+  UserProfile = '/user-profile',
 }

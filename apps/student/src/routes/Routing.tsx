@@ -12,6 +12,7 @@ import TrendNewsDetail from '../pages/news/TrendNewsDetail';
 import { RouterLink } from '../utils/RouterLink';
 import MockInterviewDetail from '../pages/mock-interview/MockInterviewDetail';
 import MockInterviewResult from '../pages/mock-interview/MockInterviewResult';
+import UserProfile from '../pages/user-profile/UserProfile';
 
 export const Routing = [
   {
@@ -65,5 +66,9 @@ export const Routing = [
   {
     path: RouterLink.CommunityDiscussionDetail,
     element: DiscussionDetails,
+  },
+  {
+    path: RouterLink.UserProfile,
+    element: UserProfile,
   },
 ];

@@ -34,7 +34,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ username, onLogout }) => {
       label: <span className="font-medium text-gray-700">Trang cá nhân</span>,
       icon: <EyeOutlined className="text-blue-600" />,
       onClick: () => {
-        navigate('/profile');
+        navigate('/user-profile');
       },
     },
     {
