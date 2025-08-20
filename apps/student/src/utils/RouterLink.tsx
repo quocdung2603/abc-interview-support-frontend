@@ -11,6 +11,5 @@ export enum RouterLink {
   RecruitmentNewsDetail = '/recruitment-news-detail/:id',
   CommunityDiscussion = '/community-discussion',
   CommunityDiscussionDetail = '/community-discussion-details/:id',
-  About = '/about-abc-interview-support',
   UserProfile = '/user-profile',
 }

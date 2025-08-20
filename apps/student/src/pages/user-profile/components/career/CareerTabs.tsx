@@ -55,7 +55,7 @@ const CareerTabs: React.FC<CareerTabsProps> = ({
     {
       id: 'career-guide',
       label: 'Định hướng nghề nghiệp',
-      icon: '🎯',
+      icon: '',
       description: 'Hướng dẫn phát triển sự nghiệp',
       badge:
         careerGuides.filter((guide) => !guide.isCompleted).length || undefined,
@@ -63,7 +63,7 @@ const CareerTabs: React.FC<CareerTabsProps> = ({
     {
       id: 'roadmap',
       label: 'Roadmap',
-      icon: '🛣️',
+      icon: '',
       description: 'Lộ trình học tập cá nhân',
       badge: roadmaps.length || undefined,
     },

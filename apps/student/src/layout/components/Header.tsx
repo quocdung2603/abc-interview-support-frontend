@@ -51,7 +51,6 @@ const menuItems: MenuItem[] = [
     label: 'Thảo luận cộng đồng',
     path: `${RouterLink.CommunityDiscussion}`,
   },
-  { key: '5', label: 'Giới thiệu', path: `${RouterLink.About}` },
 ];
 
 const Header: React.FC = () => {

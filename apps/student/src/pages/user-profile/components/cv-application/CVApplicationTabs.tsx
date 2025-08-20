@@ -35,14 +35,14 @@ const CVApplicationTabs: React.FC<CVApplicationTabsProps> = ({
     {
       id: 'cv-list',
       label: 'CV của bạn',
-      icon: '📄',
+      icon: '',
       description: 'Quản lý danh sách CV',
       badge: uploadedCVs.length || undefined,
     },
     {
       id: 'applications',
       label: 'Đã ứng tuyển',
-      icon: '📋',
+      icon: '',
       description: 'Theo dõi đơn ứng tuyển',
       badge: appliedCompanies.length || undefined,
     },
@@ -209,7 +209,7 @@ const CVApplicationTabs: React.FC<CVApplicationTabsProps> = ({
                     <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
                       {cv.isActive && (
                         <span
-                          className="badge-accent"
+                          className="badge-accent m-auto"
                           style={{ fontSize: '0.75rem' }}
                         >
                           Đang sử dụng

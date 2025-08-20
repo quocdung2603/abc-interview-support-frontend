@@ -25,15 +25,15 @@ const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
     {
       id: 'info',
       label: 'Thông tin cá nhân',
-      icon: '📝',
+      icon: '',
       description: 'Quản lý thông tin cá nhân',
       badge: undefined,
     },
     {
       id: 'elo',
       label: 'ELO & Xếp hạng',
-      icon: '🏆',
-      description: 'Thông tin ELO và lịch sử',
+      icon: '',
+      description: 'Thông tin ELO và lịch sử cộng điểm',
       badge: eloHistory.length || undefined,
     },
   ];

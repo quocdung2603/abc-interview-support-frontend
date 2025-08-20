@@ -28,10 +28,6 @@ export const Routing = [
     element: InterviewQuestionDetail,
   },
   {
-    path: RouterLink.About,
-    element: About,
-  },
-  {
     path: RouterLink.MockInterview,
     element: MockInterview,
   },

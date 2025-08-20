@@ -8,8 +8,8 @@ import PersonalInfoTabs from './components/personal-info/PersonalInfoTabs';
 import CVApplicationTabs from './components/cv-application/CVApplicationTabs';
 import CommunityTabs from './components/community/CommunityTabs';
 import CareerTabs from './components/career/CareerTabs';
-import ExamManagement from './components/ExamManagement';
 import TabNavigation from './components/TabNavigation';
+import ExamTabs from './components/exam/ExamTabs';
 
 const UserProfile: React.FC = () => {
   // Tab state
@@ -19,8 +19,8 @@ const UserProfile: React.FC = () => {
   const [user, setUser] = useState<User>({
     userId: 'user-001',
     roleId: 'role-001',
-    fullName: 'Nguyễn Minh Tuấn',
-    email: 'tuan.nguyen@student.edu.vn',
+    fullName: 'Nguyễn Quốc Dũng',
+    email: 'nguyenquocdung26032003@gmail.vn',
     passWord: 'encrypted_password',
     dateOfBirth: new Date('1998-05-15'),
     address: '123 Lê Loi, Quận 1, TP.HCM',
@@ -389,21 +389,21 @@ const UserProfile: React.FC = () => {
       id: 'personal',
       label: 'Thông tin cá nhân',
       icon: '👤',
-      description: 'Quản lý thông tin cá nhân và ELO',
+      description: '',
       badge: undefined,
     },
     {
       id: 'exams',
       label: 'Bài kiểm tra',
       icon: '📝',
-      description: 'Quản lý bài kiểm tra và chứng chỉ',
+      description: '',
       badge: upcomingExams.length || undefined,
     },
     {
       id: 'cv',
       label: 'CV & Ứng tuyển',
       icon: '📄',
-      description: 'Quản lý CV và đơn ứng tuyển',
+      description: '',
       badge:
         appliedCompanies.filter((app) => app.status === 'Interview').length ||
         undefined,
@@ -412,14 +412,14 @@ const UserProfile: React.FC = () => {
       id: 'community',
       label: 'Cộng đồng',
       icon: '💬',
-      description: 'Tương tác cộng đồng và thảo luận',
+      description: '',
       badge: discussions.length || undefined,
     },
     {
       id: 'career',
       label: 'Định hướng nghề nghiệp',
       icon: '🎯',
-      description: 'Mục tiêu và định hướng nghề nghiệp',
+      description: '',
       badge: undefined,
     },
   ];
@@ -438,7 +438,7 @@ const UserProfile: React.FC = () => {
 
       case 'exams':
         return (
-          <ExamManagement
+          <ExamTabs
             completedExams={completedExams}
             registeredExams={registeredExams}
             upcomingExams={upcomingExams}

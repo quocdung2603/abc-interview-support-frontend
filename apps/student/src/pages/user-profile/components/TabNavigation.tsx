@@ -25,6 +25,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       <div
         style={{
           display: 'flex',
+          flexDirection: 'row',
           overflowX: 'auto',
           borderBottom: '2px solid var(--color-neutral-200)',
           scrollbarWidth: 'thin',
