@@ -212,7 +212,7 @@ export const RecruitmentNews: React.FC = () => {
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to recruitment news detail page
-    navigate(`/recruitment-news-detail/${newsItem.newsId}`);
+    navigate(`/student/recruitment-news-detail/${newsItem.newsId}`);
   };
 
   return (

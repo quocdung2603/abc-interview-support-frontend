@@ -10,6 +10,7 @@ import {
   Question,
   Topic,
 } from '@abc-interview-support-frontend/types';
+import { RouterLink } from '../../utils/RouterLink';
 
 export const InterviewQuestionDetail: React.FC = () => {
   const { id: questionId } = useParams<{ id: string }>();
@@ -407,11 +408,11 @@ console.log('End'); // 2
 
   // Navigation handlers
   const handleBackToList = () => {
-    navigate('/interview-revision');
+    navigate(RouterLink.InterviewRevision);
   };
 
   const handleQuestionClick = (newQuestionId: string) => {
-    navigate(`/interview-question-detail/${newQuestionId}`);
+    navigate(`/student/interview-question-detail/${newQuestionId}`);
   };
 
   const handleVoteQuestion = (

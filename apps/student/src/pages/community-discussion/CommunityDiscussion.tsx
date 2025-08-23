@@ -266,7 +266,7 @@ const CommunityDiscussion: React.FC = () => {
 
   const handlePostClick = (postId: string) => {
     console.log('Navigate to post:', postId);
-    navigate(`/community-discussion-details/${postId}`);
+    navigate(`/student/community-discussion-details/${postId}`);
   };
 
   const handleLoadMore = () => {

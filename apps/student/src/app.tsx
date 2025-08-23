@@ -5,7 +5,7 @@ import { Routing } from './routes/Routing';
 export function App() {
   return (
     <Routes>
-      <Route path="" element={<Layout />}>
+      <Route path="/student" element={<Layout />}>
         {Routing.map((route, index) => {
           return (
             <Route

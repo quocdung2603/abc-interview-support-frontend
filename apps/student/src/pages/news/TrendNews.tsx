@@ -145,7 +145,7 @@ export const TrendNews: React.FC = () => {
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to news detail page
-    navigate(`/trend-news-detail/${newsItem.newsId}`);
+    navigate(`/student/trend-news-detail/${newsItem.newsId}`);
   };
 
   return (

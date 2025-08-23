@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Menu, MenuProps } from 'antd';
 import { LogoutOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { RouterLink } from '../../utils/RouterLink';
 
 interface UserDropdownProps {
   username: string | undefined;
@@ -34,7 +35,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ username, onLogout }) => {
       label: <span className="font-medium text-gray-700">Trang cá nhân</span>,
       icon: <EyeOutlined className="text-blue-600" />,
       onClick: () => {
-        navigate('/user-profile');
+        navigate(`${RouterLink.UserProfile}`);
       },
     },
     {

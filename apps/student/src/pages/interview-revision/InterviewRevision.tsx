@@ -379,7 +379,7 @@ const InterviewRevision: React.FC = () => {
 
   const handleQuestionClick = (questionId: string) => {
     // Navigate to question detail page
-    navigate(`/interview-question-detail/${questionId}`);
+    navigate(`/student/interview-question-detail/${questionId}`);
   };
 
   return (

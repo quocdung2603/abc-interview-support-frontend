@@ -1,4 +1,3 @@
-import About from '../pages/about/About';
 import CommunityDiscussion from '../pages/community-discussion/CommunityDiscussion';
 import DiscussionDetails from '../pages/community-discussion/DiscussionDetails';
 import InterviewRevision from '../pages/interview-revision/InterviewRevision';
