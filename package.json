@@ -7,7 +7,10 @@
     "dev:admin": "nx serve admin",
     "dev:student": "nx serve student",
     "dev:recruiter": "nx serve recruiter",
-    "dev": "concurrently -k -n SSO,ADMIN,STUDENT,RECRUITER -c green,cyan,yellow,magenta \"npm run dev:sso\" \"npm run dev:admin\" \"npm run dev:student\" \"npm run dev:recruiter\""
+    "dev": "concurrently -k -n SSO,ADMIN,STUDENT,RECRUITER -c green,cyan,yellow,magenta \"npm run dev:sso\" \"npm run dev:admin\" \"npm run dev:student\" \"npm run dev:recruiter\"",
+    "start:server": "cd mock-server && npm start",
+    "start:all": "concurrently -k -n SERVER,FRONTEND -c red,blue \"npm run start:server\" \"npm run dev\"",
+    "install:server": "cd mock-server && npm install"
   },
   "private": true,
   "dependencies": {

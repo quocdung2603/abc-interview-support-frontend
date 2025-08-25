@@ -6,6 +6,9 @@
       "path": "../../libs/types"
     },
     {
+      "path": "../../libs/sso-utils"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

@@ -1,4 +1,5 @@
 export * from './lib/api-types';
+export * from './lib/auth-types';
 export * from './lib/career-types';
 export * from './lib/exam-types';
 export * from './lib/news-types';

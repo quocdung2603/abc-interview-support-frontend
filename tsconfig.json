@@ -16,6 +16,9 @@
       "path": "./apps/admin"
     },
     {
+      "path": "./libs/sso-utils"
+    },
+    {
       "path": "./libs/types"
     }
   ]

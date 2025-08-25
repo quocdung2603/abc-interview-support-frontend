@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/libs/types",
+    "outDir": "../../dist/libs/sso-utils",
     "declaration": true,
     "types": ["node"]
   },
@@ -16,5 +16,10 @@
     "**/*.test.ts",
     "**/*.stories.ts",
     "**/*.stories.js"
+  ],
+  "references": [
+    {
+      "path": "../types/tsconfig.lib.json"
+    }
   ]
 }

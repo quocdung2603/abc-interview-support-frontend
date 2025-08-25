@@ -11,13 +11,23 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "target": "es2017",
-    "lib": ["es2017"],
+    "lib": ["es2017", "dom", "dom.iterable"],
     "moduleResolution": "node",
-    "skipLibCheck": true
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@abc-interview-support-frontend/types": ["../../libs/types/src/index.ts"]
+    }
   },
   "files": [],
   "include": [],
   "references": [
+    {
+      "path": "../types"
+    },
     {
       "path": "./tsconfig.lib.json"
     }

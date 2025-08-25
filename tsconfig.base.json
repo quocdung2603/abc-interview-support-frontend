@@ -16,6 +16,13 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "customConditions": ["development"],
+    "baseUrl": ".",
+    "paths": {
+      "@abc-interview-support-frontend/sso-utils": [
+        "libs/sso-utils/src/index.ts"
+      ],
+      "@abc-interview-support-frontend/types": ["libs/types/src/index.ts"]
+    }
   }
 }
