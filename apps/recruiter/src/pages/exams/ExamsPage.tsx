@@ -9,6 +9,7 @@ import {
   EmptyState,
   NotVerifiedState,
 } from './components';
+import ExamPageHeader from './components/ExamPageHeader';
 
 const ExamsPage: React.FC = () => {
   // Mock verification state
@@ -86,28 +87,16 @@ const ExamsPage: React.FC = () => {
     setCurrentStep(0);
   };
 
+  const onCreateExam = () => {};
+
   // Show not verified state
   if (!isVerified) {
     return <NotVerifiedState />;
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div className="header-content">
-          <div>
-            <h1>Kỳ thi</h1>
-            <p>Quản lý các kỳ thi tuyển dụng</p>
-          </div>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setWizardVisible(true)}
-          >
-            Tạo kỳ thi mới
-          </Button>
-        </div>
-      </div>
+    <div className="container-center animate-fade-in-up">
+      <ExamPageHeader onCreateExam={onCreateExam} />
 
       <div className="page-content">
         <div className="content-card">

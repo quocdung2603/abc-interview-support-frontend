@@ -2,6 +2,7 @@ export enum RouterLink {
   Dashboard = '',
   Verification = 'verification',
   Jobs = 'jobs',
+  TrendNews = 'trend-news',
   JobsNew = 'jobs/new',
   JobsEdit = 'jobs/:id',
   Exams = 'exams',

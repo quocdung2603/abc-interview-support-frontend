@@ -42,46 +42,40 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     {
       key: 'jobs-group',
       icon: <ShopOutlined />,
-      label: 'Tin tuyển dụng',
+      label: 'Quản lý tin tức',
       children: [
         {
           key: RouterLink.Jobs,
           icon: <FileTextOutlined />,
-          label: 'Danh sách tin',
+          label: 'Tin tuyển dụng',
           onClick: () => navigate(`/${RouterLink.Jobs}`),
         },
         {
           key: RouterLink.JobsNew,
           icon: <PlusOutlined />,
-          label: 'Tạo tin mới',
-          onClick: () => navigate(`/${RouterLink.JobsNew}`),
+          label: 'Tin xu hướng',
+          onClick: () => navigate(`/${RouterLink.TrendNews}`),
         },
       ],
     },
     {
       key: 'exams-group',
       icon: <FileTextOutlined />,
-      label: 'Kỳ thi',
+      label: 'Quản lý kì thi',
       children: [
         {
           key: RouterLink.Exams,
           icon: <FileTextOutlined />,
-          label: 'Danh sách kỳ thi',
+          label: 'Kỳ thi',
           onClick: () => navigate(`/${RouterLink.Exams}`),
         },
         {
-          key: RouterLink.ExamsNew,
-          icon: <PlusOutlined />,
-          label: 'Tạo kỳ thi mới',
-          onClick: () => navigate(`/${RouterLink.ExamsNew}`),
+          key: RouterLink.Results,
+          icon: <TrophyOutlined />,
+          label: 'Kết quả & BXH',
+          onClick: () => navigate(`/${RouterLink.Results}`),
         },
       ],
-    },
-    {
-      key: RouterLink.Results,
-      icon: <TrophyOutlined />,
-      label: 'Kết quả & BXH',
-      onClick: () => navigate(`/${RouterLink.Results}`),
     },
     {
       key: RouterLink.Settings,

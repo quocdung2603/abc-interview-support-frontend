@@ -82,7 +82,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({
         </Select>
       }
     >
-      <div style={{ marginBottom: '16px' }}>
+      <div className="mb-4">
         <span
           style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}
         >

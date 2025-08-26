@@ -8,8 +8,8 @@ import {
   JobsToolbar,
   JobsTable,
   JobPreviewDrawer,
-} from './components';
-import { JobPost } from './components/types';
+} from './components/recruitment';
+import { JobPost } from './components/recruitment/types';
 
 const JobsPage: React.FC = () => {
   const { user } = useAuth();

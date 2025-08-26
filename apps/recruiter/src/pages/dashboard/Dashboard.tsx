@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Row, Col, message } from 'antd';
+import { message } from 'antd';
 import {
   StatsCards,
   RecentJobs,
   RecentExams,
   ActivityChart,
-  QuickActions,
 } from './components';
 import type {
   StatsData,
@@ -180,36 +179,6 @@ const Dashboard: React.FC = () => {
     // Navigate to exam edit page
   };
 
-  const handleCreateJob = () => {
-    console.log('Create new job');
-    // Navigate to job creation page
-  };
-
-  const handleCreateExam = () => {
-    console.log('Create new exam');
-    // Navigate to exam creation page
-  };
-
-  const handleViewReports = () => {
-    console.log('View reports');
-    // Navigate to reports page
-  };
-
-  const handleViewCandidates = () => {
-    console.log('View candidates');
-    // Navigate to candidates page
-  };
-
-  const handleViewSettings = () => {
-    console.log('View settings');
-    // Navigate to settings page
-  };
-
-  const handleViewNotifications = () => {
-    console.log('View notifications');
-    // Navigate to notifications page
-  };
-
   const handleTimeRangeChange = (range: TimeRangeType) => {
     setTimeRange(range);
     // Reload data for new time range
@@ -217,39 +186,34 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '24px', minHeight: 'calc(100vh - 64px)' }}>
-      <Row gutter={[16, 16]}>
-        {/* Statistics Cards */}
-        <Col span={24}>
-          <StatsCards data={statsData} />
-        </Col>
-
-        {/* Activity Chart */}
-        <Col span={24}>
-          <ActivityChart
-            data={activityData}
-            summary={activitySummary}
-            timeRange={timeRange}
-            onTimeRangeChange={handleTimeRangeChange}
-          />
-        </Col>
-
-        {/* Recent Jobs and Exams */}
-        <Col xs={24} lg={12}>
+    <div className="container-center flex flex-col space-y-10 animate-fade-in-up ">
+      <div>
+        <StatsCards data={statsData} />
+      </div>
+      <div>
+        <ActivityChart
+          data={activityData}
+          summary={activitySummary}
+          timeRange={timeRange}
+          onTimeRangeChange={handleTimeRangeChange}
+        />
+      </div>
+      <div className="flex flex-row justify-center space-x-5">
+        <div className="w-1/2">
           <RecentJobs
             jobs={recentJobs}
             onViewJob={handleViewJob}
             onEditJob={handleEditJob}
           />
-        </Col>
-        <Col xs={24} lg={12}>
+        </div>
+        <div className="w-1/2">
           <RecentExams
             exams={recentExams}
             onViewExam={handleViewExam}
             onEditExam={handleEditExam}
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

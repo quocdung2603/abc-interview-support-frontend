@@ -5,6 +5,7 @@ import ExamsPage from '../pages/exams/ExamsPage';
 import ResultsPage from '../pages/results/ResultsPage';
 import SettingsPage from '../pages/settings/SettingsPage';
 import { RouterLink } from '../utils/RouterLink';
+import TrendNewsPage from '../pages/jobs/TrendNewsPage';
 
 export const Routing = [
   {
@@ -18,6 +19,10 @@ export const Routing = [
   {
     path: RouterLink.Jobs,
     element: JobsPage,
+  },
+  {
+    path: RouterLink.TrendNews,
+    element: TrendNewsPage,
   },
   {
     path: RouterLink.JobsNew,

@@ -27,7 +27,7 @@ const Layout: React.FC = () => {
         <Content
           style={{
             margin: '24px',
-            padding: '24px',
+            padding: '10px',
             minHeight: 280,
             background: '#f5f5f5',
             borderRadius: '8px',
