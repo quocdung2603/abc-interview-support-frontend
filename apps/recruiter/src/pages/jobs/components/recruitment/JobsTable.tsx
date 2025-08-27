@@ -1,12 +1,6 @@
 import React from 'react';
 import { Table, Button, Tag, Space, Popconfirm, Tooltip, message } from 'antd';
-import {
-  EditOutlined,
-  EyeOutlined,
-  CopyOutlined,
-  DeleteOutlined,
-  SendOutlined,
-} from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import JobStatusTag from './JobStatusTag';
 import { JobPost } from './types';
@@ -16,8 +10,8 @@ interface JobsTableProps {
   selectedRowKeys: React.Key[];
   onSelectionChange: (newSelectedRowKeys: React.Key[]) => void;
   onPreview: (job: JobPost) => void;
-  onSubmitForApproval: (jobId: string) => void;
-  isVerified: boolean;
+  onEdit: (job: JobPost) => void;
+  onDelete?: (jobId: string) => void;
 }
 
 const JobsTable: React.FC<JobsTableProps> = ({
@@ -25,8 +19,8 @@ const JobsTable: React.FC<JobsTableProps> = ({
   selectedRowKeys,
   onSelectionChange,
   onPreview,
-  onSubmitForApproval,
-  isVerified,
+  onEdit,
+  onDelete,
 }) => {
   const formatSalary = (min: number, max: number, currency: string) => {
     const formatNumber = (num: number) => {
@@ -131,34 +125,17 @@ const JobsTable: React.FC<JobsTableProps> = ({
               type="text"
               icon={<EditOutlined />}
               size="small"
-              onClick={() => message.info('Chuyển đến trang chỉnh sửa')}
-            />
-          </Tooltip>
-          {record.status === 'draft' && (
-            <Tooltip
-              title={!isVerified ? 'Cần xác thực tài khoản' : 'Gửi duyệt'}
-            >
-              <Button
-                type="text"
-                icon={<SendOutlined />}
-                size="small"
-                disabled={!isVerified}
-                onClick={() => onSubmitForApproval(record.id)}
-              />
-            </Tooltip>
-          )}
-          <Tooltip title="Sao chép">
-            <Button
-              type="text"
-              icon={<CopyOutlined />}
-              size="small"
-              onClick={() => message.success('Đã tạo bản sao')}
+              onClick={() => onEdit(record)}
             />
           </Tooltip>
           <Tooltip title="Xóa">
             <Popconfirm
               title="Bạn có chắc chắn muốn xóa bài đăng này?"
-              onConfirm={() => message.success('Đã xóa bài đăng')}
+              onConfirm={() =>
+                onDelete
+                  ? onDelete(record.id)
+                  : message.success('Đã xóa bài đăng')
+              }
             >
               <Button
                 type="text"

@@ -1,6 +1,5 @@
-import { Drawer, Typography, Image, Tag, Space, Divider, Button } from 'antd';
+import { Drawer, Typography, Image, Tag, Space, Divider } from 'antd';
 import {
-  EditOutlined,
   CalendarOutlined,
   UserOutlined,
   EyeOutlined,
@@ -13,7 +12,6 @@ interface TrendNewsPreviewDrawerProps {
   news: TrendNews | null;
   visible: boolean;
   onClose: () => void;
-  onEdit: (news: TrendNews) => void;
 }
 
 const { Title, Paragraph, Text } = Typography;
@@ -22,7 +20,6 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
   news,
   visible,
   onClose,
-  onEdit,
 }) => {
   if (!news) return null;
 
@@ -45,14 +42,6 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
           }}
         >
           <span>Xem trước tin tức</span>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(news)}
-            size="small"
-          >
-            Chỉnh sửa
-          </Button>
         </div>
       }
       width={1000}
@@ -110,18 +99,19 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
           <Space direction="vertical" size={8} style={{ width: '100%' }}>
             <Space>
               <UserOutlined style={{ color: 'var(--color-text-secondary)' }} />
-              <Text type="secondary">{news.author.name}</Text>
+              <Text type="secondary">{news.author?.name}</Text>
             </Space>
             <Space>
               <CalendarOutlined
                 style={{ color: 'var(--color-text-secondary)' }}
               />
               <Text type="secondary">
-                {new Date(news.createdAt).toLocaleDateString('vi-VN', {
+                {/* {new Date(news?.createdAt).toLocaleDateString('vi-VN', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                })}
+                })} */}
+                {news?.createdAt}
               </Text>
             </Space>
             <Space size="large">

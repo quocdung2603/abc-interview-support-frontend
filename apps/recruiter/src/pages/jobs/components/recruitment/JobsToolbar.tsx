@@ -14,7 +14,6 @@ interface JobsToolbarProps {
   locationFilter: string;
   onLocationFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
-  onBulkSubmit: () => void;
   isVerified: boolean;
 }
 
@@ -26,7 +25,6 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
   locationFilter,
   onLocationFilterChange,
   selectedRowKeys,
-  onBulkSubmit,
   isVerified,
 }) => {
   return (
@@ -82,16 +80,7 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
               ? 'Cần xác thực tài khoản'
               : `Gửi duyệt ${selectedRowKeys.length} bài`
           }
-        >
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            disabled={!isVerified}
-            onClick={onBulkSubmit}
-          >
-            Gửi duyệt ({selectedRowKeys.length})
-          </Button>
-        </Tooltip>
+        ></Tooltip>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import {
   JobsToolbar,
   JobsTable,
   JobPreviewDrawer,
+  JobFormDrawer,
 } from './components/recruitment';
 import { JobPost } from './components/recruitment/types';
 
@@ -20,10 +21,13 @@ const JobsPage: React.FC = () => {
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [openForm, setOpenForm] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobPost | null>(null);
 
+  const [editingJob, setEditingJob] = useState<JobPost | null>(null);
+
   // Mock data
-  const [jobPosts] = useState<JobPost[]>([
+  const initialJobs: JobPost[] = [
     {
       id: '1',
       title: 'Senior Frontend Developer - React/TypeScript',
@@ -77,32 +81,51 @@ const JobsPage: React.FC = () => {
       updatedAt: '2024-11-12',
       createdAt: '2024-11-05',
     },
-  ]);
+  ];
+
+  const [jobPosts, setJobPosts] = useState<JobPost[]>(initialJobs);
 
   const handlePreview = (job: JobPost) => {
     setSelectedJob(job);
     setPreviewVisible(true);
   };
 
-  const handleSubmitForApproval = (jobId: string) => {
-    if (!isVerified) {
-      message.warning('Cần xác thực tài khoản trước khi gửi duyệt');
-      return;
-    }
-    message.success('Đã gửi bài đăng để duyệt');
-  };
-
-  const handleBulkSubmit = () => {
-    if (!isVerified) {
-      message.warning('Cần xác thực tài khoản trước khi gửi duyệt');
-      return;
-    }
-    message.success(`Đã gửi ${selectedRowKeys.length} bài đăng để duyệt`);
-    setSelectedRowKeys([]);
-  };
-
   const handleCreateJob = () => {
-    message.info('Chuyển đến trang tạo bài đăng mới');
+    setEditingJob(null); // <- tạo mới => form rỗng
+    setOpenForm(true);
+  };
+
+  const handleEditJob = (job: JobPost) => {
+    setEditingJob(job); // <- sửa => đổ dữ liệu
+    setOpenForm(true);
+  };
+
+  const handleSaveJob = (payload: JobPost, mode: 'create' | 'update') => {
+    const now = new Date().toISOString().slice(0, 10);
+    if (mode === 'create') {
+      const newJob: JobPost = {
+        ...payload,
+        id: crypto.randomUUID?.() ?? String(Date.now()),
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now,
+      };
+      setJobPosts((prev) => [newJob, ...prev]);
+      console.log(jobPosts);
+      message.success('Đã tạo tin tuyển dụng');
+    } else {
+      setJobPosts((prev) =>
+        prev.map((j) =>
+          j.id === payload.id ? { ...j, ...payload, updatedAt: now } : j
+        )
+      );
+      message.success('Đã cập nhật tin tuyển dụng');
+    }
+    setOpenForm(false);
+  };
+
+  const handleDeleteJob = (jobId: string) => {
+    //api delete job
   };
 
   const filteredData = jobPosts.filter((job) => {
@@ -131,7 +154,6 @@ const JobsPage: React.FC = () => {
           locationFilter={locationFilter}
           onLocationFilterChange={setLocationFilter}
           selectedRowKeys={selectedRowKeys}
-          onBulkSubmit={handleBulkSubmit}
           isVerified={isVerified}
         />
 
@@ -140,8 +162,8 @@ const JobsPage: React.FC = () => {
           selectedRowKeys={selectedRowKeys}
           onSelectionChange={setSelectedRowKeys}
           onPreview={handlePreview}
-          onSubmitForApproval={handleSubmitForApproval}
-          isVerified={isVerified}
+          onEdit={handleEditJob}
+          onDelete={handleDeleteJob}
         />
       </div>
 
@@ -149,6 +171,12 @@ const JobsPage: React.FC = () => {
         visible={previewVisible}
         onClose={() => setPreviewVisible(false)}
         job={selectedJob}
+      />
+      <JobFormDrawer
+        visible={openForm}
+        onClose={() => setOpenForm(false)}
+        onSave={handleSaveJob}
+        initForm={editingJob || undefined}
       />
     </div>
   );

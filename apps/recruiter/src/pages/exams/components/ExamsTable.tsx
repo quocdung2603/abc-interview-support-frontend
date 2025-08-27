@@ -1,19 +1,21 @@
 import React from 'react';
-import { Table, Button, Tag, Space } from 'antd';
+import { Table, Button, Tag, Space, Tooltip, Popconfirm, message } from 'antd';
+import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import StatusTag from './StatusTag';
+import { Examss } from './types';
 
 interface ExamsTableProps {
-  examList: any[];
-  onEdit: (examId: string) => void;
-  onView: (exam: any) => void;
-  onStatusChange: (examId: string, newStatus: string) => void;
+  examList: Examss[];
+  onEdit: (exam: Examss) => void;
+  onPreview: (exam: Examss) => void;
+  onDelete: (examId: string) => void;
 }
 
 const ExamsTable: React.FC<ExamsTableProps> = ({
   examList,
   onEdit,
-  onView,
-  onStatusChange,
+  onPreview,
+  onDelete,
 }) => {
   const columns = [
     {
@@ -70,22 +72,40 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
       title: 'Thao tác',
       key: 'action',
       render: (record: any) => (
-        <Space>
-          <Button onClick={() => onEdit(record.id)}>Sửa</Button>
-          <Button onClick={() => onView(record)}>Xem</Button>
-          {record.status === 'draft' && (
+        <Space size="small">
+          <Tooltip title="Xem chi tiết">
             <Button
-              type="primary"
-              onClick={() => onStatusChange(record.id, 'published')}
+              type="text"
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => onPreview(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              size="small"
+              onClick={() => onEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Xóa">
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa bài đăng này?"
+              onConfirm={() =>
+                onDelete
+                  ? onDelete(record.id)
+                  : message.success('Đã xóa bài đăng')
+              }
             >
-              Công bố
-            </Button>
-          )}
-          {record.status === 'published' && (
-            <Button danger onClick={() => onStatusChange(record.id, 'closed')}>
-              Kết thúc
-            </Button>
-          )}
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                size="small"
+              />
+            </Popconfirm>
+          </Tooltip>
         </Space>
       ),
     },

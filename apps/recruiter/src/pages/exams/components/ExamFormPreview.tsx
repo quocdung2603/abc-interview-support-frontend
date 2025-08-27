@@ -2,13 +2,13 @@ import React from 'react';
 import { Drawer, Tag } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 
-interface ExamDetailModalProps {
+interface ExamFormPreviewProps {
   visible: boolean;
   onClose: () => void;
   exam: any;
 }
 
-const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
+const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
   visible,
   onClose,
   exam,
@@ -18,7 +18,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
     placement="right"
     onClose={onClose}
     open={visible}
-    width={600}
+    width={900}
   >
     {exam && (
       <div className="exam-detail-content">
@@ -73,4 +73,4 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
   </Drawer>
 );
 
-export default ExamDetailModal;
+export default ExamFormPreview;

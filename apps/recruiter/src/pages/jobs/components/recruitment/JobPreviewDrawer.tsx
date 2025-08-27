@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Button, message } from 'antd';
+import { Drawer } from 'antd';
 import JobStatusTag from './JobStatusTag';
 import { JobPost } from './types';
 
@@ -28,20 +28,9 @@ const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
   return (
     <Drawer
       title="Xem trước bài đăng"
-      width={600}
+      width={900}
       open={visible}
       onClose={onClose}
-      footer={
-        <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
-          <Button onClick={onClose}>Đóng</Button>
-          <Button
-            type="primary"
-            onClick={() => message.info('Chuyển đến trang chỉnh sửa')}
-          >
-            Chỉnh sửa
-          </Button>
-        </div>
-      }
     >
       {job && (
         <div>

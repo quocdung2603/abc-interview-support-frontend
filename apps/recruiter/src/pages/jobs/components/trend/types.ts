@@ -6,7 +6,7 @@ export interface TrendNews {
   category: 'technology' | 'career' | 'interview' | 'skills' | 'industry';
   tags?: string[];
   featuredImage?: string;
-  author: {
+  author?: {
     id: string;
     name: string;
     avatar?: string;
@@ -20,7 +20,7 @@ export interface TrendNews {
     metaDescription?: string;
     keywords?: string[];
   };
-  createdAt: string;
+  createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
 }

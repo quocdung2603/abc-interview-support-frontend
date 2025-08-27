@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { message } from 'antd';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import {
@@ -6,9 +6,9 @@ import {
   TrendNewsToolbar,
   TrendNewsTable,
   TrendNewsPreviewDrawer,
-  TrendNewsForm,
   VerificationWarning,
   TrendNews,
+  TrendNewsFormDrawer,
 } from './components/trend';
 import dayjs from 'dayjs';
 
@@ -16,11 +16,11 @@ const TrendNewsPage = () => {
   const { user } = useAuth();
   const isVerified = user?.status === 'Verified';
 
-  const [trendNewsList, setTrendNewsList] = useState<TrendNews[]>([]);
   const [loading, setLoading] = useState(false);
-  const [formVisible, setFormVisible] = useState(false);
+  const [openForm, setOpenForm] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedNews, setSelectedNews] = useState<TrendNews | null>(null);
+  const [editingNews, setEditingNews] = useState<TrendNews | null>(null);
 
   // Filter states
   const [searchValue, setSearchValue] = useState('');
@@ -30,56 +30,52 @@ const TrendNewsPage = () => {
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
 
-  // Mock data
-  useEffect(() => {
-    const mockData: TrendNews[] = [
-      {
-        id: '1',
-        title: 'Xu hướng tuyển dụng IT 2024',
-        summary:
-          'Những xu hướng mới trong việc tuyển dụng nhân tài IT năm 2024',
-        content: '<p>Nội dung chi tiết về xu hướng tuyển dụng IT...</p>',
-        category: 'technology',
-        tags: ['IT', 'Tuyển dụng', '2024'],
-        featuredImage: '/trend-it-2024.jpg',
-        author: {
-          id: 'author1',
-          name: 'Nguyễn Văn A',
-          avatar: '/avatar1.jpg',
-        },
-        status: 'published',
-        viewCount: 1250,
-        likeCount: 89,
-        isFeature: true,
-        seo: {
-          metaTitle: 'Xu hướng tuyển dụng IT 2024',
-          metaDescription:
-            'Khám phá những xu hướng mới nhất trong tuyển dụng IT',
-          keywords: ['tuyển dụng IT', 'xu hướng 2024', 'công nghệ'],
-        },
-        createdAt: '2024-01-15T10:00:00Z',
-        publishedAt: '2024-01-15T10:00:00Z',
+  const mockData: TrendNews[] = [
+    {
+      id: '1',
+      title: 'Xu hướng tuyển dụng IT 2024',
+      summary: 'Những xu hướng mới trong việc tuyển dụng nhân tài IT năm 2024',
+      content: '<p>Nội dung chi tiết về xu hướng tuyển dụng IT...</p>',
+      category: 'technology',
+      tags: ['IT', 'Tuyển dụng', '2024'],
+      featuredImage: '/trend-it-2024.jpg',
+      author: {
+        id: 'author1',
+        name: 'Nguyễn Văn A',
+        avatar: '/avatar1.jpg',
       },
-      {
-        id: '2',
-        title: 'Kỹ năng mềm quan trọng cho developer',
-        summary: 'Những kỹ năng mềm cần thiết mà mọi developer nên có',
-        content: '<p>Nội dung về kỹ năng mềm...</p>',
-        category: 'skills',
-        tags: ['Kỹ năng mềm', 'Developer', 'Phát triển'],
-        author: {
-          id: 'author2',
-          name: 'Trần Thị B',
-        },
-        status: 'draft',
-        viewCount: 0,
-        likeCount: 0,
-        isFeature: false,
-        createdAt: '2024-01-14T14:30:00Z',
+      status: 'published',
+      viewCount: 1250,
+      likeCount: 89,
+      isFeature: true,
+      seo: {
+        metaTitle: 'Xu hướng tuyển dụng IT 2024',
+        metaDescription: 'Khám phá những xu hướng mới nhất trong tuyển dụng IT',
+        keywords: ['tuyển dụng IT', 'xu hướng 2024', 'công nghệ'],
       },
-    ];
-    setTrendNewsList(mockData);
-  }, []);
+      createdAt: '2024-01-15T10:00:00Z',
+      publishedAt: '2024-01-15T10:00:00Z',
+    },
+    {
+      id: '2',
+      title: 'Kỹ năng mềm quan trọng cho developer',
+      summary: 'Những kỹ năng mềm cần thiết mà mọi developer nên có',
+      content: '<p>Nội dung về kỹ năng mềm...</p>',
+      category: 'skills',
+      tags: ['Kỹ năng mềm', 'Developer', 'Phát triển'],
+      author: {
+        id: 'author2',
+        name: 'Trần Thị B',
+      },
+      status: 'draft',
+      viewCount: 0,
+      likeCount: 0,
+      isFeature: false,
+      createdAt: '2024-01-14T14:30:00Z',
+    },
+  ];
+
+  const [trendNewsList, setTrendNewsList] = useState<TrendNews[]>(mockData);
 
   // Filter logic
   const filteredNews = trendNewsList.filter((news) => {
@@ -100,81 +96,50 @@ const TrendNewsPage = () => {
     return matchesSearch && matchesStatus && matchesCategory && matchesDate;
   });
 
-  const handleCreateNews = () => {
-    if (!isVerified) {
-      message.warning('Vui lòng xác thực tài khoản trước khi tạo tin tức');
-      return;
-    }
-    setSelectedNews(null);
-    setFormVisible(true);
-  };
-
-  const handleEditNews = (news: TrendNews) => {
-    setSelectedNews(news);
-    setFormVisible(true);
-    setPreviewVisible(false);
-  };
-
-  const handleDeleteNews = async (id: string) => {
-    try {
-      setLoading(true);
-      // API call to delete news
-      setTrendNewsList((prev) => prev.filter((news) => news.id !== id));
-      message.success('Đã xóa tin tức thành công');
-    } catch (error) {
-      console.error('Error deleting news:', error);
-      message.error('Có lỗi xảy ra khi xóa tin tức');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handlePreviewNews = (news: TrendNews) => {
     setSelectedNews(news);
     setPreviewVisible(true);
   };
 
-  const handleFormSubmit = async (values: any) => {
-    try {
-      setLoading(true);
+  const handleCreateNews = () => {
+    setEditingNews(null);
+    setOpenForm(true);
+  };
 
-      if (selectedNews) {
-        // Update existing news
-        const updatedNews: TrendNews = {
-          ...selectedNews,
-          ...values,
-          updatedAt: new Date().toISOString(),
-        };
-        setTrendNewsList((prev) =>
-          prev.map((news) => (news.id === selectedNews.id ? updatedNews : news))
-        );
-        message.success('Cập nhật tin tức thành công');
-      } else {
-        // Create new news
-        const newNews: TrendNews = {
-          id: Date.now().toString(),
-          ...values,
-          author: {
-            id: user?.userId || 'current-user',
-            name: user?.fullName || 'Current User',
-            avatar: '',
-          },
-          viewCount: 0,
-          likeCount: 0,
-          createdAt: new Date().toISOString(),
-        };
-        setTrendNewsList((prev) => [newNews, ...prev]);
-        message.success('Tạo tin tức mới thành công');
-      }
+  const handleEditNews = (news: TrendNews) => {
+    setEditingNews(news); // <- sửa => đổ dữ liệu
+    setOpenForm(true);
+  };
 
-      setFormVisible(false);
-      setSelectedNews(null);
-    } catch (error) {
-      console.error('Error saving news:', error);
-      message.error('Có lỗi xảy ra khi lưu tin tức');
-    } finally {
-      setLoading(false);
+  const handleDeleteNews = async (id: string) => {
+    //api delete news
+  };
+
+  const handleSaveNews = async (
+    payload: TrendNews,
+    mode: 'create' | 'update'
+  ) => {
+    const now = new Date().toISOString().slice(0, 10);
+    if (mode === 'create') {
+      const newJob: TrendNews = {
+        ...payload,
+        id: crypto.randomUUID?.() ?? String(Date.now()),
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now,
+      };
+      setTrendNewsList((prev) => [newJob, ...prev]);
+      console.log(trendNewsList);
+      message.success('Đã tạo tin xu hướng');
+    } else {
+      setTrendNewsList((prev) =>
+        prev.map((j) =>
+          j.id === payload.id ? { ...j, ...payload, updatedAt: now } : j
+        )
+      );
+      message.success('Đã cập nhật tin xu hướng');
     }
+    setOpenForm(false);
   };
 
   const handleResetFilters = () => {
@@ -211,25 +176,19 @@ const TrendNewsPage = () => {
         />
       </div>
 
-      <TrendNewsForm
-        visible={formVisible}
-        news={selectedNews}
-        onCancel={() => {
-          setFormVisible(false);
-          setSelectedNews(null);
-        }}
-        onSubmit={handleFormSubmit}
-        loading={loading}
-      />
-
       <TrendNewsPreviewDrawer
         news={selectedNews}
         visible={previewVisible}
         onClose={() => {
           setPreviewVisible(false);
-          setSelectedNews(null);
         }}
-        onEdit={handleEditNews}
+      />
+
+      <TrendNewsFormDrawer
+        visible={openForm}
+        onClose={() => setOpenForm(false)}
+        onSave={handleSaveNews}
+        initForm={editingNews || undefined}
       />
     </div>
   );
