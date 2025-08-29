@@ -1,30 +1,28 @@
 import React from 'react';
-import { Input, Select, DatePicker, Tooltip } from 'antd';
+import { Input, Select, DatePicker } from 'antd';
 
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-interface JobsToolbarProps {
+interface ToolbarProps {
   searchText: string;
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusFilterChange: (value: string) => void;
-  locationFilter: string;
-  onLocationFilterChange: (value: string) => void;
+  rankFilter: string;
+  onRankFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
-  isVerified: boolean;
 }
 
-const JobsToolbar: React.FC<JobsToolbarProps> = ({
+const UserToolbar: React.FC<ToolbarProps> = ({
   searchText,
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
-  locationFilter,
-  onLocationFilterChange,
+  rankFilter,
+  onRankFilterChange,
   selectedRowKeys,
-  isVerified,
 }) => {
   return (
     <div
@@ -51,38 +49,31 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
         style={{ width: 130 }}
       >
         <Option value="all">Tất cả</Option>
-        <Option value="draft">Bản nháp</Option>
-        <Option value="pending">Chờ duyệt</Option>
-        <Option value="approved">Đã duyệt</Option>
-        <Option value="rejected">Trả lại</Option>
+        <Option value="Pending">Chưa xác thực</Option>
+        <Option value="Verified">Đã xác thực</Option>
+        <Option value="Lock">Đã bị khóa</Option>
       </Select>
 
       <Select
-        placeholder="Địa điểm"
-        value={locationFilter}
-        onChange={onLocationFilterChange}
+        placeholder="Bậc xếp hạng"
+        value={rankFilter}
+        onChange={onRankFilterChange}
         style={{ width: 130 }}
       >
         <Option value="all">Tất cả</Option>
-        <Option value="Hồ Chí Minh">TP.HCM</Option>
-        <Option value="Hà Nội">Hà Nội</Option>
-        <Option value="Đà Nẵng">Đà Nẵng</Option>
-        <Option value="Remote">Remote</Option>
+        <Option value="Newbie">Newbie</Option>
+        <Option value="Learner">Learner</Option>
+        <Option value="Contributor">Contributor</Option>
+        <Option value="Solver">Solver</Option>
+        <Option value="Expert">Expert</Option>
+        <Option value="Senior Expert">Senior Expert</Option>
+        <Option value="Master">Master</Option>
+        <Option value="Legend">Legend</Option>
       </Select>
 
       <RangePicker style={{ width: 250 }} />
-
-      {selectedRowKeys.length > 0 && (
-        <Tooltip
-          title={
-            !isVerified
-              ? 'Cần xác thực tài khoản'
-              : `Gửi duyệt ${selectedRowKeys.length} bài`
-          }
-        ></Tooltip>
-      )}
     </div>
   );
 };
 
-export default JobsToolbar;
+export default UserToolbar;

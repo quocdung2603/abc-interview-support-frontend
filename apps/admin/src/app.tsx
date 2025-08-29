@@ -5,6 +5,9 @@ import {
 } from '@abc-interview-support-frontend/sso-utils';
 import { useSSO } from './utils/useSSO';
 import { createApiClient } from './utils/apiClient';
+import { Route, Routes } from 'react-router-dom';
+import Layout from './layout/Layout';
+import { Routing } from './routes/Routing';
 
 function AdminDashboard() {
   const { user, isAuthenticated, isLoading, login } = useAuth();
@@ -74,65 +77,19 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Admin Dashboard
-            </h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.fullName}</span>
-              <button
-                onClick={() => {
-                  sessionStorage.clear();
-                  const ssoOrigin =
-                    import.meta.env.VITE_SSO_ORIGIN || 'http://localhost:4200';
-                  window.location.href = ssoOrigin;
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            System Overview
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-blue-900">
-                User Management
-              </h3>
-              <p className="text-blue-700 mt-2">
-                Manage system users and permissions
-              </p>
-            </div>
-            <div className="bg-green-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-green-900">
-                Content Management
-              </h3>
-              <p className="text-green-700 mt-2">
-                Manage questions and interview content
-              </p>
-            </div>
-            <div className="bg-yellow-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-yellow-900">
-                System Settings
-              </h3>
-              <p className="text-yellow-700 mt-2">
-                Configure system-wide settings
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+    <Routes>
+      <Route path="" element={<Layout />}>
+        {Routing.map((route) => {
+          return (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={<route.element />}
+            />
+          );
+        })}
+      </Route>
+    </Routes>
   );
 }
 

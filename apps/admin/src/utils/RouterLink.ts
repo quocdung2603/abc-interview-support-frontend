@@ -1,0 +1,15 @@
+export enum RouterLink {
+  Dashboard = '',
+  User = 'user-management',
+  Recruiter = 'recruiter-management',
+  AccountApproval = 'account-approval',
+  RecruitmentNews = 'recruitment-news-management',
+  TrendNews = 'trend-news-management',
+  NewsApproval = 'news-approval',
+  QuestionBank = 'question-bank-management',
+  QuestionApproval = 'question-approval',
+  MockExam = 'mock-exam-management',
+  BaseExam = 'base-exam-management',
+  ExamApproval = 'exam-approval',
+  Setting = 'setting',
+}
