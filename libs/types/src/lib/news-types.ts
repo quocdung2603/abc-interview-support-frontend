@@ -6,7 +6,11 @@ export interface News {
   newsType: 'trend' | 'recruitment';
   title: string;
   content: string;
+  location?: string;
   fieldId?: string;
+  topicId?: string;
   examId?: string;
   createdAt: Date;
+  status: 'Pending' | 'Approve' | 'Reject';
+  rejectReason?: string;
 }
