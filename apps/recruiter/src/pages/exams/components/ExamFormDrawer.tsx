@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Select,
-  DatePicker,
   Upload,
   Card,
   Button,
@@ -16,6 +15,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import { Examss } from './types';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import dayjs from 'dayjs';
+import { Option } from 'antd/es/mentions';
 
 interface CreateFormFields extends Examss {}
 
@@ -328,7 +328,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
             name="examPeriod"
             rules={[{ required: true, message: 'Vui lòng chọn thời gian' }]}
           >
-            <Controller
+            {/* <Controller
               name="examPeriod"
               control={control}
               rules={{ required: 'Vui lòng chọn thời gian thi' }}
@@ -355,7 +355,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
                   }}
                 />
               )}
-            />
+            /> */}
           </Form.Item>
 
           <div className="time-summary">

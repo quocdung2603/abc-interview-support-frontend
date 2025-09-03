@@ -1,45 +1,55 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
+import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import {
-  EyeOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
-import { News, Field, Topic } from '@abc-interview-support-frontend/types';
+  Question,
+  Field,
+  Topic,
+  Level,
+  QuestionType,
+} from '@abc-interview-support-frontend/types';
 
 interface TableProps {
-  dataList: News[];
-  onPreview: (data: News) => void;
-  onApprove: (data: News) => void;
+  dataList: Question[];
+  onPreview: (data: Question) => void;
+  onEdit: (data: Question) => void;
   fields: Field[];
   topics: Topic[];
+  levels: Level[];
+  questionTypes: QuestionType[];
 }
 
-const NewsApprovalTable: React.FC<TableProps> = ({
+const QuestionApprovalTable: React.FC<TableProps> = ({
   dataList,
   onPreview,
-  onApprove,
+  onEdit,
   fields,
   topics,
+  levels,
+  questionTypes,
 }) => {
-  const getFieldName = (fieldId?: string) => {
-    if (!fieldId) return 'N/A';
+  const getFieldName = (fieldId: string) => {
     const field = fields.find((f) => f.fieldId === fieldId);
     return field?.fieldName || 'N/A';
   };
 
-  const getTopicName = (topicId?: string) => {
-    if (!topicId) return 'N/A';
+  const getTopicName = (topicId: string) => {
     const topic = topics.find((t) => t.topicId === topicId);
     return topic?.topicName || 'N/A';
+  };
+
+  const getLevelName = (levelId: string) => {
+    const level = levels.find((l) => l.levelId === levelId);
+    return level?.levelName || 'N/A';
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'Pending':
         return 'Chờ duyệt';
-      case 'Approve':
+      case 'Approved':
         return 'Đã duyệt';
-      case 'Reject':
+      case 'Rejected':
         return 'Đã từ chối';
       default:
         return status;
@@ -50,32 +60,10 @@ const NewsApprovalTable: React.FC<TableProps> = ({
     switch (status) {
       case 'Pending':
         return '#faad14';
-      case 'Approve':
+      case 'Approved':
         return '#52c41a';
-      case 'Reject':
+      case 'Rejected':
         return '#ff4d4f';
-      default:
-        return '#d9d9d9';
-    }
-  };
-
-  const getNewsTypeText = (newsType: string) => {
-    switch (newsType) {
-      case 'trend':
-        return 'Xu hướng';
-      case 'recruitment':
-        return 'Tuyển dụng';
-      default:
-        return newsType;
-    }
-  };
-
-  const getNewsTypeColor = (newsType: string) => {
-    switch (newsType) {
-      case 'trend':
-        return '#1890ff';
-      case 'recruitment':
-        return '#722ed1';
       default:
         return '#d9d9d9';
     }
@@ -83,11 +71,11 @@ const NewsApprovalTable: React.FC<TableProps> = ({
 
   const columns = [
     {
-      title: 'Tiêu đề',
-      dataIndex: 'title',
-      key: 'title',
-      render: (title: string) => (
-        <div style={{ fontWeight: 'bold', maxWidth: '300px' }}>
+      title: 'Nội dung câu hỏi',
+      dataIndex: 'questionTitle',
+      key: 'questionTitle',
+      render: (content: string) => (
+        <div style={{ maxWidth: '300px' }}>
           <div
             style={{
               overflow: 'hidden',
@@ -95,20 +83,16 @@ const NewsApprovalTable: React.FC<TableProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            {title}
+            {content}
           </div>
         </div>
       ),
     },
     {
-      title: 'Loại tin tức',
-      dataIndex: 'newsType',
-      key: 'newsType',
-      render: (newsType: string) => (
-        <Tag color={getNewsTypeColor(newsType)}>
-          {getNewsTypeText(newsType)}
-        </Tag>
-      ),
+      title: 'Người tạo',
+      dataIndex: 'userId',
+      key: 'userId',
+      render: (userId: string) => <Tag color="geekblue">User #{userId}</Tag>,
     },
     {
       title: 'Lĩnh vực',
@@ -127,18 +111,12 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       ),
     },
     {
-      title: 'Địa điểm',
-      dataIndex: 'location',
-      key: 'location',
-      render: (location?: string) => (
-        <Tag color="orange">{location || 'Toàn quốc'}</Tag>
+      title: 'Mức độ',
+      dataIndex: 'levelId',
+      key: 'levelId',
+      render: (levelId: string) => (
+        <Tag color="orange">{getLevelName(levelId)}</Tag>
       ),
-    },
-    {
-      title: 'Người đăng',
-      dataIndex: 'userId',
-      key: 'userId',
-      render: (userId: string) => <span>User #{userId}</span>,
     },
     {
       title: 'Trạng thái',
@@ -156,6 +134,21 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       ),
     },
     {
+      title: 'Lượt vote',
+      dataIndex: 'usefulVote',
+      key: 'usefulVote',
+      render: (usefulVote: number, record: Question) => (
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ color: '#52c41a', fontWeight: 'bold' }}>
+            +{usefulVote}
+          </div>
+          <div style={{ color: '#ff4d4f', fontSize: '12px' }}>
+            -{record.unusefulVote}
+          </div>
+        </div>
+      ),
+    },
+    {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -164,7 +157,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      render: (record: News) => (
+      render: (record: Question) => (
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
@@ -174,17 +167,14 @@ const NewsApprovalTable: React.FC<TableProps> = ({
               onClick={() => onPreview(record)}
             />
           </Tooltip>
-          {record.status === 'Pending' && (
-            <Tooltip title="Duyệt tin tức">
-              <Button
-                type="text"
-                style={{ color: '#52c41a' }}
-                icon={<CheckCircleOutlined />}
-                size="small"
-                onClick={() => onApprove(record)}
-              />
-            </Tooltip>
-          )}
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              size="small"
+              onClick={() => onEdit(record)}
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -194,17 +184,17 @@ const NewsApprovalTable: React.FC<TableProps> = ({
     <Table
       columns={columns}
       dataSource={dataList}
-      rowKey="newsId"
+      rowKey="questionId"
       pagination={{
         total: dataList.length,
         pageSize: 10,
         showSizeChanger: true,
         showQuickJumper: true,
         showTotal: (total, range) =>
-          `${range[0]}-${range[1]} của ${total} tin tức`,
+          `${range[0]}-${range[1]} của ${total} câu hỏi`,
       }}
     />
   );
 };
 
-export default NewsApprovalTable;
+export default QuestionApprovalTable;

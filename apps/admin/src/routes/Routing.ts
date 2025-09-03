@@ -6,6 +6,8 @@ import RecruiterManagement from '../pages/user-management/RecruiterManagement';
 import UserManagement from '../pages/user-management/UserManagement';
 import { RouterLink } from '../utils/RouterLink';
 import NewsApproval from '../pages/news-management/NewsApproval';
+import QuestionBank from '../pages/question-management/QuestionBank';
+import QuestionApproval from '../pages/question-management/QuestionApproval';
 
 export const Routing = [
   {
@@ -35,5 +37,13 @@ export const Routing = [
   {
     path: RouterLink.NewsApproval,
     element: NewsApproval,
+  },
+  {
+    path: RouterLink.QuestionBank,
+    element: QuestionBank,
+  },
+  {
+    path: RouterLink.QuestionApproval,
+    element: QuestionApproval,
   },
 ];

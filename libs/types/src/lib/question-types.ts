@@ -32,34 +32,37 @@ export interface QuestionType {
 
 export interface Question {
   questionId: string;
-  userId: string;
+  userId?: string;
   topicId: string;
   fieldId: string;
   levelId: string;
-  questionTypeId: string;
-  questionContent: string;
-  questionAnswer?: string;
-  similarityScore?: number;
   status: 'Pending' | 'Approved' | 'Rejected';
-  language: string;
-  createdAt: Date;
-  approvedAt?: Date;
-  approvedBy?: string;
+  rejectReason?:string;
+  questionTitle: string; // tiêu đề câu hỏi
+  questionVariant: string; // Chuỗi chứa danh sách questionVariant (VD: "1,2,3" hoặc JSON như {"ids": [1, 2, 3]})
+  similarityScore?: number;
   usefulVote: number;
   unusefulVote: number;
+  createdAt: Date;
+}
+
+export interface QuestionVariant {
+  questionVariantId: string;
+  questionTypeId: string;
+  questionContent?: string; //chứa nội dung bổ sung của câu hỏi. Ví dụ: dạng FillInTheBlank cần 1 đoạn văn khuyết từ
+  questionChoose?: string; //Chứa các lựa chọn cách nhau bởi dấu "|". Ví dụ: dạng SingleChoice, MultipleChoice cần
+  questionAnswer: string; //Đáp án, nếu nhiều đáp án thì cách nhau bởi dấu "|"
 }
 
 export interface Answer {
   answerId: string;
   userId: string;
   questionId: string;
-  questionTypeId: string;
+  questionVariantId: string;
   answerContent: string;
   isCorrect?: boolean;
   similarityScore?: number;
   usefulVote: number;
   unusefulVote: number;
-  isSampleAnswer?: boolean;
-  orderNumber?: number;
   createdAt: Date;
 }
