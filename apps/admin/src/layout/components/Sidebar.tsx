@@ -138,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const getMenuState = () => {
     const currentPath =
       location.pathname.replace('/', '') || RouterLink.Dashboard;
-    let selectedKeys: string[] = [currentPath];
+    const selectedKeys: string[] = [currentPath];
     let openKeys: string[] = [];
 
     // Map path to group
