@@ -9,6 +9,7 @@ import NewsApproval from '../pages/news-management/NewsApproval';
 import QuestionBank from '../pages/question-management/QuestionBank';
 import QuestionApproval from '../pages/question-management/QuestionApproval';
 import MockExamManagement from '../pages/exam-management/MockExamManagement';
+import BaseExamManagement from '../pages/exam-management/BaseExamManagement';
 
 export const Routing = [
   {
@@ -47,8 +48,12 @@ export const Routing = [
     path: RouterLink.QuestionApproval,
     element: QuestionApproval,
   },
-    {
+  {
     path: RouterLink.MockExam,
     element: MockExamManagement,
+  },
+  {
+    path: RouterLink.BaseExam,
+    element: BaseExamManagement,
   },
 ];

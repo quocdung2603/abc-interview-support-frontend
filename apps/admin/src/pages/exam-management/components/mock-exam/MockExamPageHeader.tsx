@@ -40,7 +40,7 @@ const MockExamPageHeader: React.FC<PageHeaderProps> = ({ onCreate }) => {
             minWidth: '140px',
           }}
         >
-          Tạo câu hỏi mới
+          Tạo bài kiểm tra mới
         </Button>
       </div>
     </div>

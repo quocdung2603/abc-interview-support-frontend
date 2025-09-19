@@ -1,21 +1,14 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { Exam } from '@abc-interview-support-frontend/types';
 
-interface MockExamTableProps {
+interface BaseExamTableProps {
   data: Exam[];
   onView: (exam: Exam) => void;
-  onEdit: (exam: Exam) => void;
-  onDelete: (examId: string) => void;
 }
 
-const MockExamTable: React.FC<MockExamTableProps> = ({
-  data,
-  onView,
-  onEdit,
-  onDelete,
-}) => {
+const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'Active':
@@ -56,7 +49,7 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
       title: 'Tiêu đề bài kiểm tra',
       dataIndex: 'title',
       key: 'title',
-      width: '30%',
+      width: '25%',
       render: (title: string) => (
         <div
           style={{
@@ -115,14 +108,6 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
               onClick={() => onView(record)}
             />
           </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              size="small"
-              onClick={() => onEdit(record)}
-            />
-          </Tooltip>
         </Space>
       ),
     },
@@ -145,4 +130,4 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
   );
 };
 
-export default MockExamTable;
+export default BaseExamTable;

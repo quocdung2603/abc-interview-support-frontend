@@ -5,18 +5,18 @@ import { Exam, Question } from '@abc-interview-support-frontend/types';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
-interface PreviewDrawerProps {
+interface BaseExamPreviewDrawerProps {
   visible: boolean;
   onClose: () => void;
   data: Exam | null;
 }
 
-const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
+const BaseExamPreviewDrawer: React.FC<BaseExamPreviewDrawerProps> = ({
   visible,
   onClose,
   data,
 }) => {
-  console.log('MockExamPreviewDrawer render:', { visible, data });
+  console.log('BaseExamPreviewDrawer render:', { visible, data });
 
   const [questions, setQuestions] = useState<Question[]>([]);
 
@@ -129,7 +129,7 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
 
   return (
     <Drawer
-      title="Chi tiết bài kiểm tra ảo"
+      title="Chi tiết bài kiểm tra cơ bản"
       width={900}
       open={visible}
       onClose={onClose}
@@ -281,4 +281,4 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
   );
 };
 
-export default MockExamPreviewDrawer;
+export default BaseExamPreviewDrawer;

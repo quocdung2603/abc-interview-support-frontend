@@ -4,16 +4,16 @@ import { Dayjs } from 'dayjs';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-interface MockExamToolbarProps {
+interface BaseExamToolbarProps {
   onFilterChange: (filters: {
     searchText?: string;
     status?: string;
     position?: string;
-    dateRange?: [Date, Date];
+    dateRange?: [Dayjs, Dayjs];
   }) => void;
 }
 
-const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
+const BaseExamToolbar: React.FC<BaseExamToolbarProps> = ({
   onFilterChange,
 }) => {
   const [searchText, setSearchText] = useState<string>('');
@@ -27,9 +27,7 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
       searchText: value || undefined,
       status: statusFilter || undefined,
       position: positionFilter || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -39,9 +37,7 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
       searchText: searchText || undefined,
       status: value || undefined,
       position: positionFilter || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -51,9 +47,7 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
       searchText: searchText || undefined,
       status: statusFilter || undefined,
       position: value || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -71,9 +65,7 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
       searchText: searchText || undefined,
       status: statusFilter || undefined,
       position: positionFilter || undefined,
-      dateRange: validDates
-        ? [validDates[0].toDate(), validDates[1].toDate()]
-        : undefined,
+      dateRange: validDates || undefined,
     });
   };
 
@@ -134,6 +126,8 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
           <Option value="Mobile Developer">Mobile Developer</Option>
           <Option value="Data Analyst">Data Analyst</Option>
           <Option value="QA Engineer">QA Engineer</Option>
+          <Option value="Product Manager">Product Manager</Option>
+          <Option value="Business Analyst">Business Analyst</Option>
           <Option value="UI/UX Designer">UI/UX Designer</Option>
         </Select>
       </div>
@@ -153,4 +147,4 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
   );
 };
 
-export default MockExamToolbar;
+export default BaseExamToolbar;
