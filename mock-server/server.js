@@ -186,10 +186,12 @@ app.post('/api/auth/login', async (req, res) => {
 // POST /api/auth/register
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, fullName, roleId } = req.body;
+    const { email, password, fullName } = req.body;
 
-    if (!email || !password || !fullName || !roleId) {
-      return res.status(400).json({ error: 'All fields required' });
+    if (!email || !password || !fullName) {
+      return res
+        .status(400)
+        .json({ error: 'Email, password, and fullName required' });
     }
 
     // Check if user exists
@@ -197,11 +199,11 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(409).json({ error: 'User already exists' });
     }
 
-    // Create new user
+    // Create new user - always as Student role
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = generateId();
-    const roleName =
-      roleId === '1' ? 'Admin' : roleId === '2' ? 'Student' : 'Recruiter';
+    const roleId = '2'; // Always Student role
+    const roleName = 'Student';
 
     const newUser = {
       userId,

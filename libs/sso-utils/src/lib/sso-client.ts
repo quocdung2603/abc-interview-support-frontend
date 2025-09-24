@@ -37,6 +37,12 @@ export class SSOClient {
     // Send ready signal to parent if we're in a popup/iframe context
     this.sendReadySignal(ssoOrigin);
 
+    // Fallback: Clean URL parameters after a short delay to ensure they're removed
+    // even if authentication fails or takes too long
+    setTimeout(() => {
+      this.cleanUrlParams();
+    }, 2000);
+
     // Return cleanup function
     return () => {
       window.removeEventListener('message', messageHandler);
@@ -96,6 +102,8 @@ export class SSOClient {
               response.refreshToken,
               response.user
             );
+            // Clean URL parameters after successful authentication
+            this.cleanUrlParams();
           })
           .catch((error) => {
             onError(
