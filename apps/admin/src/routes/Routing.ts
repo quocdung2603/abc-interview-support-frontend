@@ -10,6 +10,7 @@ import QuestionBank from '../pages/question-management/QuestionBank';
 import QuestionApproval from '../pages/question-management/QuestionApproval';
 import MockExamManagement from '../pages/exam-management/MockExamManagement';
 import BaseExamManagement from '../pages/exam-management/BaseExamManagement';
+import ExamApproval from '../pages/exam-management/ExamApproval';
 
 export const Routing = [
   {
@@ -55,5 +56,9 @@ export const Routing = [
   {
     path: RouterLink.BaseExam,
     element: BaseExamManagement,
+  },
+  {
+    path: RouterLink.ExamApproval,
+    element: ExamApproval,
   },
 ];
