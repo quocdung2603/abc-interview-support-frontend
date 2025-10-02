@@ -1,24 +1,48 @@
 import { SSOMessage } from '@abc-interview-support-frontend/types';
+import { generateState } from './security-utils';
 
 export class SSOTokenManager {
-  private static readonly HANDSHAKE_TIMEOUT = 5000; // 5 seconds
+  private static readonly HANDSHAKE_TIMEOUT = 3000; // 3 seconds (reduced from 5)
   private static readonly SSO_READY_MESSAGE = 'SSO_READY';
   private static readonly SSO_AUTH_MESSAGE = 'SSO_AUTH';
+  private static activeWindows: Map<string, Window> = new Map();
 
   /**
    * SSO App: Send auth token to target app via postMessage with fallback to URL redirect
+   * @param targetOrigin - Target app origin
+   * @param targetUrl - Target app URL
+   * @param ssoAuth - SSO auth token
+   * @param useNewWindow - Whether to open in new window (default: true)
    */
   static async sendAuthToken(
     targetOrigin: string,
     targetUrl: string,
-    ssoAuth: string
+    ssoAuth: string,
+    useNewWindow: boolean = true
   ): Promise<void> {
-    // Try postMessage handshake first
-    const success = await this.tryPostMessageHandshake(targetOrigin, ssoAuth);
+    // Generate CSRF state
+    const state = generateState();
+    sessionStorage.setItem(`sso_state_${state}`, Date.now().toString());
 
-    if (!success) {
-      // Fallback to URL parameter redirect
-      this.redirectWithToken(targetUrl, ssoAuth);
+    if (useNewWindow) {
+      // Try postMessage handshake first (with new window)
+      const success = await this.tryPostMessageHandshake(
+        targetOrigin,
+        targetUrl,
+        ssoAuth,
+        state
+      );
+
+      if (!success) {
+        console.warn(
+          'PostMessage handshake failed, falling back to URL redirect'
+        );
+        // Fallback to URL parameter redirect
+        this.redirectWithToken(targetUrl, ssoAuth, state);
+      }
+    } else {
+      // Direct redirect in same window
+      this.redirectWithToken(targetUrl, ssoAuth, state, false);
     }
   }
 
@@ -27,41 +51,71 @@ export class SSOTokenManager {
    */
   private static async tryPostMessageHandshake(
     targetOrigin: string,
-    ssoAuth: string
+    targetUrl: string,
+    ssoAuth: string,
+    state: string
   ): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
+      let targetWindow: Window | null = null;
+      let isHandshakeComplete = false;
+
       const timeout = setTimeout(() => {
-        window.removeEventListener('message', messageHandler);
-        resolve(false);
+        if (!isHandshakeComplete) {
+          console.warn('PostMessage handshake timeout');
+          window.removeEventListener('message', messageHandler);
+          resolve(false);
+        }
       }, this.HANDSHAKE_TIMEOUT);
 
       const messageHandler = (event: MessageEvent) => {
-        if (event.origin !== targetOrigin) return;
+        // Validate origin
+        if (event.origin !== targetOrigin) {
+          console.warn('Invalid origin:', event.origin);
+          return;
+        }
 
         const message = event.data as SSOMessage;
+
         if (message.type === this.SSO_READY_MESSAGE) {
+          console.log('Received SSO_READY from target app');
+          isHandshakeComplete = true;
+
           // Target is ready, send the auth token
           const authMessage: SSOMessage = {
             type: this.SSO_AUTH_MESSAGE,
-            payload: { sso_auth: ssoAuth },
+            payload: {
+              sso_auth: ssoAuth,
+              state: state,
+            },
             origin: window.location.origin,
           };
 
-          if (event.source) {
+          if (event.source && targetWindow) {
+            console.log('Sending SSO_AUTH via postMessage');
             (event.source as Window).postMessage(authMessage, targetOrigin);
           }
 
           clearTimeout(timeout);
           window.removeEventListener('message', messageHandler);
+
+          // Store reference to window for potential cleanup
+          this.activeWindows.set(targetOrigin, targetWindow as Window);
+
           resolve(true);
         }
       };
 
       window.addEventListener('message', messageHandler);
 
-      // Open the target window
-      const targetWindow = window.open(targetOrigin, '_blank');
+      // Open the target window with proper features to avoid popup blockers
+      targetWindow = window.open(
+        targetUrl,
+        '_blank',
+        'noopener,noreferrer,width=1200,height=800'
+      );
+
       if (!targetWindow) {
+        console.error('Failed to open window (popup blocker?)');
         clearTimeout(timeout);
         window.removeEventListener('message', messageHandler);
         resolve(false);
@@ -72,10 +126,49 @@ export class SSOTokenManager {
   /**
    * Fallback: Redirect to target with sso_auth parameter
    */
-  private static redirectWithToken(targetUrl: string, ssoAuth: string): void {
+  private static redirectWithToken(
+    targetUrl: string,
+    ssoAuth: string,
+    state: string,
+    newWindow: boolean = true
+  ): void {
     const url = new URL(targetUrl);
     url.searchParams.set('sso_auth', ssoAuth);
-    window.location.href = url.toString();
+    url.searchParams.set('state', state);
+
+    if (newWindow) {
+      window.open(url.toString(), '_blank');
+    } else {
+      window.location.href = url.toString();
+    }
+  }
+
+  /**
+   * Validate state parameter (CSRF protection)
+   */
+  static validateState(state: string): boolean {
+    const stateKey = `sso_state_${state}`;
+    const timestamp = sessionStorage.getItem(stateKey);
+
+    if (!timestamp) {
+      console.error('Invalid state: not found');
+      return false;
+    }
+
+    // State should be used within 5 minutes
+    const now = Date.now();
+    const stateTime = parseInt(timestamp, 10);
+    const fiveMinutes = 5 * 60 * 1000;
+
+    if (now - stateTime > fiveMinutes) {
+      console.error('Invalid state: expired');
+      sessionStorage.removeItem(stateKey);
+      return false;
+    }
+
+    // Clean up used state
+    sessionStorage.removeItem(stateKey);
+    return true;
   }
 
   /**

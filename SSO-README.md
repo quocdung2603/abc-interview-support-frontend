@@ -15,8 +15,12 @@ A secure Single Sign-On (SSO) implementation for the ABC Interview Support monor
 
 - **Server-side sessions** with configurable TTL
 - **Single-use SSO auth tokens** with 60-second expiry
-- **PostMessage handshake** with URL parameter fallback
+- **CSRF protection** via state parameter with cryptographic validation
+- **Encrypted session storage** using XOR encryption for sensitive data
+- **PostMessage handshake** with origin validation and URL parameter fallback
 - **Automatic token cleanup** and session management
+- **Open redirect protection** to prevent malicious redirects
+- **Device fingerprinting** for enhanced session validation
 - **Role-based access control** for different user types
 
 ## 🚀 Quick Start
@@ -264,37 +268,51 @@ Your Java Spring Boot backend must allow these origins:
 
    - Visit http://localhost:4200
    - Login with test credentials
-   - Verify you see the dashboard
+   - Verify you see the dashboard with loading states
 
-2. **✅ App Launch (PostMessage):**
+2. **✅ App Launch (PostMessage with State):**
 
    - Click "Launch Admin Dashboard"
+   - Verify loading spinner appears
    - Check if app opens and user is authenticated
-   - Verify URL is clean (no `sso_auth` parameter)
+   - Verify URL is clean (no `sso_auth` or `state` parameters)
+   - **Security:** Open DevTools Console, look for state validation logs
 
 3. **✅ App Launch (Fallback):**
 
    - Disable JavaScript temporarily
    - Try launching an app
-   - Should redirect with URL parameter
-   - Re-enable JavaScript, page should clean URL
+   - Should redirect with URL parameters (`sso_auth` and `state`)
+   - Re-enable JavaScript, page should clean both parameters
 
-4. **✅ Direct Access Protection:**
+4. **✅ CSRF Protection Test:**
+
+   - Manually craft URL: `http://localhost:4500?sso_auth=fake_token&state=invalid_state`
+   - Should see error: "Invalid or expired state parameter"
+   - Authentication should fail
+
+5. **✅ Encrypted Storage Test:**
+
+   - Login and open DevTools → Application → Session Storage
+   - Check stored values - should be encrypted (not plain JSON)
+   - Verify encrypted format: `{"data":"...","iv":"..."}`
+
+6. **✅ Direct Access Protection:**
 
    - Open http://localhost:4500 in incognito mode
    - Should redirect to SSO login
    - After login, should return to intended page
 
-5. **✅ Role-based Access:**
+7. **✅ Role-based Access:**
 
    - Login as Student user
    - Try accessing Admin portal
    - Should show "Access Denied" message
 
-6. **✅ Session Storage Isolation:**
+8. **✅ Session Storage Isolation:**
    - Login and access multiple apps
    - Check sessionStorage in DevTools
-   - Each app should have separate token keys
+   - Each app should have separate encrypted token keys
 
 ### Browser DevTools Inspection
 
@@ -447,13 +465,78 @@ curl http://your-backend-url/actuator/health
    - Implement CSP headers
    - Add request validation/sanitization
 
-### Frontend Security Features
+### Frontend Security Features (Implemented)
 
-- Single-use SSO tokens (60s TTL)
-- Token auto-refresh on 401 errors
-- SessionStorage isolation per app
-- Clean URL parameters after authentication
-- PostMessage origin validation
+✅ **CSRF Protection:**
+
+- State parameter with cryptographic validation
+- Generated using `crypto.getRandomValues()`
+- Validated on both SSO and target app sides
+- 5-minute TTL to prevent replay attacks
+
+✅ **Encrypted Session Storage:**
+
+- XOR encryption for sensitive data at rest
+- Protects tokens from XSS attacks accessing sessionStorage
+- Custom `SecureStorage` wrapper for transparent encryption
+
+✅ **Open Redirect Protection:**
+
+- Validates redirect URLs against whitelist
+- Prevents malicious redirects to external sites
+- Uses `isValidRedirectUrl()` utility
+
+✅ **PostMessage Security:**
+
+- Origin validation on both sender and receiver
+- Structured message types (SSO_AUTH, SSO_READY)
+- 3-second timeout for handshake
+- Fallback to URL parameters only if postMessage fails
+
+✅ **Device Fingerprinting:**
+
+- Combines userAgent, language, screen resolution, timezone
+- Helps detect session hijacking attempts
+- Used for additional session validation
+
+✅ **Token Cleanup:**
+
+- Automatic removal of sensitive URL parameters
+- Both `sso_auth` and `state` cleaned after use
+- Prevents token exposure in browser history
+
+✅ **Single-use Tokens:**
+
+- SSO auth tokens expire in 60 seconds
+- Backend marks tokens as used after verification
+- Prevents token replay attacks
+
+✅ **Loading & Error States:**
+
+- User-friendly feedback during authentication
+- Error messages for security violations
+- Prevents confusion during CSRF validation failures
+
+### Security Best Practices
+
+**For Developers:**
+
+1. Never log tokens or state parameters to console in production
+2. Always validate origin in postMessage handlers
+3. Use `SecureStorage` for sensitive data, not plain sessionStorage
+4. Keep security utilities up to date
+5. Test CSRF protection with manual token crafting
+
+**Production Checklist:**
+
+- [ ] Enable HTTPS for all apps
+- [ ] Configure CSP headers to restrict script sources
+- [ ] Rotate encryption keys regularly
+- [ ] Enable security logging and monitoring
+- [ ] Implement rate limiting on backend
+- [ ] Add session timeout warnings (recommended: 55 minutes)
+- [ ] Use HttpOnly cookies for refresh tokens (backend)
+- [ ] Enable audit logging for authentication events
 
 ### Backend Security Recommendations
 
@@ -467,6 +550,8 @@ Your Java Spring Boot backend should implement:
 - Request/response encryption (HTTPS)
 - Audit logging
 - 2FA support (optional)
+- CSRF token validation on state parameter
+- IP-based rate limiting
 
 ## 📝 License
 

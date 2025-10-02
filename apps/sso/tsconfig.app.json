@@ -6,11 +6,7 @@
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
     "jsx": "react-jsx",
     "lib": ["dom"],
-    "types": [
-      "node",
-      "@nx/react/typings/image.d.ts",
-      "vite/client"
-    ]
+    "types": ["node", "@nx/react/typings/image.d.ts", "vite/client"]
   },
   "exclude": [
     "out-tsc",
@@ -40,6 +36,9 @@
     "../../libs/sso-utils/src/**/*"
   ],
   "references": [
+    {
+      "path": "../../libs/sso-utils/tsconfig.lib.json"
+    },
     {
       "path": "../../libs/types/tsconfig.lib.json"
     }

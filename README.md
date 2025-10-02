@@ -31,26 +31,29 @@ A comprehensive interview preparation platform built with React, TypeScript, and
 
 2. **Configure environment variables:**
 
-   Create `.env` files in each app directory:
+   Copy `.env.example` to `.env` at the root directory:
 
-   **SSO App (`apps/sso/.env`):**
+   ```bash
+   cp .env.example .env
+   ```
+
+   Update values in `.env`:
 
    ```env
+   # API Configuration
    VITE_API_BASE_URL=http://your-backend-api-url
+
+   # SSO Configuration
    VITE_SSO_ORIGIN=http://localhost:4200
-   VITE_APP_ORIGIN=http://localhost:4200
-   VITE_ADMIN_URL=http://localhost:4500
+
+   # App URLs
+   VITE_SSO_URL=http://localhost:4200
    VITE_STUDENT_URL=http://localhost:4300
    VITE_RECRUITER_URL=http://localhost:4400
+   VITE_ADMIN_URL=http://localhost:4500
    ```
 
-   **Other Apps:**
-
-   ```env
-   VITE_API_BASE_URL=http://your-backend-api-url
-   VITE_SSO_ORIGIN=http://localhost:4200
-   VITE_APP_ORIGIN=http://localhost:4XXX
-   ```
+   > 📝 **Note:** This monorepo uses a **single .env file at root** instead of separate files for each app. See [ENV-CONFIGURATION-GUIDE.md](./ENV-CONFIGURATION-GUIDE.md) for details.
 
 3. **Start all applications:**
 
@@ -100,7 +103,10 @@ abc-interview-support-frontend/
 │   └── admin/               # Admin Dashboard
 ├── libs/
 │   ├── types/               # Shared TypeScript types
-│   └── sso-utils/          # SSO utilities & API client
+│   ├── sso-utils/          # SSO utilities & API client
+│   └── services/           # API services layer (NEW!)
+├── .env                     # Environment variables (shared)
+├── .env.example            # Environment template
 ├── .github/                 # GitHub Actions CI/CD
 ├── nx.json                  # Nx configuration
 ├── package.json             # Root dependencies
@@ -180,6 +186,37 @@ This project uses a custom SSO (Single Sign-On) implementation:
 
 ## 📚 Shared Libraries
 
+### `@abc-interview-support-frontend/services` ⭐ NEW
+
+Centralized API services layer for all backend calls.
+
+**Features:**
+
+- Unified axios instance with interceptors
+- Auto token injection and refresh
+- Type-safe API methods
+- Single `.env` configuration
+
+**Services:**
+
+- `AuthService` - Login, register, password reset
+- `UserService` - User management, profiles
+- `ExamService` - Exam CRUD operations
+- `QuestionService` - Question bank management
+- `NewsService` - News and recruitment posts
+- `CareerService` - Career preferences
+
+**Usage:**
+
+```typescript
+import { createAuthService } from '@abc-interview-support-frontend/services';
+
+const authService = createAuthService(import.meta.env.VITE_API_BASE_URL);
+const response = await authService.login({ email, password });
+```
+
+See [libs/services/README.md](./libs/services/README.md) for full documentation.
+
 ### `@abc-interview-support-frontend/types`
 
 Shared TypeScript interfaces and types:
@@ -239,13 +276,19 @@ lsof -ti:4200 | xargs kill -9
 **CORS errors:**
 
 - Verify backend CORS configuration allows frontend origins
-- Check `VITE_API_BASE_URL` in `.env` files
+- Check `VITE_API_BASE_URL` in root `.env` file
 
 **Authentication issues:**
 
-- Clear browser sessionStorage
+- Clear browser localStorage (tokens may be expired)
 - Verify backend `/api/auth/verify-session` endpoint is working
 - Check browser console for SSO errors
+
+**Environment variables not loading:**
+
+- Ensure `.env` file is at root (not in app directories)
+- Restart dev server after changing `.env`
+- See [ENV-CONFIGURATION-GUIDE.md](./ENV-CONFIGURATION-GUIDE.md)
 
 ## 📄 License
 

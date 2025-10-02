@@ -4,6 +4,7 @@ import { RegisterForm } from './components/RegisterForm';
 import { ForgotPasswordForm } from './components/ForgotPasswordForm';
 import { DashboardLinks } from './components/DashboardLinks';
 import { AuthUser } from '@abc-interview-support-frontend/types';
+import { SecureStorage } from '@abc-interview-support-frontend/sso-utils';
 
 interface SSOSession {
   user: AuthUser;
@@ -19,23 +20,18 @@ export function App() {
   >('login');
 
   useEffect(() => {
-    // Check if we have an existing session
-    const sessionData = sessionStorage.getItem('sso_session');
+    // Check if we have an existing session (using secure storage)
+    const sessionData = SecureStorage.getItem<SSOSession>('sso_session');
     if (sessionData) {
-      try {
-        const parsedSession = JSON.parse(sessionData);
-        setSession(parsedSession);
-      } catch (error) {
-        console.error('Failed to parse session data:', error);
-        sessionStorage.removeItem('sso_session');
-      }
+      setSession(sessionData);
     }
     setIsLoading(false);
   }, []);
 
   const handleLogin = (sessionData: SSOSession) => {
     setSession(sessionData);
-    sessionStorage.setItem('sso_session', JSON.stringify(sessionData));
+    // Use secure storage to encrypt sensitive data
+    SecureStorage.setItem('sso_session', sessionData);
   };
 
   const handleRegister = (userData: any) => {
@@ -45,7 +41,8 @@ export function App() {
 
   const handleLogout = () => {
     setSession(null);
-    sessionStorage.removeItem('sso_session');
+    // Clear secure storage
+    SecureStorage.removeItem('sso_session');
     setCurrentPage('login');
   };
 

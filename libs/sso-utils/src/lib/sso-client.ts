@@ -3,6 +3,7 @@ import {
   VerifySessionRequest,
   VerifySessionResponse,
 } from '@abc-interview-support-frontend/types';
+import { SSOTokenManager } from './sso-token-manager';
 
 export class SSOClient {
   private static readonly SSO_READY_MESSAGE = 'SSO_READY';
@@ -61,8 +62,17 @@ export class SSOClient {
     ) => void,
     onError: (error: string) => void
   ): Promise<void> {
-    const ssoAuth = this.getTokenFromUrl();
+    const ssoAuth = this.getTokenFromUrl('sso_auth');
+    const state = this.getTokenFromUrl('state');
+
     if (ssoAuth) {
+      // Validate state parameter for CSRF protection
+      if (state && !SSOTokenManager.validateState(state)) {
+        onError('Invalid or expired state parameter. Possible CSRF attack.');
+        this.cleanUrlParams();
+        return;
+      }
+
       try {
         const response = await this.verifySession(apiBaseUrl, ssoAuth);
         onAuthReceived(
@@ -73,6 +83,7 @@ export class SSOClient {
         this.cleanUrlParams();
       } catch (error) {
         onError(error instanceof Error ? error.message : 'Verification failed');
+        this.cleanUrlParams();
       }
     }
   }
@@ -95,7 +106,15 @@ export class SSOClient {
 
       const message = event.data as SSOMessage;
       if (message.type === this.SSO_AUTH_MESSAGE && message.payload?.sso_auth) {
-        this.verifySession(apiBaseUrl, message.payload.sso_auth)
+        const { sso_auth, state } = message.payload;
+
+        // Validate state parameter for CSRF protection
+        if (state && !SSOTokenManager.validateState(state)) {
+          onError('Invalid or expired state parameter. Possible CSRF attack.');
+          return;
+        }
+
+        this.verifySession(apiBaseUrl, sso_auth)
           .then((response) => {
             onAuthReceived(
               response.accessToken,
@@ -164,10 +183,21 @@ export class SSOClient {
   /**
    * Clean URL parameters after token is processed
    */
-  private static cleanUrlParams(paramName: string = 'sso_auth'): void {
+  private static cleanUrlParams(): void {
     const url = new URL(window.location.href);
-    if (url.searchParams.has(paramName)) {
-      url.searchParams.delete(paramName);
+    let hasChanges = false;
+
+    // Remove both sso_auth and state parameters
+    if (url.searchParams.has('sso_auth')) {
+      url.searchParams.delete('sso_auth');
+      hasChanges = true;
+    }
+    if (url.searchParams.has('state')) {
+      url.searchParams.delete('state');
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
       window.history.replaceState({}, document.title, url.toString());
     }
   }
