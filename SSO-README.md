@@ -8,7 +8,7 @@ A secure Single Sign-On (SSO) implementation for the ABC Interview Support monor
 
 1. **SSO App** (`/apps/sso`) - Central authentication portal
 2. **Target Apps** - Individual applications (Admin, Student, Recruiter)
-3. **Mock Server** - Backend API with JWT authentication
+3. **Backend API** - Java Spring Boot microservices with JWT authentication
 4. **Shared Libraries** - Common utilities and types
 
 ### Security Features
@@ -25,6 +25,7 @@ A secure Single Sign-On (SSO) implementation for the ABC Interview Support monor
 
 - Node.js 18+
 - npm 8+
+- Java Spring Boot Backend running
 
 ### Installation & Startup
 
@@ -36,59 +37,39 @@ A secure Single Sign-On (SSO) implementation for the ABC Interview Support monor
    npm install
    ```
 
-2. **Start the entire system:**
+2. **Configure environment variables:**
 
-   **Windows:**
+   Create `.env` files in each app directory with your backend API URL:
 
-   ```cmd
-   scripts\start-all.bat
+   ```env
+   VITE_API_BASE_URL=http://your-backend-api-url
+   VITE_SSO_ORIGIN=http://localhost:4200
+   VITE_APP_ORIGIN=http://localhost:4XXX
    ```
 
-   **Linux/Mac:**
+3. **Start all frontend applications:**
 
    ```bash
-   chmod +x scripts/start-all.sh
-   ./scripts/start-all.sh
+   npm run dev
    ```
 
-3. **Access the applications:**
+   This starts all 4 apps concurrently:
+
+   - SSO: `nx serve sso` (port 4200)
+   - Admin: `nx serve admin` (port 4500)
+   - Student: `nx serve student` (port 4300)
+   - Recruiter: `nx serve recruiter` (port 4400)
+
+4. **Access the applications:**
    - **SSO Portal:** http://localhost:4200
    - **Student Portal:** http://localhost:4300
    - **Recruiter Portal:** http://localhost:4400
    - **Admin Portal:** http://localhost:4500
-   - **Mock API:** http://localhost:3000
+   - **Backend API:** Your configured backend URL
 
-## 👤 Test Accounts
+## 👤 User Accounts
 
-| Role      | Email                 | Password     |
-| --------- | --------------------- | ------------ |
-| Admin     | admin@example.com     | admin123     |
-| Student   | student@example.com   | student123   |
-| Recruiter | recruiter@example.com | recruiter123 |
-
-## 🔧 Manual Setup (Alternative)
-
-### 1. Start Mock Server
-
-```bash
-cd mock-server
-npm install
-npm start
-```
-
-### 2. Start Frontend Apps
-
-```bash
-# In project root
-npm run dev
-```
-
-This starts all 4 apps concurrently:
-
-- SSO: `nx serve sso`
-- Admin: `nx serve admin`
-- Student: `nx serve student`
-- Recruiter: `nx serve recruiter`
+User accounts are managed by your Java Spring Boot backend. Contact your backend administrator for test credentials.
 
 ## 🔄 SSO Flow
 
@@ -130,6 +111,8 @@ This starts all 4 apps concurrently:
 │   │   ├── src/
 │   │   │   ├── components/
 │   │   │   │   ├── LoginForm.tsx
+│   │   │   │   ├── RegisterForm.tsx
+│   │   │   │   ├── ForgotPasswordForm.tsx
 │   │   │   │   └── DashboardLinks.tsx
 │   │   │   └── app.tsx
 │   │   └── .env
@@ -145,47 +128,97 @@ This starts all 4 apps concurrently:
 │       │   ├── api-client.ts
 │       │   └── auth-context.tsx
 │       └── src/index.ts
-├── mock-server/             # Express.js API server
-│   ├── server.js
-│   ├── package.json
-│   └── .env
-└── scripts/                 # Startup/shutdown scripts
-    ├── start-all.bat
-    ├── start-all.sh
-    ├── stop-all.bat
-    └── stop-all.sh
+└── package.json             # Root dependencies
 ```
 
-## 🔌 API Endpoints
+## 🔌 Backend API Requirements
 
-### Authentication Endpoints
+Your Java Spring Boot backend must implement these authentication endpoints:
+
+### Required Endpoints
 
 - `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
+- `POST /api/auth/register` - User registration (optional)
 - `POST /api/auth/verify-session` - SSO token verification
 - `POST /api/auth/refresh` - Token refresh
 - `GET /api/auth/profile` - Get user profile (protected)
 - `POST /api/auth/logout` - User logout
-- `GET /health` - Health check
+- `POST /api/auth/forgot-password` - Forgot password (optional)
 
-### Example Requests
+### Expected Request/Response Formats
 
 **Login:**
 
-```javascript
+```typescript
+// Request
 POST /api/auth/login
 {
-  "email": "student@example.com",
-  "password": "student123"
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+// Response
+{
+  "user": {
+    "userId": "string",
+    "email": "string",
+    "fullName": "string",
+    "roleId": "string",
+    "role": {
+      "roleId": "string",
+      "roleName": "Student" | "Recruiter" | "Admin"
+    },
+    "status": "Pending" | "Verified" | "Locked"
+  },
+  "tokens": {
+    "accessToken": "string",
+    "refreshToken": "string"
+  },
+  "sessionId": "string",
+  "sso_auth": "string" // Single-use token for SSO
 }
 ```
 
 **Verify SSO Token:**
 
-```javascript
+```typescript
+// Request
 POST /api/auth/verify-session
 {
-  "sso_auth": "abc123xyz"
+  "sso_auth": "single-use-token"
+}
+
+// Response
+{
+  "accessToken": "string",
+  "refreshToken": "string",
+  "user": {
+    "userId": "string",
+    "email": "string",
+    "fullName": "string",
+    "roleId": "string",
+    "role": {
+      "roleId": "string",
+      "roleName": "Student" | "Recruiter" | "Admin"
+    },
+    "status": "Pending" | "Verified" | "Locked"
+  }
+}
+```
+
+**Refresh Token:**
+
+```typescript
+// Request
+POST /api/auth/refresh
+{
+  "refreshToken": "string"
+}
+
+// Response
+{
+  "accessToken": "string",
+  "refreshToken": "string"
 }
 ```
 
@@ -198,7 +231,7 @@ Each app has its own `.env` file:
 **SSO App** (`apps/sso/.env`):
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://your-backend-api-url
 VITE_SSO_ORIGIN=http://localhost:4200
 VITE_APP_ORIGIN=http://localhost:4200
 VITE_ADMIN_URL=http://localhost:4500
@@ -209,23 +242,19 @@ VITE_RECRUITER_URL=http://localhost:4400
 **Target Apps** (e.g., `apps/admin/.env`):
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://your-backend-api-url
 VITE_SSO_ORIGIN=http://localhost:4200
 VITE_APP_ORIGIN=http://localhost:4500
 ```
 
-**Mock Server** (`mock-server/.env`):
+**Backend CORS Configuration:**
 
-```env
-PORT=3000
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=7d
-FRONTEND_ORIGINS=http://localhost:4200,http://localhost:4300,http://localhost:4400,http://localhost:4500
-SESSION_TTL=3600000
-SSO_AUTH_TTL=60000
-```
+Your Java Spring Boot backend must allow these origins:
+
+- `http://localhost:4200` (SSO)
+- `http://localhost:4300` (Student)
+- `http://localhost:4400` (Recruiter)
+- `http://localhost:4500` (Admin)
 
 ## 🧪 Testing the SSO Flow
 
@@ -357,9 +386,9 @@ lsof -ti:4200 | xargs kill -9
 
 **3. CORS errors:**
 
-- Check mock server console for origin logs
-- Verify `.env` FRONTEND_ORIGINS matches your URLs
-- Restart mock server after changes
+- Check backend CORS configuration
+- Verify backend allows frontend origins (localhost:4200-4500)
+- Restart backend after CORS configuration changes
 
 **4. PostMessage not working:**
 
@@ -370,8 +399,8 @@ lsof -ti:4200 | xargs kill -9
 **5. SSO tokens expiring:**
 
 - Tokens expire in 60 seconds by design
-- Check server logs for cleanup messages
-- Verify system clock synchronization
+- Check backend logs for token cleanup
+- Verify system clock synchronization between frontend and backend
 
 ### Debug Logging
 
@@ -384,10 +413,11 @@ const cleanup = SSOClient.initializeClient(ssoOrigin, apiBaseUrl, onAuthReceived
 });
 ```
 
-**Monitor server sessions:**
+**Monitor backend health:**
 
 ```bash
-curl http://localhost:3000/health
+curl http://your-backend-url/health
+curl http://your-backend-url/actuator/health
 ```
 
 ## 🔒 Security Considerations
@@ -417,12 +447,26 @@ curl http://localhost:3000/health
    - Implement CSP headers
    - Add request validation/sanitization
 
-### Known Limitations
+### Frontend Security Features
 
-- Sessions stored in memory (use Redis in production)
-- No rate limiting on auth endpoints
-- Basic error handling (enhance for production)
-- Test users hardcoded (use proper user management)
+- Single-use SSO tokens (60s TTL)
+- Token auto-refresh on 401 errors
+- SessionStorage isolation per app
+- Clean URL parameters after authentication
+- PostMessage origin validation
+
+### Backend Security Recommendations
+
+Your Java Spring Boot backend should implement:
+
+- HttpOnly cookies for refresh tokens
+- Rate limiting on auth endpoints
+- Session management in Redis/database
+- Token rotation
+- Input validation & sanitization
+- Request/response encryption (HTTPS)
+- Audit logging
+- 2FA support (optional)
 
 ## 📝 License
 

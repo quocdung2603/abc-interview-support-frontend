@@ -1,83 +1,272 @@
-# AbcInterviewSupportFrontend
+# ABC Interview Support Frontend
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+A comprehensive interview preparation platform built with React, TypeScript, and Nx monorepo. This frontend application connects to a Java Spring Boot microservices backend.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 🏗️ Architecture
 
-## Finish your CI setup
+- **Monorepo:** Nx workspace managing multiple applications
+- **Frontend:** React 19 + TypeScript + Tailwind CSS + Ant Design
+- **Backend:** Java Spring Boot Microservices
+- **Authentication:** SSO (Single Sign-On) with JWT tokens
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/obcYD8DVYc)
+## 🚀 Quick Start
 
+### Prerequisites
 
-## Run tasks
+- Node.js 18+
+- npm 8+
+- Java Spring Boot Backend running
 
-To run the dev server for your app, use:
+### Installation
 
-```sh
-npx nx serve sso
+1. **Clone and install dependencies:**
+
+   ```bash
+   git clone <repository-url>
+   cd abc-interview-support-frontend
+   npm install
+   ```
+
+2. **Configure environment variables:**
+
+   Create `.env` files in each app directory:
+
+   **SSO App (`apps/sso/.env`):**
+
+   ```env
+   VITE_API_BASE_URL=http://your-backend-api-url
+   VITE_SSO_ORIGIN=http://localhost:4200
+   VITE_APP_ORIGIN=http://localhost:4200
+   VITE_ADMIN_URL=http://localhost:4500
+   VITE_STUDENT_URL=http://localhost:4300
+   VITE_RECRUITER_URL=http://localhost:4400
+   ```
+
+   **Other Apps:**
+
+   ```env
+   VITE_API_BASE_URL=http://your-backend-api-url
+   VITE_SSO_ORIGIN=http://localhost:4200
+   VITE_APP_ORIGIN=http://localhost:4XXX
+   ```
+
+3. **Start all applications:**
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the applications:**
+   - **SSO Portal:** http://localhost:4200
+   - **Student Portal:** http://localhost:4300
+   - **Recruiter Portal:** http://localhost:4400
+   - **Admin Portal:** http://localhost:4500
+
+## 📝 Available Scripts
+
+```bash
+# Start individual app
+npm run dev:sso          # Start SSO app (port 4200)
+npm run dev:student      # Start Student app (port 4300)
+npm run dev:recruiter    # Start Recruiter app (port 4400)
+npm run dev:admin        # Start Admin app (port 4500)
+
+# Start all apps concurrently
+npm run dev              # Start all 4 apps at once
+
+# Build for production
+npx nx build sso         # Build specific app
+npx nx build --all       # Build all apps
+
+# Run tests
+npx nx test sso          # Test specific app
+npx nx test --all        # Test all apps
+
+# Lint
+npx nx lint sso          # Lint specific app
+npx nx lint --all        # Lint all apps
 ```
 
-To create a production bundle:
+## 📦 Project Structure
 
-```sh
-npx nx build sso
+```
+abc-interview-support-frontend/
+├── apps/
+│   ├── sso/                 # SSO Portal (Authentication)
+│   ├── student/             # Student Portal
+│   ├── recruiter/           # Recruiter Portal
+│   └── admin/               # Admin Dashboard
+├── libs/
+│   ├── types/               # Shared TypeScript types
+│   └── sso-utils/          # SSO utilities & API client
+├── .github/                 # GitHub Actions CI/CD
+├── nx.json                  # Nx configuration
+├── package.json             # Root dependencies
+└── tsconfig.base.json       # Base TypeScript config
 ```
 
-To see all available targets to run for a project, run:
+## 🎯 Applications
 
-```sh
-npx nx show project sso
+### 1. SSO Portal (`apps/sso`)
+
+Central authentication portal with:
+
+- Login, Register, Forgot Password flows
+- Multi-step registration form
+- Role-based dashboard
+- Single Sign-On token management
+
+### 2. Student Portal (`apps/student`)
+
+For students to:
+
+- Practice interview questions
+- Take mock interviews
+- View recruitment news
+- Participate in community discussions
+- Track learning progress
+
+### 3. Recruiter Portal (`apps/recruiter`)
+
+For recruiters to:
+
+- Post job openings
+- Create and manage exams
+- Review candidate results
+- Manage company verification
+
+### 4. Admin Portal (`apps/admin`)
+
+For administrators to:
+
+- Manage users and roles
+- Review and approve content
+- Monitor system activities
+- Configure system settings
+
+## 🛠️ Technology Stack
+
+- **React 19.0.0** - UI library
+- **TypeScript 5.8.2** - Type safety
+- **Tailwind CSS 4.1.12** - Utility-first CSS
+- **Ant Design 5.27.0** - Component library
+- **React Router 6.29.0** - Routing
+- **React Hook Form 7.62.0** - Form management
+- **Axios 1.12.2** - HTTP client
+- **Vite 6.0.0** - Build tool
+- **Nx 21.4.0** - Monorepo management
+
+## 🔐 Authentication Flow
+
+This project uses a custom SSO (Single Sign-On) implementation:
+
+1. User visits any app → Redirected to SSO Portal
+2. User logs in at SSO → Server creates session + generates single-use `sso_auth` token
+3. User selects target app from dashboard
+4. SSO sends token via:
+   - **PostMessage API** (primary)
+   - **URL parameter** (fallback)
+5. Target app verifies token with backend
+6. Backend returns access/refresh tokens
+7. Tokens stored in sessionStorage with app-specific keys
+
+**Token Types:**
+
+- **SSO Auth Token:** Single-use, 60s TTL
+- **Access Token:** JWT, 15 minutes
+- **Refresh Token:** 7 days
+
+## 📚 Shared Libraries
+
+### `@abc-interview-support-frontend/types`
+
+Shared TypeScript interfaces and types:
+
+- Authentication types (AuthUser, LoginRequest, etc.)
+- User and Role types
+- Exam and Question types
+- News and Career types
+
+### `@abc-interview-support-frontend/sso-utils`
+
+SSO utilities and authentication helpers:
+
+- `SSOClient` - Client-side SSO initialization
+- `SSOTokenManager` - Token transmission management
+- `ApiClient` - HTTP client with auto token refresh
+- `AuthContext` - React authentication context
+- `useAuth` - Authentication hook
+
+## 🔧 Backend Integration
+
+This frontend connects to a Java Spring Boot microservices backend. Make sure to:
+
+1. Update `VITE_API_BASE_URL` in `.env` files to point to your backend
+2. Ensure backend CORS is configured to allow frontend origins
+3. Backend should implement these endpoints:
+   - `POST /api/auth/login` - User login
+   - `POST /api/auth/register` - User registration
+   - `POST /api/auth/verify-session` - SSO token verification
+   - `POST /api/auth/refresh` - Token refresh
+   - `GET /api/auth/profile` - Get user profile (protected)
+   - `POST /api/auth/logout` - User logout
+
+## 🎨 Design System
+
+The project uses a consistent design system with:
+
+- **Color Palette:** Blue/Indigo primary, Slate secondary
+- **Typography Scale:** 5 heading levels + body + caption
+- **Spacing Scale:** XS to XL (0.5rem to 3rem)
+- **Animations:** Fade-in, slide-up, bounce-in effects
+- **Glass Morphism:** Backdrop blur + semi-transparent backgrounds
+
+## 🐛 Troubleshooting
+
+**Port conflicts:**
+
+```bash
+# Windows: Find and kill process on port
+netstat -ano | findstr :4200
+taskkill /PID <pid> /F
+
+# Linux/Mac: Kill process on port
+lsof -ti:4200 | xargs kill -9
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+**CORS errors:**
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Verify backend CORS configuration allows frontend origins
+- Check `VITE_API_BASE_URL` in `.env` files
 
-## Add new projects
+**Authentication issues:**
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+- Clear browser sessionStorage
+- Verify backend `/api/auth/verify-session` endpoint is working
+- Check browser console for SSO errors
 
-Use the plugin's generator to create new projects.
+## 📄 License
 
-To generate a new application, use:
+MIT License
 
-```sh
-npx nx g @nx/react:app demo
-```
+## 🤝 Contributing
 
-To generate a new library, use:
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-```sh
-npx nx g @nx/react:lib mylib
-```
+## 📞 Support
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+For more information about Nx:
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Nx Documentation](https://nx.dev)
+- [Nx Console Extension](https://nx.dev/getting-started/editor-setup)
+- [Nx Community Discord](https://go.nx.dev/community)
 
+---
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-# abc-interview-support-frontend
+**Built with ❤️ using React, TypeScript, and Nx**

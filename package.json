@@ -7,16 +7,14 @@
     "dev:admin": "nx serve admin",
     "dev:student": "nx serve student",
     "dev:recruiter": "nx serve recruiter",
-    "dev": "concurrently -k -n SSO,ADMIN,STUDENT,RECRUITER -c green,cyan,yellow,magenta \"npm run dev:sso\" \"npm run dev:admin\" \"npm run dev:student\" \"npm run dev:recruiter\"",
-    "start:server": "cd mock-server && npm start",
-    "start:all": "concurrently -k -n SERVER,FRONTEND -c red,blue \"npm run start:server\" \"npm run dev\"",
-    "install:server": "cd mock-server && npm install"
+    "dev": "concurrently -k -n SSO,ADMIN,STUDENT,RECRUITER -c green,cyan,yellow,magenta \"npm run dev:sso\" \"npm run dev:admin\" \"npm run dev:student\" \"npm run dev:recruiter\""
   },
   "private": true,
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@tailwindcss/vite": "^4.1.12",
     "antd": "^5.27.0",
+    "axios": "^1.12.2",
     "concurrently": "^9.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
