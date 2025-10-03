@@ -2,7 +2,7 @@
 
 export interface Role {
   roleId: string;
-  roleName: 'Student' | 'Recruiter' | 'Admin';
+  roleName: 'User' | 'Recruiter' | 'Admin';
   description?: string;
 }
 

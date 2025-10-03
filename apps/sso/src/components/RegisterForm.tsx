@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { RegisterRequest } from '@abc-interview-support-frontend/types';
+import { authService } from '@abc-interview-support-frontend/services';
 
 interface RegisterFormProps {
   onRegister: (userData: any) => void;
   onSwitchToLogin: () => void;
 }
 
-export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps) {
+export function RegisterForm({
+  onRegister,
+  onSwitchToLogin,
+}: RegisterFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,11 +24,9 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
 
   // Step 2: Personal Information
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [address, setAddress] = useState('');
-
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  const [isStudying, setIsStudying] = useState(false);
 
   const validateStep1 = () => {
     if (!email.trim()) {
@@ -58,8 +60,25 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
     setError('');
   };
 
+  const validateStep2 = () => {
+    if (!fullName.trim()) {
+      setError('Full name is required');
+      return false;
+    }
+    if (!dateOfBirth) {
+      setError('Date of birth is required');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateStep2()) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -67,29 +86,19 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
       const registerRequest: RegisterRequest = {
         email: email.trim(),
         password,
-        fullName: fullName.trim() || undefined,
-        phone: phone.trim() || undefined,
-        dateOfBirth: dateOfBirth || undefined,
-        address: address.trim() || undefined,
+        fullName: fullName.trim(),
+        roleId: 1, // Default role for new users
+        dateOfBirth: dateOfBirth,
+        address: address.trim(),
+        isStudying: isStudying,
       };
 
-      const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registerRequest),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Registration failed');
-      }
-
-      const data = await response.json();
+      const data = await authService.register(registerRequest);
       onRegister(data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || err.message || 'Registration failed';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -98,21 +107,27 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
       <div className="flex items-center">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-          currentStep >= 1
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-200 text-gray-600'
-        }`}>
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+            currentStep >= 1
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-600'
+          }`}
+        >
           1
         </div>
-        <div className={`w-12 h-0.5 mx-2 ${
-          currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'
-        }`}></div>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-          currentStep >= 2
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-200 text-gray-600'
-        }`}>
+        <div
+          className={`w-12 h-0.5 mx-2 ${
+            currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'
+          }`}
+        ></div>
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+            currentStep >= 2
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-600'
+          }`}
+        >
           2
         </div>
       </div>
@@ -125,14 +140,15 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Account Information
         </h3>
-        <p className="text-sm text-gray-600">
-          Create your account credentials
-        </p>
+        <p className="text-sm text-gray-600">Create your account credentials</p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Email Address *
           </label>
           <div className="relative">
@@ -147,14 +163,27 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
               className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
               placeholder="Enter your email address"
             />
-            <svg className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+            <svg
+              className="absolute right-3 top-3.5 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+              />
             </svg>
           </div>
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Password *
           </label>
           <div className="relative">
@@ -176,13 +205,38 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
               tabIndex={-1}
             >
               {showPassword ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                  />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
                 </svg>
               )}
             </button>
@@ -190,7 +244,10 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Confirm Password *
           </label>
           <div className="relative">
@@ -212,13 +269,38 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
               tabIndex={-1}
             >
               {showConfirmPassword ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                  />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
                 </svg>
               )}
             </button>
@@ -244,21 +326,23 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Personal Information
         </h3>
-        <p className="text-sm text-gray-600">
-          Tell us a bit about yourself (optional)
-        </p>
+        <p className="text-sm text-gray-600">Tell us a bit about yourself</p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-            Full Name
+          <label
+            htmlFor="fullName"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Full Name *
           </label>
           <input
             id="fullName"
             name="fullName"
             type="text"
             autoComplete="name"
+            required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
@@ -267,29 +351,17 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-            Phone Number
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-            placeholder="Enter your phone number"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700 mb-2">
-            Date of Birth
+          <label
+            htmlFor="dateOfBirth"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Date of Birth *
           </label>
           <input
             id="dateOfBirth"
             name="dateOfBirth"
             type="date"
+            required
             value={dateOfBirth}
             onChange={(e) => setDateOfBirth(e.target.value)}
             className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
@@ -297,7 +369,10 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         </div>
 
         <div>
-          <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor="address"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             Address
           </label>
           <textarea
@@ -309,6 +384,23 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
             className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white resize-none"
             placeholder="Enter your address"
           />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            id="isStudying"
+            name="isStudying"
+            type="checkbox"
+            checked={isStudying}
+            onChange={(e) => setIsStudying(e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label
+            htmlFor="isStudying"
+            className="ml-2 block text-sm text-gray-700"
+          >
+            I am currently a student
+          </label>
         </div>
       </div>
 
@@ -336,8 +428,18 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-in">
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-red-400 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <div className="text-red-700 text-sm font-medium">{error}</div>
           </div>

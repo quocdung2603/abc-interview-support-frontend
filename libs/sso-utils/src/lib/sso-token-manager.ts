@@ -8,6 +8,33 @@ export class SSOTokenManager {
   private static activeWindows: Map<string, Window> = new Map();
 
   /**
+   * Encode UTF-8 string to base64 (safe for Unicode characters)
+   */
+  private static encodeBase64(str: string): string {
+    // Convert UTF-8 string to percent-encoding, then to base64
+    return btoa(
+      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => {
+        return String.fromCharCode(parseInt(p1, 16));
+      })
+    );
+  }
+
+  /**
+   * Decode base64 to UTF-8 string (safe for Unicode characters)
+   */
+  private static decodeBase64(str: string): string {
+    // Decode base64 to percent-encoding, then to UTF-8
+    return decodeURIComponent(
+      atob(str)
+        .split('')
+        .map((c) => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+  }
+
+  /**
    * SSO App: Send auth token to target app via postMessage with fallback to URL redirect
    * @param targetOrigin - Target app origin
    * @param targetUrl - Target app URL
@@ -25,21 +52,10 @@ export class SSOTokenManager {
     sessionStorage.setItem(`sso_state_${state}`, Date.now().toString());
 
     if (useNewWindow) {
-      // Try postMessage handshake first (with new window)
-      const success = await this.tryPostMessageHandshake(
-        targetOrigin,
-        targetUrl,
-        ssoAuth,
-        state
-      );
-
-      if (!success) {
-        console.warn(
-          'PostMessage handshake failed, falling back to URL redirect'
-        );
-        // Fallback to URL parameter redirect
-        this.redirectWithToken(targetUrl, ssoAuth, state);
-      }
+      // When opening in new tab with noopener, postMessage won't work
+      // Use direct URL redirect with token parameter
+      console.log('Opening in new tab with URL token');
+      this.redirectWithToken(targetUrl, ssoAuth, state, true);
     } else {
       // Direct redirect in same window
       this.redirectWithToken(targetUrl, ssoAuth, state, false);
@@ -107,12 +123,8 @@ export class SSOTokenManager {
 
       window.addEventListener('message', messageHandler);
 
-      // Open the target window with proper features to avoid popup blockers
-      targetWindow = window.open(
-        targetUrl,
-        '_blank',
-        'noopener,noreferrer,width=1200,height=800'
-      );
+      // Open in new tab instead of popup window
+      targetWindow = window.open(targetUrl, '_blank', 'noopener,noreferrer');
 
       if (!targetWindow) {
         console.error('Failed to open window (popup blocker?)');
@@ -124,7 +136,7 @@ export class SSOTokenManager {
   }
 
   /**
-   * Fallback: Redirect to target with sso_auth parameter
+   * Fallback: Redirect to target with tokens from sessionStorage
    */
   private static redirectWithToken(
     targetUrl: string,
@@ -133,8 +145,22 @@ export class SSOTokenManager {
     newWindow: boolean = true
   ): void {
     const url = new URL(targetUrl);
-    url.searchParams.set('sso_auth', ssoAuth);
-    url.searchParams.set('state', state);
+
+    // Get tokens and user data from sessionStorage
+    const accessToken = sessionStorage.getItem('accessToken');
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    const userData = sessionStorage.getItem('user');
+
+    if (accessToken) {
+      url.searchParams.set('sso_token', accessToken);
+    }
+    if (refreshToken) {
+      url.searchParams.set('sso_refresh', refreshToken);
+    }
+    if (userData) {
+      // Encode user data to base64 for URL safety (supports Unicode/UTF-8)
+      url.searchParams.set('sso_user', this.encodeBase64(userData));
+    }
 
     if (newWindow) {
       window.open(url.toString(), '_blank');

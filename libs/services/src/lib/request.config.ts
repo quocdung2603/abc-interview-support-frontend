@@ -9,20 +9,43 @@ import axios, {
  * Centralized axios instance with interceptors for all API calls
  */
 
+// Type-safe browser API access
+interface Window {
+  location: {
+    href: string;
+  };
+}
+
+interface Storage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+declare const window: Window | undefined;
+declare const sessionStorage: Storage | undefined;
+
 // Helper to safely access browser APIs
-const isBrowser = typeof window !== 'undefined';
+const isBrowser = () =>
+  typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
 
 /**
  * Clear authentication tokens and redirect to SSO
  */
 const redirectToSSO = () => {
-  if (!isBrowser) return;
+  if (!isBrowser()) return;
 
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  // Clear tokens from sessionStorage
+  if (sessionStorage) {
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('user');
+  }
 
   const ssoUrl = import.meta.env.VITE_SSO_URL || 'http://localhost:4200';
-  window.location.href = ssoUrl;
+  if (window) {
+    window.location.href = ssoUrl;
+  }
 };
 
 /**
@@ -49,7 +72,7 @@ const handleUnauthorizedError = async (
   error: AxiosError,
   instance: AxiosInstance
 ) => {
-  if (!isBrowser) return Promise.reject(error);
+  if (!isBrowser()) return Promise.reject(error);
 
   const originalRequest = error.config as InternalAxiosRequestConfig & {
     _retry?: boolean;
@@ -66,23 +89,30 @@ const handleUnauthorizedError = async (
   originalRequest._retry = true;
 
   try {
-    const refreshToken = localStorage.getItem('refreshToken');
+    // Get refresh token from sessionStorage
+    const refreshToken = sessionStorage?.getItem('refreshToken');
 
     if (!refreshToken) {
+      console.warn('No refresh token found, redirecting to SSO');
       redirectToSSO();
       return Promise.reject(error);
     }
 
     // Call refresh token endpoint
     const response = await axios.post(
-      `${originalRequest.baseURL}/api/auth/refresh`,
+      `${originalRequest.baseURL}/auth/refresh`,
       { refreshToken }
     );
 
-    const { accessToken } = response.data;
+    const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-    // Save new access token
-    localStorage.setItem('accessToken', accessToken);
+    // Save new tokens
+    if (sessionStorage) {
+      sessionStorage.setItem('accessToken', accessToken);
+      if (newRefreshToken) {
+        sessionStorage.setItem('refreshToken', newRefreshToken);
+      }
+    }
 
     // Retry original request with new token
     if (originalRequest.headers) {
@@ -121,9 +151,9 @@ export const createRequestInstance = (
   // Request interceptor: Add token to every request
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // Get token from localStorage (only in browser)
-      if (isBrowser) {
-        const token = localStorage.getItem('accessToken');
+      // Get token from sessionStorage (only in browser)
+      if (isBrowser() && sessionStorage) {
+        const token = sessionStorage.getItem('accessToken');
 
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;

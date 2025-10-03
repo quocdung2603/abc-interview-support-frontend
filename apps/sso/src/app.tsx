@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import { ForgotPasswordForm } from './components/ForgotPasswordForm';
 import { DashboardLinks } from './components/DashboardLinks';
 import { AuthUser } from '@abc-interview-support-frontend/types';
-import { SecureStorage } from '@abc-interview-support-frontend/sso-utils';
 
 interface SSOSession {
   user: AuthUser;
@@ -20,18 +19,24 @@ export function App() {
   >('login');
 
   useEffect(() => {
-    // Check if we have an existing session (using secure storage)
-    const sessionData = SecureStorage.getItem<SSOSession>('sso_session');
-    if (sessionData) {
-      setSession(sessionData);
+    // Check if we have an existing session in sessionStorage
+    const sessionDataStr = sessionStorage.getItem('sso_session');
+    if (sessionDataStr) {
+      try {
+        const sessionData: SSOSession = JSON.parse(sessionDataStr);
+        setSession(sessionData);
+      } catch (error) {
+        console.error('Failed to parse session data:', error);
+        sessionStorage.removeItem('sso_session');
+      }
     }
     setIsLoading(false);
   }, []);
 
   const handleLogin = (sessionData: SSOSession) => {
     setSession(sessionData);
-    // Use secure storage to encrypt sensitive data
-    SecureStorage.setItem('sso_session', sessionData);
+    // Save session to sessionStorage
+    sessionStorage.setItem('sso_session', JSON.stringify(sessionData));
   };
 
   const handleRegister = (userData: any) => {
@@ -41,8 +46,11 @@ export function App() {
 
   const handleLogout = () => {
     setSession(null);
-    // Clear secure storage
-    SecureStorage.removeItem('sso_session');
+    // Clear session storage
+    sessionStorage.removeItem('sso_session');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('user');
     setCurrentPage('login');
   };
 
@@ -101,7 +109,7 @@ export function App() {
                       {session.user.fullName}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {session.user.role.roleName}
+                      {session.user.roleName}
                     </p>
                   </div>
                 </div>

@@ -84,7 +84,7 @@ function RecruiterDashboard() {
     );
   }
 
-  if (user?.role.roleName !== 'Recruiter' && user?.role.roleName !== 'Admin') {
+  if (user?.roleName !== 'Recruiter' && user?.roleName !== 'Admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -94,9 +94,7 @@ function RecruiterDashboard() {
           <p className="text-gray-600 mb-6">
             You don't have permission to access the Recruiter Portal.
           </p>
-          <p className="text-sm text-gray-500">
-            Your role: {user?.role.roleName}
-          </p>
+          <p className="text-sm text-gray-500">Your role: {user?.roleName}</p>
         </div>
       </div>
     );

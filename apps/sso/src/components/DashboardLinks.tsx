@@ -38,7 +38,7 @@ export function DashboardLinks({ user, ssoAuth }: DashboardLinksProps) {
       description: 'Practice interviews, view questions, and track progress',
       url: studentUrl,
       icon: '📚',
-      roles: ['Student', 'Admin'],
+      roles: ['User', 'Admin'],
     },
     {
       name: 'Recruiter Portal',
@@ -49,12 +49,12 @@ export function DashboardLinks({ user, ssoAuth }: DashboardLinksProps) {
     },
   ];
 
-  const userRole = user.role.roleName;
+  const userRole = user.roleName;
 
   // Define role-based access rules
   const getAvailableApps = (role: string) => {
     switch (role) {
-      case 'Student':
+      case 'User':
         return apps.filter((app) => app.name === 'Student Portal');
       case 'Recruiter':
         return apps.filter(

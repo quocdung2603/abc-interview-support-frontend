@@ -84,7 +84,7 @@ function AdminDashboard() {
     );
   }
 
-  if (user?.role.roleName !== 'Admin') {
+  if (user?.roleName !== 'Admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -94,9 +94,7 @@ function AdminDashboard() {
           <p className="text-gray-600 mb-6">
             You don't have permission to access the Admin Dashboard.
           </p>
-          <p className="text-sm text-gray-500">
-            Your role: {user?.role.roleName}
-          </p>
+          <p className="text-sm text-gray-500">Your role: {user?.roleName}</p>
         </div>
       </div>
     );

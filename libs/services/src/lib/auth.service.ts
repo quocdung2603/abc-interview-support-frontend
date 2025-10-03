@@ -7,7 +7,7 @@ import {
   VerifySessionResponse,
   RefreshTokenRequest,
 } from '@abc-interview-support-frontend/types';
-import { createRequestInstance } from './request.config';
+import { createRequestInstance } from './request.config.js';
 
 /**
  * Authentication Service
@@ -16,8 +16,15 @@ import { createRequestInstance } from './request.config';
 export class AuthService {
   private readonly apiClient: AxiosInstance;
 
-  constructor(baseURL: string) {
-    this.apiClient = createRequestInstance(baseURL);
+  constructor(baseURL?: string) {
+    if (baseURL) {
+      this.apiClient = createRequestInstance(baseURL);
+    } else {
+      // Use default Request instance
+      this.apiClient = createRequestInstance(
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+      );
+    }
   }
 
   /**
@@ -26,7 +33,7 @@ export class AuthService {
    * @returns Login response with user data and tokens
    */
   async login(credentials: LoginRequest) {
-    const response = await this.apiClient.post('/api/auth/login', credentials);
+    const response = await this.apiClient.post('/auth/login', credentials);
     return response.data;
   }
 
@@ -36,7 +43,7 @@ export class AuthService {
    * @returns Registered user information
    */
   async register(userData: RegisterRequest) {
-    const response = await this.apiClient.post('/api/auth/register', userData);
+    const response = await this.apiClient.post('/auth/register', userData);
     return response.data;
   }
 
@@ -48,10 +55,7 @@ export class AuthService {
   async verifySession(
     request: VerifySessionRequest
   ): Promise<VerifySessionResponse> {
-    const response = await this.apiClient.post(
-      '/api/auth/verify-session',
-      request
-    );
+    const response = await this.apiClient.post('/auth/verify-session', request);
     return response.data;
   }
 
@@ -61,7 +65,7 @@ export class AuthService {
    * @returns New access token and refresh token
    */
   async refreshToken(request: RefreshTokenRequest) {
-    const response = await this.apiClient.post('/api/auth/refresh', request);
+    const response = await this.apiClient.post('/auth/refresh', request);
     return response.data;
   }
 
@@ -71,7 +75,7 @@ export class AuthService {
    * @returns User profile data
    */
   async getProfile(accessToken: string): Promise<AuthUser> {
-    const response = await this.apiClient.get('/api/auth/profile', {
+    const response = await this.apiClient.get('/auth/profile', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -85,7 +89,7 @@ export class AuthService {
    * @param refreshToken - Refresh token to invalidate
    */
   async logout(sessionId?: string, refreshToken?: string) {
-    const response = await this.apiClient.post('/api/auth/logout', {
+    const response = await this.apiClient.post('/auth/logout', {
       sessionId,
       refreshToken,
     });
@@ -97,7 +101,7 @@ export class AuthService {
    * @param email - User email
    */
   async forgotPassword(email: string) {
-    const response = await this.apiClient.post('/api/auth/forgot-password', {
+    const response = await this.apiClient.post('/auth/forgot-password', {
       email,
     });
     return response.data;
@@ -110,7 +114,7 @@ export class AuthService {
    * @param newPassword - New password
    */
   async resetPassword(email: string, code: string, newPassword: string) {
-    const response = await this.apiClient.post('/api/auth/reset-password', {
+    const response = await this.apiClient.post('/auth/reset-password', {
       email,
       code,
       newPassword,
@@ -124,7 +128,7 @@ export class AuthService {
    * @param code - Verification code
    */
   async verifyEmail(email: string, code: string) {
-    const response = await this.apiClient.post('/api/auth/verify-email', {
+    const response = await this.apiClient.post('/auth/verify-email', {
       email,
       code,
     });
@@ -134,8 +138,18 @@ export class AuthService {
 
 /**
  * Create an instance of AuthService
- * @param baseURL - API base URL
+ * @param baseURL - API base URL (optional, uses VITE_API_BASE_URL if not provided)
  */
-export const createAuthService = (baseURL: string) => {
+export const createAuthService = (baseURL?: string) => {
   return new AuthService(baseURL);
 };
+
+/**
+ * Default AuthService instance
+ * Uses VITE_API_BASE_URL from environment variables
+ *
+ * Usage:
+ *   import { authService } from '@abc-interview-support-frontend/services';
+ *   const data = await authService.login({ email, password });
+ */
+export const authService = new AuthService();

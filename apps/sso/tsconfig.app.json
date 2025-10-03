@@ -37,6 +37,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/services/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/sso-utils/tsconfig.lib.json"
     },
     {

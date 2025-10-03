@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { LoginRequest, AuthUser } from '@abc-interview-support-frontend/types';
+import {
+  LoginRequest,
+  AuthUser,
+  transformBackendUserToAuthUser,
+} from '@abc-interview-support-frontend/types';
+import {
+  authService,
+  userService,
+} from '@abc-interview-support-frontend/services';
 
 interface SSOSession {
   user: AuthUser;
@@ -24,9 +32,6 @@ export function LoginForm({
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const apiBaseUrl =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -35,30 +40,53 @@ export function LoginForm({
     try {
       const loginRequest: LoginRequest = { email, password };
 
-      const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginRequest),
-      });
+      // Step 1: Call authService.login to get tokens
+      // Returns: { accessToken, refreshToken, tokenType, expiresIn }
+      const authData = await authService.login(loginRequest);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+      // Save tokens to sessionStorage immediately
+      if (authData.accessToken) {
+        sessionStorage.setItem('accessToken', authData.accessToken);
+      }
+      if (authData.refreshToken) {
+        sessionStorage.setItem('refreshToken', authData.refreshToken);
       }
 
-      const data = await response.json();
+      // Step 2: Call userService.login to get user info
+      // Returns: { id, roleId, roleName, email, fullName, dateOfBirth, address, status, ... }
+      const backendUser = await userService.login(loginRequest);
 
+      // Step 3: Transform backend user to frontend AuthUser format
+      const user: AuthUser = transformBackendUserToAuthUser(backendUser);
+
+      // Save user to sessionStorage
+      sessionStorage.setItem('user', JSON.stringify(user));
+
+      // Step 4: Create SSO session
       const session: SSOSession = {
-        user: data.user,
-        sessionId: data.sessionId,
-        sso_auth: data.sso_auth,
+        user: user,
+        sessionId: `session_${Date.now()}`, // Generate session ID
+        sso_auth: authData.accessToken, // Use accessToken as SSO auth token
       };
 
       onLogin(session);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      // Handle errors from AuthService
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === 'object' && err !== null && 'response' in err) {
+        // Axios error with response
+        const axiosError = err as {
+          response?: { data?: { error?: string; message?: string } };
+        };
+        const errorMessage =
+          axiosError.response?.data?.error ||
+          axiosError.response?.data?.message ||
+          'Login failed';
+        setError(errorMessage);
+      } else {
+        setError('An error occurred during login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -260,41 +288,6 @@ export function LoginForm({
             </button>
           </div>
         )}
-      </div>
-
-      <div className="mt-8">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500 font-medium">
-              Test Accounts
-            </span>
-          </div>
-        </div>
-        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <div className="text-xs text-gray-600 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Admin:</span>
-              <code className="bg-white px-2 py-1 rounded text-xs">
-                admin@example.com / admin123
-              </code>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Student:</span>
-              <code className="bg-white px-2 py-1 rounded text-xs">
-                student@example.com / student123
-              </code>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Recruiter:</span>
-              <code className="bg-white px-2 py-1 rounded text-xs">
-                recruiter@example.com / recruiter123
-              </code>
-            </div>
-          </div>
-        </div>
       </div>
     </form>
   );

@@ -83,9 +83,9 @@ function StudentApp() {
   }
 
   if (
-    user?.role.roleName !== 'Student' &&
-    user?.role.roleName !== 'Recruiter' &&
-    user?.role.roleName !== 'Admin'
+    user?.roleName !== 'User' &&
+    user?.roleName !== 'Recruiter' &&
+    user?.roleName !== 'Admin'
   ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -96,9 +96,7 @@ function StudentApp() {
           <p className="text-gray-600 mb-6">
             You don't have permission to access the Student Portal.
           </p>
-          <p className="text-sm text-gray-500">
-            Your role: {user?.role.roleName}
-          </p>
+          <p className="text-sm text-gray-500">Your role: {user?.roleName}</p>
         </div>
       </div>
     );

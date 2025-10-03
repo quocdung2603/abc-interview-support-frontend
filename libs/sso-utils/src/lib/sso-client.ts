@@ -10,6 +10,21 @@ export class SSOClient {
   private static readonly SSO_AUTH_MESSAGE = 'SSO_AUTH';
 
   /**
+   * Decode base64 to UTF-8 string (safe for Unicode characters)
+   */
+  private static decodeBase64(str: string): string {
+    // Decode base64 to percent-encoding, then to UTF-8
+    return decodeURIComponent(
+      atob(str)
+        .split('')
+        .map((c) => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+  }
+
+  /**
    * Target App: Initialize SSO client and listen for auth messages
    */
   static initializeClient(
@@ -51,7 +66,7 @@ export class SSOClient {
   }
 
   /**
-   * Check URL parameters for sso_auth token (fallback method)
+   * Check URL parameters for SSO tokens (direct method)
    */
   private static async checkUrlForToken(
     apiBaseUrl: string,
@@ -62,27 +77,27 @@ export class SSOClient {
     ) => void,
     onError: (error: string) => void
   ): Promise<void> {
-    const ssoAuth = this.getTokenFromUrl('sso_auth');
-    const state = this.getTokenFromUrl('state');
+    const accessToken = this.getTokenFromUrl('sso_token');
+    const refreshToken = this.getTokenFromUrl('sso_refresh');
+    const encodedUser = this.getTokenFromUrl('sso_user');
 
-    if (ssoAuth) {
-      // Validate state parameter for CSRF protection
-      if (state && !SSOTokenManager.validateState(state)) {
-        onError('Invalid or expired state parameter. Possible CSRF attack.');
-        this.cleanUrlParams();
-        return;
-      }
-
+    if (accessToken && refreshToken && encodedUser) {
       try {
-        const response = await this.verifySession(apiBaseUrl, ssoAuth);
-        onAuthReceived(
-          response.accessToken,
-          response.refreshToken,
-          response.user
-        );
+        console.log('SSO tokens found in URL, authenticating...');
+
+        // Decode user data from base64 (supports Unicode/UTF-8)
+        const userData = JSON.parse(this.decodeBase64(encodedUser));
+
+        // Call onAuthReceived with tokens and user data
+        onAuthReceived(accessToken, refreshToken, userData);
+
+        // Clean URL parameters
         this.cleanUrlParams();
       } catch (error) {
-        onError(error instanceof Error ? error.message : 'Verification failed');
+        console.error('Failed to parse SSO tokens:', error);
+        onError(
+          error instanceof Error ? error.message : 'Failed to parse SSO tokens'
+        );
         this.cleanUrlParams();
       }
     }
@@ -106,13 +121,12 @@ export class SSOClient {
 
       const message = event.data as SSOMessage;
       if (message.type === this.SSO_AUTH_MESSAGE && message.payload?.sso_auth) {
-        const { sso_auth, state } = message.payload;
+        const { sso_auth } = message.payload;
 
-        // Validate state parameter for CSRF protection
-        if (state && !SSOTokenManager.validateState(state)) {
-          onError('Invalid or expired state parameter. Possible CSRF attack.');
-          return;
-        }
+        // Note: State validation skipped as postMessage is from trusted SSO origin
+        console.log(
+          'SSO auth token received via postMessage, verifying session...'
+        );
 
         this.verifySession(apiBaseUrl, sso_auth)
           .then((response) => {
@@ -155,7 +169,7 @@ export class SSOClient {
   ): Promise<VerifySessionResponse> {
     const request: VerifySessionRequest = { sso_auth: ssoAuth };
 
-    const response = await fetch(`${apiBaseUrl}/api/auth/verify-session`, {
+    const response = await fetch(`${apiBaseUrl}/auth/verify-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -187,15 +201,21 @@ export class SSOClient {
     const url = new URL(window.location.href);
     let hasChanges = false;
 
-    // Remove both sso_auth and state parameters
-    if (url.searchParams.has('sso_auth')) {
-      url.searchParams.delete('sso_auth');
-      hasChanges = true;
-    }
-    if (url.searchParams.has('state')) {
-      url.searchParams.delete('state');
-      hasChanges = true;
-    }
+    // Remove SSO token parameters
+    const paramsToRemove = [
+      'sso_token',
+      'sso_refresh',
+      'sso_user',
+      'sso_auth',
+      'state',
+    ];
+
+    paramsToRemove.forEach((param) => {
+      if (url.searchParams.has(param)) {
+        url.searchParams.delete(param);
+        hasChanges = true;
+      }
+    });
 
     if (hasChanges) {
       window.history.replaceState({}, document.title, url.toString());
