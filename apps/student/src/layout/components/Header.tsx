@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RouterLink } from '../../utils/RouterLink';
 import UserDropdown from './UserDropdown';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 /** Menu có thể có children */
 type MenuChild = {
@@ -56,10 +57,15 @@ const menuItems: MenuItem[] = [
 const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Mobile: trạng thái mở accordion submenu
   const [openSubKey, setOpenSubKey] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -108,7 +114,6 @@ const Header: React.FC = () => {
                     <Link
                       to={item.path}
                       aria-haspopup={hasSub ? 'menu' : undefined}
-                      aria-expanded={hasSub ? undefined : undefined}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                         active
                           ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
@@ -159,7 +164,10 @@ const Header: React.FC = () => {
           {/* Actions */}
           <div className="flex items-center gap-3">
             <button className="btn-accent btn-sm">Thi nhanh</button>
-            <UserDropdown username="quocdung2603" onLogout={() => {}} />
+            <UserDropdown
+              username={user?.fullName || user?.email}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
 

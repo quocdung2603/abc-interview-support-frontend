@@ -1,720 +1,370 @@
-import React, { useState } from 'react';
-import TabNavigation from '../TabNavigation';
+﻿import React, { useState, useEffect } from 'react';
+import {
+  CareerPreference,
+  Field,
+  Topic,
+} from '@abc-interview-support-frontend/types';
+import { CareerService } from '@abc-interview-support-frontend/services';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+import CareerCard from './CareerCard';
+import CreateCareerModal from './CreateCareerModal';
+import EditCareerModal from './EditCareerModal';
+import DetailCareerModal from './DetailCareerModal';
 
-interface CareerGuideItem {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  readTime: number;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  isCompleted: boolean;
-  progress: number;
-}
-
-interface RoadmapItem {
-  id: string;
-  title: string;
-  description: string;
-  field: string;
-  steps: Array<{
-    id: string;
-    title: string;
-    description: string;
-    estimatedTime: string;
-    resources: string[];
-    isCompleted: boolean;
-  }>;
-  totalProgress: number;
-  isPersonalized: boolean;
-  createdDate: Date;
-}
-
-interface CareerTabsProps {
-  careerGuides: CareerGuideItem[];
-  roadmaps: RoadmapItem[];
-  onCompleteGuide: (guideId: string) => void;
-  onCompleteStep: (roadmapId: string, stepId: string) => void;
-  onCreateRoadmap: (field: string, preferences: any) => void;
-  onDeleteRoadmap: (roadmapId: string) => void;
-}
-
-const CareerTabs: React.FC<CareerTabsProps> = ({
-  careerGuides,
-  roadmaps,
-  onCompleteGuide,
-  onCompleteStep,
-  onCreateRoadmap,
-  onDeleteRoadmap,
-}) => {
-  const [activeSubTab, setActiveSubTab] = useState<string>('career-guide');
-  const [showCreateRoadmap, setShowCreateRoadmap] = useState(false);
-  const [selectedField, setSelectedField] = useState('');
-
-  const subTabs = [
+const CareerTabs: React.FC = () => {
+  const { user } = useAuth();
+  const [careerPreferences, setCareerPreferences] = useState<
+    CareerPreference[]
+  >([]);
+  const [fields] = useState<Field[]>([
     {
-      id: 'career-guide',
-      label: 'Định hướng nghề nghiệp',
-      icon: '',
-      description: 'Hướng dẫn phát triển sự nghiệp',
-      badge:
-        careerGuides.filter((guide) => !guide.isCompleted).length || undefined,
+      fieldId: '1',
+      fieldName: 'Frontend Development',
+      description:
+        'Phát triển giao diện người dùng với HTML, CSS, JavaScript và các framework như React, Vue.js, Angular. Tập trung vào trải nghiệm người dùng (UX/UI).',
     },
     {
-      id: 'roadmap',
-      label: 'Roadmap',
-      icon: '',
-      description: 'Lộ trình học tập cá nhân',
-      badge: roadmaps.length || undefined,
+      fieldId: '2',
+      fieldName: 'Backend Development',
+      description:
+        'Phát triển hệ thống backend, xử lý logic nghiệp vụ, database, API với các công nghệ như Node.js, Spring Boot, Django, .NET.',
     },
-  ];
+    {
+      fieldId: '3',
+      fieldName: 'Full Stack Development',
+      description:
+        'Kết hợp cả frontend và backend development. Có khả năng xây dựng ứng dụng web hoàn chỉnh từ giao diện đến server.',
+    },
+    {
+      fieldId: '4',
+      fieldName: 'Mobile Development',
+      description:
+        'Phát triển ứng dụng di động cho iOS, Android với React Native, Flutter, Swift, Kotlin. Tối ưu cho trải nghiệm mobile.',
+    },
+    {
+      fieldId: '5',
+      fieldName: 'DevOps',
+      description:
+        'Vận hành và triển khai ứng dụng. Quản lý CI/CD, container (Docker), orchestration (Kubernetes), cloud infrastructure (AWS, Azure, GCP).',
+    },
+  ]);
+  const [topics] = useState<Topic[]>([
+    { topicId: '1', fieldId: '1', topicName: 'React' },
+    { topicId: '2', fieldId: '1', topicName: 'Vue.js' },
+    { topicId: '3', fieldId: '2', topicName: 'Node.js' },
+    { topicId: '4', fieldId: '2', topicName: 'Spring Boot' },
+    { topicId: '5', fieldId: '4', topicName: 'React Native' },
+  ]);
 
-  const careerFields = [
-    'Frontend Developer',
-    'Backend Developer',
-    'Full Stack Developer',
-    'Mobile Developer',
-    'DevOps Engineer',
-    'Data Scientist',
-    'Machine Learning Engineer',
-    'UI/UX Designer',
-    'Product Manager',
-    'Quality Assurance',
-  ];
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner':
-        return 'var(--color-success)';
-      case 'Intermediate':
-        return 'var(--color-warning)';
-      case 'Advanced':
-        return 'var(--color-danger)';
-      default:
-        return 'var(--color-neutral-600)';
-    }
-  };
-
-  const getDifficultyText = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner':
-        return 'Cơ bản';
-      case 'Intermediate':
-        return 'Trung cấp';
-      case 'Advanced':
-        return 'Nâng cao';
-      default:
-        return difficulty;
-    }
-  };
-
-  const handleCreateRoadmap = () => {
-    if (selectedField) {
-      onCreateRoadmap(selectedField, {
-        customized: true,
-        includeProjects: true,
-        includeCertifications: true,
-      });
-      setShowCreateRoadmap(false);
-      setSelectedField('');
-    }
-  };
-
-  const renderCareerGuide = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h3
-          className="text-heading-3"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Định hướng nghề nghiệp
-        </h3>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-          <button className="btn-outline btn-sm">🔥 Phổ biến</button>
-          <button className="btn-outline btn-sm">✅ Đã hoàn thành</button>
-          <button className="btn-outline btn-sm">📊 Theo tiến độ</button>
-        </div>
-      </div>
-
-      {careerGuides.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            🎯
-          </div>
-          <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-            Chưa có hướng dẫn nghề nghiệp
-          </p>
-        </div>
-      ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 'var(--spacing-md)',
-          }}
-        >
-          {careerGuides.map((guide) => (
-            <div
-              key={guide.id}
-              className="card-soft"
-              style={{ padding: 'var(--spacing-md)' }}
-            >
-              <div style={{ marginBottom: 'var(--spacing-sm)' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--spacing-sm)',
-                    marginBottom: 'var(--spacing-xs)',
-                  }}
-                >
-                  <span
-                    className="badge-neutral"
-                    style={{ fontSize: '0.75rem' }}
-                  >
-                    {guide.category}
-                  </span>
-                  <span
-                    className="badge"
-                    style={{
-                      backgroundColor: getDifficultyColor(guide.difficulty),
-                      color: 'white',
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    {getDifficultyText(guide.difficulty)}
-                  </span>
-                </div>
-                <h4
-                  style={{
-                    margin: '0 0 0.5rem 0',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
-                  {guide.title}
-                </h4>
-                <p
-                  style={{
-                    margin: '0 0 1rem 0',
-                    color: 'var(--color-neutral-600)',
-                    lineHeight: 1.5,
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  {guide.description}
-                </p>
-              </div>
-
-              {/* Progress Bar */}
-              <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0.25rem',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--color-neutral-600)',
-                    }}
-                  >
-                    Tiến độ
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      color: 'var(--color-accent)',
-                    }}
-                  >
-                    {guide.progress}%
-                  </span>
-                </div>
-                <div
-                  style={{
-                    width: '100%',
-                    height: '8px',
-                    backgroundColor: 'var(--color-neutral-200)',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${guide.progress}%`,
-                      height: '100%',
-                      backgroundColor: guide.isCompleted
-                        ? 'var(--color-success)'
-                        : 'var(--color-accent)',
-                      transition: 'width 0.3s ease',
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '0.875rem',
-                    color: 'var(--color-neutral-500)',
-                  }}
-                >
-                  ⏱️ {guide.readTime} phút
-                </span>
-                <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
-                  {guide.isCompleted ? (
-                    <span
-                      className="badge-success"
-                      style={{ fontSize: '0.75rem' }}
-                    >
-                      ✓ Hoàn thành
-                    </span>
-                  ) : (
-                    <button
-                      className="btn-accent btn-sm"
-                      onClick={() => onCompleteGuide(guide.id)}
-                    >
-                      📖 Học ngay
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCareer, setSelectedCareer] = useState<CareerPreference | null>(
+    null
   );
+  const [selectedFieldId, setSelectedFieldId] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState('');
+  const [filteredTopics, setFilteredTopics] = useState<Topic[]>([]);
 
-  const renderRoadmap = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h3
-          className="text-heading-3"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Lộ trình học tập
-        </h3>
-        <button
-          className="btn-accent"
-          onClick={() => setShowCreateRoadmap(true)}
-        >
-          ➕ Tạo roadmap mới
-        </button>
+  const careerService = new CareerService();
+
+  // Helper function to handle different API response structures
+  const parseCareerResponse = (response: any): CareerPreference[] => {
+    if (Array.isArray(response)) {
+      return response;
+    } else if (response?.content && Array.isArray(response.content)) {
+      return response.content;
+    } else if (response?.data && Array.isArray(response.data)) {
+      return response.data;
+    } else if (response) {
+      // Single object response - wrap in array
+      return [response];
+    }
+    return [];
+  };
+
+  const fetchCareerPreferences = async () => {
+    if (!user?.userId) return;
+    try {
+      const response = await careerService.getCareerByUserId(
+        Number(user.userId),
+        0,
+        100,
+        'createdAt,desc'
+      );
+      setCareerPreferences(parseCareerResponse(response));
+    } catch (err) {
+      console.error('Failed to fetch career preferences:', err);
+      setCareerPreferences([]);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      await fetchCareerPreferences();
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [user?.userId]);
+
+  useEffect(() => {
+    setFilteredTopics(
+      selectedFieldId ? topics.filter((t) => t.fieldId === selectedFieldId) : []
+    );
+  }, [selectedFieldId, topics]);
+
+  const resetForm = () => {
+    setSelectedFieldId('');
+    setSelectedTopicId('');
+  };
+
+  const handleOpenCreateModal = () => {
+    resetForm();
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    resetForm();
+  };
+
+  const handleCreateCareer = async () => {
+    if (!user?.userId || !selectedFieldId) {
+      alert('⚠️ Vui lòng chọn lĩnh vực');
+      return;
+    }
+
+    try {
+      await careerService.createCareerPreference(
+        Number(user.userId),
+        Number(selectedFieldId),
+        selectedTopicId ? Number(selectedTopicId) : undefined
+      );
+
+      // Refresh data
+      await fetchCareerPreferences();
+
+      handleCloseCreateModal();
+      alert('✅ Tạo định hướng nghề nghiệp thành công!');
+    } catch (err) {
+      console.error('Failed to create career preference:', err);
+      alert('❌ Không thể tạo định hướng nghề nghiệp. Vui lòng thử lại.');
+    }
+  };
+
+  const handleOpenEditModal = (career: CareerPreference) => {
+    setSelectedCareer(career);
+    // Convert to string since backend returns number but form expects string
+    setSelectedFieldId(career.fieldId ? String(career.fieldId) : '');
+    setSelectedTopicId(career.topicId ? String(career.topicId) : '');
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setSelectedCareer(null);
+    resetForm();
+  };
+
+  const handleUpdateCareer = async () => {
+    if (!selectedCareer?.id || !user?.userId || !selectedFieldId) {
+      alert('⚠️ Thiếu thông tin cần thiết');
+      return;
+    }
+
+    try {
+      await careerService.updateCareerPreference(
+        String(selectedCareer.id), // Convert number to string for API
+        Number(user.userId),
+        Number(selectedFieldId),
+        selectedTopicId ? Number(selectedTopicId) : undefined
+      );
+
+      // Refresh data
+      await fetchCareerPreferences();
+
+      handleCloseEditModal();
+      alert('✅ Cập nhật định hướng nghề nghiệp thành công!');
+    } catch (err) {
+      console.error('Failed to update career preference:', err);
+      alert('❌ Không thể cập nhật định hướng nghề nghiệp. Vui lòng thử lại.');
+    }
+  };
+
+  const handleOpenDetailModal = (career: CareerPreference) => {
+    setSelectedCareer(career);
+    setShowDetailModal(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedCareer(null);
+  };
+
+  const handleDeleteCareer = async (careerId: number) => {
+    const confirmed = window.confirm(
+      '⚠️ Bạn có chắc chắn muốn xóa định hướng nghề nghiệp này?'
+    );
+    if (!confirmed) return;
+
+    try {
+      // Note: Delete API endpoint needs to be added to careerService when backend is ready
+      // For now, just remove from local state (client-side only)
+      setCareerPreferences((prev) => prev.filter((c) => c.id !== careerId));
+
+      alert('✅ Xóa định hướng nghề nghiệp thành công!');
+    } catch (err) {
+      console.error('Failed to delete career preference:', err);
+      alert('❌ Không thể xóa định hướng nghề nghiệp. Vui lòng thử lại.');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+        <p style={{ color: 'var(--color-neutral-600)' }}>Đang tải dữ liệu...</p>
       </div>
+    );
+  }
 
-      {/* Create Roadmap Modal */}
-      {showCreateRoadmap && (
-        <div
-          className="card-elevated"
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-            padding: 'var(--spacing-lg)',
-            width: '90%',
-            maxWidth: '500px',
-            backgroundColor: 'white',
-            boxShadow:
-              '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          }}
-        >
-          <h4
-            style={{
-              margin: '0 0 var(--spacing-md) 0',
-              color: 'var(--color-neutral-800)',
-            }}
-          >
-            Tạo roadmap mới
-          </h4>
-          <div style={{ marginBottom: 'var(--spacing-md)' }}>
-            <label
-              htmlFor="career-field-select"
-              style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-sm)',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-              }}
-            >
-              Chọn lĩnh vực:
-            </label>
-            <select
-              id="career-field-select"
-              value={selectedField}
-              onChange={(e) => setSelectedField(e.target.value)}
-              style={{
-                width: '100%',
-                padding: 'var(--spacing-sm)',
-                border: '1px solid var(--color-neutral-300)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '0.875rem',
-              }}
-            >
-              <option value="">-- Chọn lĩnh vực --</option>
-              {careerFields.map((field) => (
-                <option key={field} value={field}>
-                  {field}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--spacing-sm)',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <button
-              className="btn-outline"
-              onClick={() => {
-                setShowCreateRoadmap(false);
-                setSelectedField('');
-              }}
-            >
-              Hủy
-            </button>
-            <button
-              className="btn-accent"
-              onClick={handleCreateRoadmap}
-              disabled={!selectedField}
-            >
-              Tạo roadmap
-            </button>
-          </div>
-        </div>
-      )}
-      {showCreateRoadmap && (
-        <button
-          type="button"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            border: 'none',
-            cursor: 'pointer',
-            zIndex: 999,
-          }}
-          onClick={() => setShowCreateRoadmap(false)}
-          aria-label="Close modal"
-        />
-      )}
-
-      {roadmaps.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            🛣️
-          </div>
-          <p
-            style={{
-              color: 'var(--color-neutral-500)',
-              margin: '0 0 var(--spacing-md) 0',
-            }}
-          >
-            Chưa có lộ trình học tập nào
-          </p>
-          <p
-            style={{
-              fontSize: '0.875rem',
-              color: 'var(--color-neutral-400)',
-              margin: 0,
-            }}
-          >
-            Tạo lộ trình học tập cá nhân để theo dõi tiến độ của bạn
-          </p>
-        </div>
-      ) : (
+  return (
+    <>
+      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+        {/* Header */}
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-lg)',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'var(--spacing-md)',
+            flexWrap: 'wrap',
+            gap: 'var(--spacing-sm)',
           }}
         >
-          {roadmaps.map((roadmap) => (
-            <div
-              key={roadmap.id}
-              className="card-soft"
-              style={{ padding: 'var(--spacing-lg)' }}
+          <div>
+            <h3
+              style={{
+                margin: '0 0 0.25rem 0',
+                color: 'var(--color-neutral-800)',
+                fontSize: '1.5rem',
+              }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: 'var(--spacing-md)',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-sm)',
-                      marginBottom: 'var(--spacing-xs)',
-                    }}
-                  >
-                    <span
-                      className="badge-accent"
-                      style={{ fontSize: '0.75rem' }}
-                    >
-                      {roadmap.field}
-                    </span>
-                    {roadmap.isPersonalized && (
-                      <span
-                        className="badge-success"
-                        style={{ fontSize: '0.75rem' }}
-                      >
-                        🎯 Cá nhân hóa
-                      </span>
-                    )}
-                  </div>
-                  <h4
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-800)',
-                    }}
-                  >
-                    {roadmap.title}
-                  </h4>
-                  <p
-                    style={{
-                      margin: '0 0 1rem 0',
-                      color: 'var(--color-neutral-600)',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {roadmap.description}
-                  </p>
-
-                  {/* Overall Progress */}
-                  <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '0.25rem',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: '0.875rem',
-                          color: 'var(--color-neutral-600)',
-                        }}
-                      >
-                        Tiến độ tổng thể
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.875rem',
-                          fontWeight: '600',
-                          color: 'var(--color-accent)',
-                        }}
-                      >
-                        {roadmap.totalProgress}%
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '8px',
-                        backgroundColor: 'var(--color-neutral-200)',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${roadmap.totalProgress}%`,
-                          height: '100%',
-                          backgroundColor: 'var(--color-accent)',
-                          transition: 'width 0.3s ease',
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
-                    📅 Tạo ngày:{' '}
-                    {new Date(roadmap.createdDate).toLocaleDateString('vi-VN')}{' '}
-                    • {roadmap.steps.length} bước •{' '}
-                    {roadmap.steps.filter((step) => step.isCompleted).length}{' '}
-                    hoàn thành
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-                  <button className="btn-outline btn-sm">
-                    👁️ Xem chi tiết
-                  </button>
-                  <button
-                    className="btn-outline btn-sm"
-                    onClick={() => onDeleteRoadmap(roadmap.id)}
-                    style={{
-                      color: 'var(--color-danger)',
-                      borderColor: 'var(--color-danger)',
-                    }}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-
-              {/* Roadmap Steps Preview */}
-              <div>
-                <h5
-                  style={{
-                    margin: '0 0 var(--spacing-sm) 0',
-                    fontSize: '1rem',
-                    color: 'var(--color-neutral-700)',
-                  }}
-                >
-                  Các bước trong lộ trình:
-                </h5>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--spacing-xs)',
-                  }}
-                >
-                  {roadmap.steps.slice(0, 3).map((step) => (
-                    <div
-                      key={step.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--spacing-sm)',
-                        padding: 'var(--spacing-sm)',
-                        backgroundColor: step.isCompleted
-                          ? 'var(--color-success-10)'
-                          : 'var(--color-neutral-50)',
-                        borderRadius: 'var(--radius-sm)',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={step.isCompleted}
-                        onChange={() => onCompleteStep(roadmap.id, step.id)}
-                        style={{ accentColor: 'var(--color-success)' }}
-                      />
-                      <span
-                        style={{
-                          flex: 1,
-                          fontSize: '0.875rem',
-                          color: step.isCompleted
-                            ? 'var(--color-success-dark)'
-                            : 'var(--color-neutral-700)',
-                          textDecoration: step.isCompleted
-                            ? 'line-through'
-                            : 'none',
-                        }}
-                      >
-                        {step.title}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--color-neutral-500)',
-                        }}
-                      >
-                        ⏱️ {step.estimatedTime}
-                      </span>
-                    </div>
-                  ))}
-                  {roadmap.steps.length > 3 && (
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        padding: 'var(--spacing-sm)',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: '0.875rem',
-                          color: 'var(--color-neutral-500)',
-                        }}
-                      >
-                        ... và {roadmap.steps.length - 3} bước khác
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+              🎯 Định hướng nghề nghiệp
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                color: 'var(--color-neutral-600)',
+                fontSize: '0.875rem',
+              }}
+            >
+              Quản lý các lĩnh vực và chủ đề nghề nghiệp bạn quan tâm
+            </p>
+          </div>
+          <button className="btn-accent" onClick={handleOpenCreateModal}>
+            ➕ Thêm định hướng mới
+          </button>
         </div>
-      )}
-    </div>
-  );
 
-  const renderSubTabContent = () => {
-    switch (activeSubTab) {
-      case 'career-guide':
-        return renderCareerGuide();
-      case 'roadmap':
-        return renderRoadmap();
-      default:
-        return null;
-    }
-  };
+        {/* Empty State */}
+        {careerPreferences.length === 0 && (
+          <div
+            className="card-soft"
+            style={{
+              textAlign: 'center',
+              padding: 'var(--spacing-xl)',
+            }}
+          >
+            <div
+              style={{ fontSize: '3rem', marginBottom: 'var(--spacing-md)' }}
+            >
+              📋
+            </div>
+            <h4
+              style={{
+                margin: '0 0 var(--spacing-sm) 0',
+                color: 'var(--color-neutral-700)',
+              }}
+            >
+              Chưa có định hướng nghề nghiệp
+            </h4>
+            <p
+              style={{
+                margin: '0 0 var(--spacing-md) 0',
+                color: 'var(--color-neutral-600)',
+                fontSize: '0.875rem',
+              }}
+            >
+              Hãy thêm lĩnh vực và chủ đề bạn quan tâm để xây dựng lộ trình nghề
+              nghiệp của mình
+            </p>
+            <button className="btn-accent" onClick={handleOpenCreateModal}>
+              ➕ Thêm định hướng đầu tiên
+            </button>
+          </div>
+        )}
 
-  return (
-    <div>
-      <TabNavigation
-        tabs={subTabs}
-        activeTab={activeSubTab}
-        onTabChange={setActiveSubTab}
+        {/* Career Grid */}
+        {careerPreferences.length > 0 && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 'var(--spacing-md)',
+            }}
+          >
+            {careerPreferences.map((career) => (
+              <CareerCard
+                key={career.id}
+                career={career}
+                fields={fields}
+                topics={topics}
+                onViewDetail={handleOpenDetailModal}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDeleteCareer}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      <CreateCareerModal
+        isOpen={showCreateModal}
+        fields={fields}
+        selectedFieldId={selectedFieldId}
+        selectedTopicId={selectedTopicId}
+        filteredTopics={filteredTopics}
+        onClose={handleCloseCreateModal}
+        onFieldChange={setSelectedFieldId}
+        onTopicChange={setSelectedTopicId}
+        onCreate={handleCreateCareer}
       />
-      <div style={{ minHeight: '400px' }}>{renderSubTabContent()}</div>
-    </div>
+
+      <EditCareerModal
+        isOpen={showEditModal}
+        career={selectedCareer}
+        fields={fields}
+        selectedFieldId={selectedFieldId}
+        selectedTopicId={selectedTopicId}
+        filteredTopics={filteredTopics}
+        onClose={handleCloseEditModal}
+        onFieldChange={setSelectedFieldId}
+        onTopicChange={setSelectedTopicId}
+        onUpdate={handleUpdateCareer}
+      />
+
+      <DetailCareerModal
+        isOpen={showDetailModal}
+        career={selectedCareer}
+        fields={fields}
+        topics={topics}
+        onClose={handleCloseDetailModal}
+      />
+    </>
   );
 };
 

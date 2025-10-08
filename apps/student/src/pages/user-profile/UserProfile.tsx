@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 // Import types
 import { User, EloHistory } from '../../../../../libs/types/src/lib/user-types';
 
+// Import hooks
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+
 // Import components
 import PersonalInfoTabs from './components/personal-info/PersonalInfoTabs';
 import CVApplicationTabs from './components/cv-application/CVApplicationTabs';
@@ -12,24 +15,48 @@ import TabNavigation from './components/TabNavigation';
 import ExamTabs from './components/exam/ExamTabs';
 
 const UserProfile: React.FC = () => {
+  // Get authenticated user
+  const { user: authUser } = useAuth();
+
   // Tab state
   const [activeTab, setActiveTab] = useState<string>('personal');
 
-  // Mock user data
-  const [user, setUser] = useState<User>({
-    userId: 'user-001',
-    roleId: 'role-001',
-    fullName: 'Nguyễn Quốc Dũng',
-    email: 'nguyenquocdung26032003@gmail.vn',
-    passWord: 'encrypted_password',
-    dateOfBirth: new Date('1998-05-15'),
-    address: '123 Lê Loi, Quận 1, TP.HCM',
-    status: 'Verified',
-    isStudying: true,
-    eloScore: 1250,
-    eloRank: 'Solver',
-    createdAt: new Date('2023-09-01'),
-  } as any);
+  // Convert AuthUser to User format for profile display
+  const [user, setUser] = useState<User>(() => {
+    if (authUser) {
+      return {
+        userId: authUser.userId,
+        roleId: authUser.roleId,
+        fullName: authUser.fullName || '',
+        email: authUser.email,
+        passWord: '', // Not available from auth
+        dateOfBirth: authUser.dateOfBirth
+          ? new Date(authUser.dateOfBirth)
+          : new Date(),
+        address: authUser.address || '',
+        status: authUser.status,
+        isStudying: authUser.isStudying || false,
+        eloScore: authUser.eloScore || 0,
+        eloRank: authUser.eloRank || 'Newbie',
+        createdAt: new Date(),
+      } as any;
+    }
+    // Fallback to mock data if no auth user (shouldn't happen in normal flow)
+    return {
+      userId: 'user-001',
+      roleId: 'role-001',
+      fullName: 'User',
+      email: 'user@example.com',
+      passWord: '',
+      dateOfBirth: new Date(),
+      address: '',
+      status: 'Verified',
+      isStudying: false,
+      eloScore: 0,
+      eloRank: 'Newbie',
+      createdAt: new Date(),
+    } as any;
+  });
 
   // Mock ELO history
   const [eloHistory] = useState<EloHistory[]>([
@@ -289,71 +316,6 @@ const UserProfile: React.FC = () => {
     },
   ]);
 
-  // Mock career data
-  const [careerGuides] = useState([
-    {
-      id: 'guide-001',
-      title: 'Lộ trình trở thành Frontend Developer chuyên nghiệp',
-      description:
-        'Hướng dẫn chi tiết từ cơ bản đến nâng cao để trở thành một Frontend Developer.',
-      category: 'Frontend',
-      readTime: 15,
-      difficulty: 'Intermediate' as const,
-      isCompleted: false,
-      progress: 65,
-    },
-    {
-      id: 'guide-002',
-      title: 'Kỹ năng soft skills cần thiết cho Developer',
-      description:
-        'Các kỹ năng mềm quan trọng mà mọi developer cần phát triển.',
-      category: 'Soft Skills',
-      readTime: 10,
-      difficulty: 'Beginner' as const,
-      isCompleted: true,
-      progress: 100,
-    },
-  ]);
-
-  const [roadmaps] = useState([
-    {
-      id: 'roadmap-001',
-      title: 'Frontend Developer Roadmap 2024',
-      description:
-        'Lộ trình học tập toàn diện để trở thành Frontend Developer trong 6 tháng.',
-      field: 'Frontend Development',
-      steps: [
-        {
-          id: 'step-001',
-          title: 'Học HTML & CSS cơ bản',
-          description: 'Nắm vững HTML5 và CSS3, responsive design',
-          estimatedTime: '4 tuần',
-          resources: ['MDN Web Docs', 'FreeCodeCamp'],
-          isCompleted: true,
-        },
-        {
-          id: 'step-002',
-          title: 'JavaScript Fundamentals',
-          description: 'Học JavaScript cơ bản, DOM manipulation',
-          estimatedTime: '6 tuần',
-          resources: ['JavaScript.info', 'Eloquent JavaScript'],
-          isCompleted: true,
-        },
-        {
-          id: 'step-003',
-          title: 'React.js Framework',
-          description: 'Học React.js, hooks, state management',
-          estimatedTime: '8 tuần',
-          resources: ['React Documentation', 'React Tutorial'],
-          isCompleted: false,
-        },
-      ],
-      totalProgress: 67,
-      isPersonalized: true,
-      createdDate: new Date('2024-01-01'),
-    },
-  ]);
-
   // Handler functions
   const handleUpdateUser = (updatedUser: User) => {
     setUser(updatedUser);
@@ -470,16 +432,7 @@ const UserProfile: React.FC = () => {
         );
 
       case 'career':
-        return (
-          <CareerTabs
-            careerGuides={careerGuides}
-            roadmaps={roadmaps}
-            onCompleteGuide={() => {}}
-            onCompleteStep={() => {}}
-            onCreateRoadmap={() => {}}
-            onDeleteRoadmap={() => {}}
-          />
-        );
+        return <CareerTabs />;
 
       default:
         return null;

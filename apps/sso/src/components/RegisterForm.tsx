@@ -87,7 +87,7 @@ export function RegisterForm({
         email: email.trim(),
         password,
         fullName: fullName.trim(),
-        roleId: 1, // Default role for new users
+        roleId: 3, // Default role for new users
         dateOfBirth: dateOfBirth,
         address: address.trim(),
         isStudying: isStudying,
