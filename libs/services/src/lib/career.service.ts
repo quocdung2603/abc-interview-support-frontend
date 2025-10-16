@@ -2,8 +2,8 @@ import { AxiosInstance } from 'axios';
 import { createRequestInstance } from './request.config.js';
 
 /**
- * User Service
- * Handles all user-related API calls
+ * Career Service
+ * Handles all career-related API calls
  */
 export class CareerService {
   private readonly apiClient: AxiosInstance;
@@ -65,11 +65,11 @@ export class CareerService {
 }
 
 /**
- * Create an instance of UserService
+ * Create an instance of CareerService
  * @param baseURL - API base URL
  */
-export const createUserService = (baseURL?: string) => {
+export const createCareerService = (baseURL?: string) => {
   return new CareerService(baseURL);
 };
 
-export const userService = new CareerService();
+export const careerService = new CareerService();
