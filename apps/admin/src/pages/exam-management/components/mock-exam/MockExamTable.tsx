@@ -1,28 +1,26 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { Exam } from '@abc-interview-support-frontend/types';
 
 interface MockExamTableProps {
   data: Exam[];
   onView: (exam: Exam) => void;
-  onEdit: (exam: Exam) => void;
-  onDelete: (examId: string) => void;
 }
 
 const MockExamTable: React.FC<MockExamTableProps> = ({
   data,
   onView,
-  onEdit,
-  onDelete,
 }) => {
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Active':
+      case 'DRAFT':
+        return 'Bản nháp';
+      case 'ACTIVE':
         return 'Đang hoạt động';
-      case 'Inactive':
+      case 'INACTIVE':
         return 'Không hoạt động';
-      case 'Completed':
+      case 'COMPLETED':
         return 'Đã hoàn thành';
       default:
         return status;
@@ -31,11 +29,13 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'green';
-      case 'Inactive':
+      case 'DRAFT':
         return 'orange';
-      case 'Completed':
+      case 'ACTIVE':
+        return 'green';
+      case 'INACTIVE':
+        return 'red';
+      case 'COMPLETED':
         return 'blue';
       default:
         return 'default';
@@ -100,7 +100,7 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: Date) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
@@ -115,14 +115,6 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
               onClick={() => onView(record)}
             />
           </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              size="small"
-              onClick={() => onEdit(record)}
-            />
-          </Tooltip>
         </Space>
       ),
     },
@@ -132,7 +124,7 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
     <Table
       columns={columns}
       dataSource={data}
-      rowKey="examId"
+      rowKey="id"
       pagination={{
         total: data.length,
         pageSize: 10,

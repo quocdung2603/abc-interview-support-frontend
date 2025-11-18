@@ -43,7 +43,7 @@ const UserPreviewDrawer: React.FC<PreviewDrawerProps> = ({
             <div>
               <strong>Tình trạng học tập:</strong>{' '}
               <StatusTag
-                status={data.isStudying.toString()}
+                status={data.isStudying ? 'Đang học' : 'Đã tốt nghiệp'}
                 type={'is-studying'}
               />
             </div>

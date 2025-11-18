@@ -77,27 +77,27 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
     });
   };
   const getFieldName = (fieldId: string) => {
-    const field = fields.find((f) => f.fieldId === fieldId);
+    const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
   const getTopicName = (topicId: string) => {
-    const topic = topics.find((t) => t.topicId === topicId);
+    const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
   const getLevelName = (levelId: string) => {
-    const level = levels.find((l) => l.levelId === levelId);
+    const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'PENDING':
         return 'Chờ duyệt';
-      case 'Approved':
+      case 'APPROVED':
         return 'Đã duyệt';
-      case 'Rejected':
+      case 'REJECTED':
         return 'Đã từ chối';
       default:
         return status;
@@ -106,11 +106,11 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'PENDING':
         return '#faad14';
-      case 'Approved':
+      case 'APPROVED':
         return '#52c41a';
-      case 'Rejected':
+      case 'REJECTED':
         return '#ff4d4f';
       default:
         return '#d9d9d9';
@@ -149,7 +149,7 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
 
       return {
         questionVariantId: id.trim(),
-        questionTypeId: String((parseInt(id.trim()) % 5) + 1), // Cycle through question types
+        questionTypeId: String((Number.parseInt(id.trim()) % 5) + 1), // Cycle through question types
         questionContent: mockContents[index % mockContents.length],
         questionChoose: mockChoices[index % mockChoices.length],
         questionAnswer: mockAnswers[index % mockAnswers.length],
@@ -196,7 +196,7 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
     const isEditing = editingVariant === variant.questionVariantId;
     const currentData = isEditing && editingData ? editingData : variant;
 
-    const questionTypeId = parseInt(variant.questionTypeId);
+    const questionTypeId = Number.parseInt(variant.questionTypeId);
 
     switch (questionTypeId) {
       case 1:
@@ -558,7 +558,7 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
           {/* Question Header */}
           <div>
             <Title level={4} style={{ marginBottom: '8px' }}>
-              {data.questionTitle}
+              {data.questionContent}
             </Title>
             <div
               style={{
@@ -568,9 +568,9 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                 flexWrap: 'wrap',
               }}
             >
-              <Tag color="blue">{getFieldName(data.fieldId)}</Tag>
-              <Tag color="green">{getTopicName(data.topicId)}</Tag>
-              <Tag color="orange">{getLevelName(data.levelId)}</Tag>
+              <Tag color="blue">{getFieldName(data.fieldId.toString())}</Tag>
+              <Tag color="green">{getTopicName(data.topicId.toString())}</Tag>
+              <Tag color="orange">{getLevelName(data.levelId.toString())}</Tag>
               <Tag color={getStatusColor(data.status)}>
                 {getStatusText(data.status)}
               </Tag>
@@ -595,22 +595,22 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
           <Card title="Thông tin bổ sung" size="small">
             <div style={{ display: 'grid', gap: '12px' }}>
               <div>
-                <Text strong>ID câu hỏi:</Text> {data.questionId}
+                <Text strong>ID câu hỏi:</Text> {data.id}
               </div>
               <div>
                 <Text strong>Người tạo:</Text> User #{data.userId}
               </div>
               <div>
                 <Text strong>Lĩnh vực:</Text>{' '}
-                <Tag color="blue">{getFieldName(data.fieldId)}</Tag>
+                <Tag color="blue">{getFieldName(data.fieldId.toString())}</Tag>
               </div>
               <div>
                 <Text strong>Chủ đề:</Text>{' '}
-                <Tag color="green">{getTopicName(data.topicId)}</Tag>
+                <Tag color="green">{getTopicName(data.topicId.toString())}</Tag>
               </div>
               <div>
                 <Text strong>Mức độ:</Text>{' '}
-                <Tag color="orange">{getLevelName(data.levelId)}</Tag>
+                <Tag color="orange">{getLevelName(data.levelId.toString())}</Tag>
               </div>
               <div>
                 <Text strong>Trạng thái:</Text>{' '}

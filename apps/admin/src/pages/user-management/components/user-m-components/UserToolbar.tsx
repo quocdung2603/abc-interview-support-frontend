@@ -49,9 +49,9 @@ const UserToolbar: React.FC<ToolbarProps> = ({
         style={{ width: 130 }}
       >
         <Option value="all">Tất cả</Option>
-        <Option value="Pending">Chưa xác thực</Option>
-        <Option value="Verified">Đã xác thực</Option>
-        <Option value="Lock">Đã bị khóa</Option>
+        <Option value="PENDING">Chưa xác thực</Option>
+        <Option value="ACTIVE">Đã xác thực</Option>
+        <Option value="LOCK">Đã bị khóa</Option>
       </Select>
 
       <Select
@@ -61,14 +61,14 @@ const UserToolbar: React.FC<ToolbarProps> = ({
         style={{ width: 130 }}
       >
         <Option value="all">Tất cả</Option>
-        <Option value="Newbie">Newbie</Option>
-        <Option value="Learner">Learner</Option>
-        <Option value="Contributor">Contributor</Option>
-        <Option value="Solver">Solver</Option>
-        <Option value="Expert">Expert</Option>
-        <Option value="Senior Expert">Senior Expert</Option>
-        <Option value="Master">Master</Option>
-        <Option value="Legend">Legend</Option>
+        <Option value="NEWBIE">Newbie</Option>
+        <Option value="LEARNER">Learner</Option>
+        <Option value="CONTRIBUTOR">Contributor</Option>
+        <Option value="SOLVER">Solver</Option>
+        <Option value="EXPERT">Expert</Option>
+        <Option value="SENIOR_EXPERT">Senior Expert</Option>
+        <Option value="MASTER">Master</Option>
+        <Option value="LEGEND">Legend</Option>
       </Select>
 
       <RangePicker style={{ width: 250 }} />

@@ -70,8 +70,8 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {fields.map((field) => (
-            <Option key={field.fieldId} value={field.fieldId}>
-              {field.fieldName}
+            <Option key={field.id} value={field.id}>
+              {field.description}
             </Option>
           ))}
         </Select>
@@ -91,8 +91,8 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {filteredTopics.map((topic) => (
-            <Option key={topic.topicId} value={topic.topicId}>
-              {topic.topicName}
+            <Option key={topic.id} value={topic.id}>
+              {topic.description}
             </Option>
           ))}
         </Select>
@@ -111,8 +111,8 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {levels.map((level) => (
-            <Option key={level.levelId} value={level.levelId}>
-              {level.levelName}
+            <Option key={level.id} value={level.id}>
+              {level.description}
             </Option>
           ))}
         </Select>

@@ -1,6 +1,14 @@
 import { AxiosInstance } from 'axios';
-import { LoginRequest } from '@abc-interview-support-frontend/types';
 import { createRequestInstance } from './request.config.js';
+
+// Type-safe browser API access
+interface Storage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+declare const sessionStorage: Storage | undefined;
 
 /**
  * User Service
@@ -20,8 +28,11 @@ export class UserService {
     }
   }
 
-  async login(credentials: LoginRequest) {
-    const response = await this.apiClient.post('/users/login', credentials);
+  async getAllUsers() {
+    const token = sessionStorage?.getItem('admin_accessToken');
+    const response = await this.apiClient.get('/users', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     return response.data;
   }
 }

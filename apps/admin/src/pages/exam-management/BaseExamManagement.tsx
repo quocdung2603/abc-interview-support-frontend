@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BaseExamPageHeader,
   BaseExamPreviewDrawer,
@@ -7,69 +7,18 @@ import {
 } from './components/base-exam';
 import { Exam } from '@abc-interview-support-frontend/types';
 import { Dayjs } from 'dayjs';
+import { examService } from '@abc-interview-support-frontend/services';
 
 const BaseExamManagement = () => {
+  const [dataList, setDataList] = useState<Exam[]>([]);
   const [previewDrawerVisible, setPreviewDrawerVisible] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [filteredExams, setFilteredExams] = useState<Exam[]>([]);
-
-  // Mock data for base exams (created by enterprises) - only Recruiter type
-  useEffect(() => {
-    const statusOptions = ['Active', 'Inactive', 'Completed'] as const;
-    const positions = [
-      'Frontend Developer',
-      'Backend Developer',
-      'Fullstack Developer',
-      'DevOps Engineer',
-      'Mobile Developer',
-      'Data Analyst',
-      'QA Engineer',
-      'Product Manager',
-      'Business Analyst',
-      'UI/UX Designer',
-    ] as const;
-    const companies = [
-      'TechCorp Vietnam',
-      'Innovate Solutions',
-      'Digital Dynamics',
-      'Future Systems',
-      'Smart Tech Co.',
-      'Global Solutions',
-      'NextGen Tech',
-    ] as const;
-
-    const mockExams: Exam[] = Array.from({ length: 25 }, (_, i) => {
-      const startOffset =
-        Math.floor(Math.random() * 14 + 1) * 24 * 60 * 60 * 1000;
-      const endOffset =
-        Math.floor(Math.random() * 14 + 15) * 24 * 60 * 60 * 1000;
-
-      return {
-        examId: `recruiter-exam${i + 1}`,
-        title: `Bài kiểm tra sơ loại ${i + 1}: ${
-          positions[i % 10] || 'Unknown'
-        } - ${companies[i % 7]}`, // Ensure string
-        examType: 'Recruiter' as const, // Only recruiter exams
-        position: positions[i % 10] || 'Unknown', // Fallback to avoid undefined
-        questionCount: Math.floor(Math.random() * 15) + 10,
-        duration: Math.floor(Math.random() * 90) + 45,
-        language: 'Vietnamese',
-        status: statusOptions[i % 3],
-        topics:
-          'JavaScript, React, Node.js, Database, Testing, Problem Solving',
-        questionTypes: 'Trắc nghiệm, Tự luận, Coding, Case Study',
-        startTime: new Date(Date.now() + startOffset), // Ensure Date is always created
-        endTime: new Date(Date.now() + endOffset),
-        createdBy: companies[i % 7], // Enterprise name as creator
-        createdAt: new Date(
-          Date.now() - Math.floor(Math.random() * 60 + 1) * 24 * 60 * 60 * 1000
-        ),
-      };
-    });
-    setExams(mockExams);
-    setFilteredExams(mockExams);
-  }, []);
+  const [filters, setFilters] = useState<{
+    searchText?: string;
+    status?: string;
+    position?: string;
+    dateRange?: [Dayjs, Dayjs];
+  }>({});
 
   const handleViewExam = (exam: Exam) => {
     console.log('Opening preview for base exam:', exam);
@@ -77,17 +26,21 @@ const BaseExamManagement = () => {
     setPreviewDrawerVisible(true);
   };
 
-  const handleFilterChange = (filters: {
+  const handleFilterChange = (newFilters: {
     searchText?: string;
     status?: string;
     position?: string;
     dateRange?: [Dayjs, Dayjs];
   }) => {
-    let filtered = exams;
+    setFilters(newFilters);
+  };
+
+  const filteredExams = useMemo(() => {
+    let filtered = dataList;
 
     if (filters.searchText) {
       filtered = filtered.filter((exam) =>
-        exam.title.toLowerCase().includes(filters.searchText!.toLowerCase())
+        exam.title.toLowerCase().includes(filters.searchText?.toLowerCase() || '')
       );
     }
 
@@ -102,13 +55,31 @@ const BaseExamManagement = () => {
     if (filters.dateRange) {
       const [startDate, endDate] = filters.dateRange;
       filtered = filtered.filter((exam) => {
-        const examDate = exam.createdAt;
+        const examDate = new Date(exam.createdAt);
         return examDate >= startDate.toDate() && examDate <= endDate.toDate();
       });
     }
 
-    setFilteredExams(filtered);
-  };
+    return filtered;
+  }, [dataList, filters]);
+
+  const getAllExams = async (examTypes: string) => {
+    try {
+      const res = await examService.getAllExams();
+      console.log(res);
+      let exams: Exam[] = (res.content as Exam[]) || [];
+      exams = exams.filter((exam) => exam?.examType === examTypes);
+      console.log('All Exams:', exams);
+      setDataList(exams);
+    } catch (error) {
+      console.error('Error fetching exams:', error);
+      setDataList([]);
+    }
+  }
+
+  useEffect(() => {
+    getAllExams("VIRTUAL");
+  }, [])
 
   return (
     <div className="container-center animate-fade-in-up">

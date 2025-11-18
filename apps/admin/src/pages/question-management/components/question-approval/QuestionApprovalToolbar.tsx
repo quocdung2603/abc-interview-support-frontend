@@ -74,7 +74,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {fields.map((field) => (
-            <Option key={field.fieldId} value={field.fieldId}>
+            <Option key={field.id} value={field.id}>
               {field.fieldName}
             </Option>
           ))}
@@ -95,7 +95,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {filteredTopics.map((topic) => (
-            <Option key={topic.topicId} value={topic.topicId}>
+            <Option key={topic.id} value={topic.id}>
               {topic.topicName}
             </Option>
           ))}
@@ -115,7 +115,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {levels.map((level) => (
-            <Option key={level.levelId} value={level.levelId}>
+            <Option key={level.id} value={level.id}>
               {level.levelName}
             </Option>
           ))}
@@ -134,9 +134,9 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
           allowClear
         >
           <Option value="all">Tất cả</Option>
-          <Option value="Pending">Chờ duyệt</Option>
-          <Option value="Approved">Đã duyệt</Option>
-          <Option value="Rejected">Đã từ chối</Option>
+          <Option value="PENDING">Chờ duyệt</Option>
+          <Option value="APPROVED">Đã duyệt</Option>
+          <Option value="REJECTED">Đã từ chối</Option>
         </Select>
       </div>
     </div>

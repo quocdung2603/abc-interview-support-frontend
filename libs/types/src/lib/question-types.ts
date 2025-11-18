@@ -1,49 +1,51 @@
 // question-types.ts in libs/shared-utils/src/lib/types/question-types.ts
 
 export interface Field {
-  fieldId: string;
+  id: string;
   fieldName: string;
   description?: string;
 }
 
 export interface Topic {
-  topicId: string;
+  id: string;
   fieldId: string;
   topicName: string;
   description?: string;
 }
 
 export interface Level {
-  levelId: string;
+  id: string;
   levelName: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
   description?: string;
 }
 
 export interface QuestionType {
-  questionTypeId: string;
-  questionTypeName:
-    | 'SingleChoice'
-    | 'MultipleChoice'
-    | 'FillInTheBlank'
-    | 'OpenEnded'
-    | 'Reference';
+  id: string;
+  questionTypeName: string;
   description?: string;
 }
 
 export interface Question {
-  questionId: string;
-  userId?: string;
-  topicId: string;
-  fieldId: string;
-  levelId: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  rejectReason?:string;
-  questionTitle: string; // tiêu đề câu hỏi
-  questionVariant: string; // Chuỗi chứa danh sách questionVariant (VD: "1,2,3" hoặc JSON như {"ids": [1, 2, 3]})
-  similarityScore?: number;
+  id: number;
+  userId: number;
+  topicId: number;
+  fieldId: number;
+  levelId: number;
+  questionTypeId: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  questionContent: string;
+  questionAnswer: string;
+  language: string;
+  similarityScore: number;
   usefulVote: number;
   unusefulVote: number;
-  createdAt: Date;
+  createdAt: string;
+  approvedAt?: string;
+  approvedBy?: number;
+  fieldName: string;
+  levelName: string;
+  topicName: string;
+  questionTypeName: string;
 }
 
 export interface QuestionVariant {

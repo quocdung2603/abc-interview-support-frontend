@@ -26,13 +26,14 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
       const mockQuestions: Question[] = Array.from(
         { length: data.questionCount },
         (_, i) => ({
-          questionId: `q${i + 1}`,
-          userId: '1',
-          topicId: '1',
-          fieldId: '1',
-          levelId: '1',
-          status: 'Approved',
-          questionTitle: `Câu hỏi ${i + 1}: ${
+          id: i + 1,
+          userId: 1,
+          topicId: 1,
+          fieldId: 1,
+          levelId: 1,
+          questionTypeId: 1,
+          status: 'APPROVED' as const,
+          questionContent: `Câu hỏi ${i + 1}: ${
             [
               'React Hook useEffect được sử dụng để làm gì?',
               'RESTful API là gì?',
@@ -40,11 +41,16 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
               'Algorithm nào có độ phức tạp O(n log n)?',
             ][i % 4]
           }`,
-          questionVariant: '1',
+          questionAnswer: 'Đáp án mẫu',
+          language: 'vi',
           similarityScore: 0,
           usefulVote: Math.floor(Math.random() * 20),
           unusefulVote: Math.floor(Math.random() * 5),
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
+          fieldName: 'Frontend',
+          levelName: 'Junior',
+          topicName: 'React',
+          questionTypeName: 'Multiple Choice',
         })
       );
       setQuestions(mockQuestions);
@@ -53,11 +59,13 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Active':
+      case 'DRAFT':
+        return 'Bản nháp';
+      case 'ACTIVE':
         return 'Đang hoạt động';
-      case 'Inactive':
+      case 'INACTIVE':
         return 'Không hoạt động';
-      case 'Completed':
+      case 'COMPLETED':
         return 'Đã hoàn thành';
       default:
         return status;
@@ -66,11 +74,13 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'green';
-      case 'Inactive':
+      case 'DRAFT':
         return 'orange';
-      case 'Completed':
+      case 'ACTIVE':
+        return 'green';
+      case 'INACTIVE':
+        return 'red';
+      case 'COMPLETED':
         return 'blue';
       default:
         return 'default';
@@ -95,9 +105,9 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
     },
     {
       title: 'Nội dung câu hỏi',
-      dataIndex: 'questionTitle',
-      key: 'questionTitle',
-      render: (title: string) => (
+      dataIndex: 'questionContent',
+      key: 'questionContent',
+      render: (content: string) => (
         <div
           style={{
             maxWidth: '400px',
@@ -106,7 +116,7 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {title}
+          {content}
         </div>
       ),
     },
@@ -159,7 +169,7 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
               <Card title="Thông tin cơ bản" size="small">
                 <div style={{ display: 'grid', gap: '12px' }}>
                   <div>
-                    <Text strong>ID bài kiểm tra:</Text> {data.examId}
+                    <Text strong>ID bài kiểm tra:</Text> {data.id}
                   </div>
                   {data.position && (
                     <div>
@@ -185,25 +195,7 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                 </div>
               </Card>
 
-              {/* Schedule Information */}
-              {(data.startTime || data.endTime) && (
-                <Card title="Thời gian tổ chức" size="small">
-                  <div style={{ display: 'grid', gap: '12px' }}>
-                    {data.startTime && (
-                      <div>
-                        <Text strong>Thời gian bắt đầu:</Text>{' '}
-                        {new Date(data.startTime).toLocaleString('vi-VN')}
-                      </div>
-                    )}
-                    {data.endTime && (
-                      <div>
-                        <Text strong>Thời gian kết thúc:</Text>{' '}
-                        {new Date(data.endTime).toLocaleString('vi-VN')}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
+
 
               {/* Topics and Question Types */}
               <Card title="Cấu trúc đề thi" size="small">
@@ -211,8 +203,8 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                   <div>
                     <Text strong>Chủ đề:</Text>
                     <div style={{ marginTop: '8px' }}>
-                      {data.topics ? (
-                        <Text>{data.topics}</Text>
+                      {data.topics && data.topics.length > 0 ? (
+                        <Text>{data.topics.join(', ')}</Text>
                       ) : (
                         <Text type="secondary">Chưa có thông tin</Text>
                       )}
@@ -221,8 +213,8 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                   <div>
                     <Text strong>Loại câu hỏi:</Text>
                     <div style={{ marginTop: '8px' }}>
-                      {data.questionTypes ? (
-                        <Text>{data.questionTypes}</Text>
+                      {data.questionTypes && data.questionTypes.length > 0 ? (
+                        <Text>{data.questionTypes.join(', ')}</Text>
                       ) : (
                         <Text type="secondary">Chưa có thông tin</Text>
                       )}
@@ -259,7 +251,7 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
               <Table
                 columns={questionColumns}
                 dataSource={questions}
-                rowKey="questionId"
+                rowKey="id"
                 pagination={{
                   total: questions.length,
                   pageSize: 10,

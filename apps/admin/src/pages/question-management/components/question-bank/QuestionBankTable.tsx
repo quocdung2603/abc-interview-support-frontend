@@ -29,27 +29,27 @@ const QuestionBankTable: React.FC<TableProps> = ({
   questionTypes,
 }) => {
   const getFieldName = (fieldId: string) => {
-    const field = fields.find((f) => f.fieldId === fieldId);
+    const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
   const getTopicName = (topicId: string) => {
-    const topic = topics.find((t) => t.topicId === topicId);
+    const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
   const getLevelName = (levelId: string) => {
-    const level = levels.find((l) => l.levelId === levelId);
+    const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'PENDING':
         return 'Chờ duyệt';
-      case 'Approved':
+      case 'APPROVED':
         return 'Đã duyệt';
-      case 'Rejected':
+      case 'REJECTED':
         return 'Đã từ chối';
       default:
         return status;
@@ -58,11 +58,11 @@ const QuestionBankTable: React.FC<TableProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'PENDING':
         return '#faad14';
-      case 'Approved':
+      case 'APPROVED':
         return '#52c41a';
-      case 'Rejected':
+      case 'REJECTED':
         return '#ff4d4f';
       default:
         return '#d9d9d9';
@@ -72,10 +72,10 @@ const QuestionBankTable: React.FC<TableProps> = ({
   const columns = [
     {
       title: 'Nội dung câu hỏi',
-      dataIndex: 'questionTitle',
-      key: 'questionTitle',
+      dataIndex: 'questionContent',
+      key: 'questionContent',
       render: (content: string) => (
-        <div style={{ maxWidth: '300px' }}>
+        <div style={{ maxWidth: '150px' }}>
           <div
             style={{
               overflow: 'hidden',
@@ -89,33 +89,27 @@ const QuestionBankTable: React.FC<TableProps> = ({
       ),
     },
     {
-      title: 'Question Variants',
-      dataIndex: 'questionVariant',
-      key: 'questionVariant',
-      render: (variant: string) => <Tag color="geekblue">{variant}</Tag>,
-    },
-    {
       title: 'Lĩnh vực',
       dataIndex: 'fieldId',
       key: 'fieldId',
-      render: (fieldId: string) => (
-        <Tag color="blue">{getFieldName(fieldId)}</Tag>
+      render: (fieldId: number) => (
+        <Tag color="blue" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getFieldName(fieldId.toString())}</Tag>
       ),
     },
     {
       title: 'Chủ đề',
       dataIndex: 'topicId',
       key: 'topicId',
-      render: (topicId: string) => (
-        <Tag color="green">{getTopicName(topicId)}</Tag>
+      render: (topicId: number) => (
+        <Tag color="green" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getTopicName(topicId.toString())}</Tag>
       ),
     },
     {
       title: 'Mức độ',
       dataIndex: 'levelId',
       key: 'levelId',
-      render: (levelId: string) => (
-        <Tag color="orange">{getLevelName(levelId)}</Tag>
+      render: (levelId: number) => (
+        <Tag color="orange" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getLevelName(levelId.toString())}</Tag>
       ),
     },
     {
@@ -152,7 +146,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: Date) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
@@ -184,7 +178,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
     <Table
       columns={columns}
       dataSource={dataList}
-      rowKey="questionId"
+      rowKey="id"
       pagination={{
         total: dataList.length,
         pageSize: 10,

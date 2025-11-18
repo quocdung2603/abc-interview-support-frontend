@@ -9,7 +9,7 @@ interface MockExamToolbarProps {
     searchText?: string;
     status?: string;
     position?: string;
-    dateRange?: [Date, Date];
+    dateRange?: [Dayjs, Dayjs];
   }) => void;
 }
 
@@ -17,43 +17,37 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
   onFilterChange,
 }) => {
   const [searchText, setSearchText] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [positionFilter, setPositionFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [positionFilter, setPositionFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
     onFilterChange({
       searchText: value || undefined,
-      status: statusFilter || undefined,
-      position: positionFilter || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
+      dateRange: dateRange || undefined,
     });
   };
 
-  const handleStatusChange = (value: string) => {
+  const handleStatusChange = (value = 'all') => {
     setStatusFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      status: value || undefined,
-      position: positionFilter || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      status: value === 'all' ? undefined : value,
+      position: positionFilter === 'all' ? undefined : positionFilter,
+      dateRange: dateRange || undefined,
     });
   };
 
-  const handlePositionChange = (value: string) => {
+  const handlePositionChange = (value = 'all') => {
     setPositionFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      status: statusFilter || undefined,
-      position: value || undefined,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: value === 'all' ? undefined : value,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -69,11 +63,9 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
     setDateRange(validDates);
     onFilterChange({
       searchText: searchText || undefined,
-      status: statusFilter || undefined,
-      position: positionFilter || undefined,
-      dateRange: validDates
-        ? [validDates[0].toDate(), validDates[1].toDate()]
-        : undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
+      dateRange: validDates || undefined,
     });
   };
 
@@ -110,9 +102,11 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
           onChange={handleStatusChange}
           style={{ minWidth: '120px' }}
         >
-          <Option value="Active">Đang hoạt động</Option>
-          <Option value="Inactive">Không hoạt động</Option>
-          <Option value="Completed">Đã hoàn thành</Option>
+          <Option value="all">Tất cả</Option>
+          <Option value="DRAFT">Bản nháp</Option>
+          <Option value="ACTIVE">Đang hoạt động</Option>
+          <Option value="INACTIVE">Không hoạt động</Option>
+          <Option value="COMPLETED">Đã hoàn thành</Option>
         </Select>
       </div>
 
@@ -127,6 +121,7 @@ const MockExamToolbar: React.FC<MockExamToolbarProps> = ({
           onChange={handlePositionChange}
           style={{ minWidth: '140px' }}
         >
+          <Option value="all">Tất cả</Option>
           <Option value="Frontend Developer">Frontend Developer</Option>
           <Option value="Backend Developer">Backend Developer</Option>
           <Option value="Fullstack Developer">Fullstack Developer</Option>

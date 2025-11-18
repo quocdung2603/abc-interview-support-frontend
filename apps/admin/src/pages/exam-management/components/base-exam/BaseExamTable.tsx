@@ -11,11 +11,13 @@ interface BaseExamTableProps {
 const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Active':
+      case 'DRAFT':
+        return 'Bản nháp';
+      case 'ACTIVE':
         return 'Đang hoạt động';
-      case 'Inactive':
+      case 'INACTIVE':
         return 'Không hoạt động';
-      case 'Completed':
+      case 'COMPLETED':
         return 'Đã hoàn thành';
       default:
         return status;
@@ -24,12 +26,16 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'green';
-      case 'Inactive':
+      case 'DRAFT':
         return 'orange';
-      case 'Completed':
+      case 'ACTIVE':
+        return 'green';
+      case 'INACTIVE':
+        return 'red';
+      case 'COMPLETED':
         return 'blue';
+      case 'CANCELLED':
+        return 'gray';
       default:
         return 'default';
     }
@@ -93,7 +99,7 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
       title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: Date) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
@@ -117,7 +123,7 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
     <Table
       columns={columns}
       dataSource={data}
-      rowKey="examId"
+      rowKey="id"
       pagination={{
         total: data.length,
         pageSize: 10,

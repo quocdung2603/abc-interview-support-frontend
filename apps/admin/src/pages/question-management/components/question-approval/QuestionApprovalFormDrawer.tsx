@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Drawer,
   Tabs,
-  Form,
   Input,
   Select,
   Button,
@@ -48,33 +47,32 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
   onApprove,
   onReject,
 }) => {
-  const [form] = Form.useForm();
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [compareDrawerVisible, setCompareDrawerVisible] = useState(false);
 
   const getFieldName = (fieldId: string) => {
-    const field = fields.find((f) => f.fieldId === fieldId);
+    const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
   const getTopicName = (topicId: string) => {
-    const topic = topics.find((t) => t.topicId === topicId);
+    const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
   const getLevelName = (levelId: string) => {
-    const level = levels.find((l) => l.levelId === levelId);
+    const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'PENDING':
         return 'Chờ duyệt';
-      case 'Approved':
+      case 'APPROVED':
         return 'Đã duyệt';
-      case 'Rejected':
+      case 'REJECTED':
         return 'Đã từ chối';
       default:
         return status;
@@ -92,14 +90,14 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
     if (!data) return;
 
     if (decision === 'approve') {
-      onApprove(data.questionId);
+      onApprove(data.id.toString());
       message.success('Đã duyệt câu hỏi thành công!');
     } else if (decision === 'reject') {
       if (!rejectReason.trim()) {
         message.error('Vui lòng nhập lý do từ chối!');
         return;
       }
-      onReject(data.questionId, rejectReason);
+      onReject(data.id.toString(), rejectReason);
       message.success('Đã từ chối câu hỏi!');
     } else {
       message.error('Vui lòng chọn quyết định duyệt!');
@@ -178,7 +176,7 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
               <Title level={5}>Nội dung câu hỏi</Title>
               <div style={{ marginTop: '16px' }}>
                 <Paragraph style={{ fontSize: '16px', lineHeight: '1.6' }}>
-                  {data.questionTitle}
+                  {data.questionContent}
                 </Paragraph>
               </div>
             </div>
@@ -191,19 +189,19 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
                 <div>
                   <Text strong>Lĩnh vực:</Text>{' '}
                   <span style={{ color: '#1890ff' }}>
-                    {getFieldName(data.fieldId)}
+                    {getFieldName(data.fieldId.toString())}
                   </span>
                 </div>
                 <div>
                   <Text strong>Chủ đề:</Text>{' '}
                   <span style={{ color: '#52c41a' }}>
-                    {getTopicName(data.topicId)}
+                    {getTopicName(data.topicId.toString())}
                   </span>
                 </div>
                 <div>
                   <Text strong>Mức độ:</Text>{' '}
                   <span style={{ color: '#faad14' }}>
-                    {getLevelName(data.levelId)}
+                    {getLevelName(data.levelId.toString())}
                   </span>
                 </div>
                 <div>
@@ -211,9 +209,6 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
                   <span style={{ color: '#722ed1' }}>
                     {getStatusText(data.status)}
                   </span>
-                </div>
-                <div>
-                  <Text strong>Biến thể:</Text> {data.questionVariant}
                 </div>
               </div>
             </div>

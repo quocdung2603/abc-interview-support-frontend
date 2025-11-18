@@ -50,7 +50,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [selectedField, setSelectedField] = useState<string>(
-    data?.fieldId || ''
+    data?.fieldId.toString() || ''
   );
   const [newVariants, setNewVariants] = useState<QuestionVariant[]>([]);
 
@@ -60,13 +60,13 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
       if (data) {
         // Editing existing question
         form.setFieldsValue({
-          fieldId: data.fieldId,
-          topicId: data.topicId,
-          levelId: data.levelId,
-          questionTitle: data.questionTitle,
-          questionVariant: data.questionVariant,
+          fieldId: data.fieldId.toString(),
+          topicId: data.topicId.toString(),
+          levelId: data.levelId.toString(),
+          questionTitle: data.questionContent,
+          questionVariant: '', // API doesn't have this
         });
-        setSelectedField(data.fieldId);
+        setSelectedField(data.fieldId.toString());
       } else {
         // Creating new question
         form.resetFields();
@@ -80,7 +80,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
   // Add new variant for a question type
   const addNewVariant = (questionTypeId: string) => {
     const questionType = questionTypes.find(
-      (qt) => qt.questionTypeId === questionTypeId
+      (qt) => qt.id === questionTypeId
     );
     if (!questionType) return;
 
@@ -107,7 +107,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
     ];
     const maxId =
       allVariantIds.length > 0
-        ? Math.max(...allVariantIds.map((id) => parseInt(id)))
+        ? Math.max(...allVariantIds.map((id) => Number.parseInt(id)))
         : 0;
     const newVariantId = String(maxId + 1);
 
@@ -140,11 +140,11 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
       questionVariantId: newVariantId,
       questionTypeId: questionTypeId,
       questionContent:
-        mockContents[parseInt(questionTypeId) - 1] || mockContents[0],
+        mockContents[Number.parseInt(questionTypeId) - 1] || mockContents[0],
       questionChoose:
-        mockChoices[parseInt(questionTypeId) - 1] || mockChoices[0],
+        mockChoices[Number.parseInt(questionTypeId) - 1] || mockChoices[0],
       questionAnswer:
-        mockAnswers[parseInt(questionTypeId) - 1] || mockAnswers[0],
+        mockAnswers[Number.parseInt(questionTypeId) - 1] || mockAnswers[0],
     };
 
     setNewVariants((prev) => [...prev, newVariant]);
@@ -189,7 +189,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 
       return {
         questionVariantId: id.trim(),
-        questionTypeId: String((parseInt(id.trim()) % 5) + 1), // Cycle through question types
+        questionTypeId: String((Number.parseInt(id.trim()) % 5) + 1), // Cycle through question types
         questionContent: mockContents[index % mockContents.length],
         questionChoose: mockChoices[index % mockChoices.length],
         questionAnswer: mockAnswers[index % mockAnswers.length],
@@ -244,7 +244,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
     questionTitle: string
   ) => {
     const questionType = questionTypes.find(
-      (qt) => qt.questionTypeId === variant.questionTypeId
+      (qt) => qt.id === variant.questionTypeId
     );
     const typeName = questionType?.questionTypeName || 'Unknown';
 
@@ -440,11 +440,11 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             form={form}
             layout="vertical"
             initialValues={{
-              fieldId: data?.fieldId,
-              topicId: data?.topicId,
-              levelId: data?.levelId,
-              questionTitle: data?.questionTitle,
-              questionVariant: data?.questionVariant,
+              fieldId: data?.fieldId.toString(),
+              topicId: data?.topicId.toString(),
+              levelId: data?.levelId.toString(),
+              questionTitle: data?.questionContent,
+              questionVariant: '',
             }}
           >
             <Form.Item
@@ -454,7 +454,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             >
               <Select placeholder="Chọn lĩnh vực" onChange={handleFieldChange}>
                 {fields.map((field) => (
-                  <Option key={field.fieldId} value={field.fieldId}>
+                  <Option key={field.id} value={field.id}>
                     {field.fieldName}
                   </Option>
                 ))}
@@ -468,7 +468,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             >
               <Select placeholder="Chọn chủ đề" disabled={!selectedField}>
                 {filteredTopics.map((topic) => (
-                  <Option key={topic.topicId} value={topic.topicId}>
+                  <Option key={topic.id} value={topic.id}>
                     {topic.topicName}
                   </Option>
                 ))}
@@ -482,7 +482,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             >
               <Select placeholder="Chọn mức độ">
                 {levels.map((level) => (
-                  <Option key={level.levelId} value={level.levelId}>
+                  <Option key={level.id} value={level.id}>
                     {level.levelName}
                   </Option>
                 ))}
@@ -529,9 +529,9 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             <Dropdown
               menu={{
                 items: questionTypes.map((qt) => ({
-                  key: qt.questionTypeId,
+                  key: qt.id,
                   label: qt.questionTypeName,
-                  onClick: () => addNewVariant(qt.questionTypeId),
+                  onClick: () => addNewVariant(qt.id),
                 })),
               }}
               trigger={['click']}
@@ -552,11 +552,11 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
                   .map((questionType) => {
                     const existingVariants = getQuestionVariants(data).filter(
                       (variant) =>
-                        variant.questionTypeId === questionType.questionTypeId
+                        variant.questionTypeId === questionType.id
                     );
                     const newVariantsOfType = newVariants.filter(
                       (variant) =>
-                        variant.questionTypeId === questionType.questionTypeId
+                        variant.questionTypeId === questionType.id
                     );
                     const allVariantsOfType = [
                       ...existingVariants,
@@ -567,7 +567,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 
                     return (
                       <Tabs.TabPane
-                        key={questionType.questionTypeId}
+                        key={questionType.id}
                         tab={`${questionType.questionTypeName} (${allVariantsOfType.length})`}
                       >
                         <div
@@ -581,7 +581,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
                             <div key={variant.questionVariantId}>
                               {renderQuestionVariant(
                                 variant,
-                                data.questionTitle
+                                data.questionContent
                               )}
                             </div>
                           ))}
@@ -605,7 +605,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
                   // Show mock preview
                   return (
                     <Tabs.TabPane
-                      key={questionType.questionTypeId}
+                      key={questionType.id}
                       tab={questionType.questionTypeName}
                     >
                       <div

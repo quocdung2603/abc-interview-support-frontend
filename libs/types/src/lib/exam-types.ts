@@ -1,21 +1,19 @@
 // exam-types.ts in libs/shared-utils/src/lib/types/exam-types.ts
 
 export interface Exam {
-  examId: string;
-  userId?: string;
-  examType: 'Virtual' | 'Recruiter';
+  id: number;
+  userId: number;
+  examType: 'VIRTUAL' | 'RECRUITER';
   title: string;
-  position?: string;
-  topics: string; // JSON string
-  questionTypes: string; // JSON string
+  position: string;
+  topics: number[]; // Array of topic IDs
+  questionTypes: number[]; // Array of question type IDs
   questionCount: number;
   duration: number;
-  startTime?: Date;
-  endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed';
+  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
   language: string;
-  createdAt: Date;
-  createdBy: string;
+  createdAt: string;
+  createdBy: number;
 }
 
 export interface ExamQuestion {

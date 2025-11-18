@@ -14,6 +14,31 @@ export class QuestionService {
       );
     }
   }
+
+  async getAllFields() {
+    const response = await this.apiClient.get('/questions/fields');
+    return response.data;
+  }
+
+  async getAllTopics() {
+    const response = await this.apiClient.get('/questions/topics');
+    return response.data;
+  }
+
+  async getAllLevels() {
+    const response = await this.apiClient.get('/questions/levels');
+    return response.data;
+  }
+
+  async getAllQuestionTypes() {
+    const response = await this.apiClient.get('/questions/question-types');
+    return response.data;
+  };
+
+  async getAllQuestions() {
+    const response = await this.apiClient.get('/questions');
+    return response.data;
+  }
 }
 
 /**
