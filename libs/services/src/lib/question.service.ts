@@ -33,10 +33,15 @@ export class QuestionService {
   async getAllQuestionTypes() {
     const response = await this.apiClient.get('/questions/question-types');
     return response.data;
-  };
+  }
 
   async getAllQuestions() {
     const response = await this.apiClient.get('/questions');
+    return response.data;
+  }
+
+  async getQuestionById(questionId: number) {
+    const response = await this.apiClient.get(`/questions/${questionId}`);
     return response.data;
   }
 }

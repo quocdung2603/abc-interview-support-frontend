@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { QuestionDetailHeader } from './components/interview-question-detail/QuestionDetailHeader';
 import { AnswersSection } from './components/interview-question-detail/AnswersSection';
 import { QuestionNavigation } from './components/interview-question-detail/QuestionNavigation';
@@ -11,412 +11,168 @@ import {
   Topic,
 } from '@abc-interview-support-frontend/types';
 import { RouterLink } from '../../utils/RouterLink';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 export const InterviewQuestionDetail: React.FC = () => {
   const { id: questionId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get filtered questions from navigation state
+  const filteredQuestions = location.state?.filteredQuestions as Question[] | undefined;
 
   // State management
   const [question, setQuestion] = useState<Question | null>(null);
+  const [questionList, setQuestionList] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with actual API calls
+  const getAllFields = async () => {
+    try {
+      const res = await questionService.getAllFields();
+      console.log('Fields:', res.content);
+      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
+        id: item.id,
+        fieldName: item.name || item.description || 'Unknown Field',
+        description: item.description || item.name || 'Unknown Field',
+      }));
+      setFields(mappedFields);
+    } catch (error) {
+      console.error('Error fetching fields:', error);
+      setFields([]);
+    }
+  };
+
+  const getAllTopics = async () => {
+    try {
+      const res = await questionService.getAllTopics();
+      console.log('Topics:', res.content);
+      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
+        id: item.id,
+        fieldId: item.fieldId,
+        topicName: item.name || item.description || 'Unknown Topic',
+        description: item.description || item.name || 'Unknown Topic',
+      }));
+      setTopics(mappedTopics);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      setTopics([]);
+    }
+
+  };
+
+  const getAllLevels = async () => {
+    try {
+      const res = await questionService.getAllLevels();
+      console.log('Levels:', res.content);
+      const mappedLevels = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
+        id: item.id,
+        levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
+        description: item.description || item.name || 'Unknown Level',
+      }));
+      setLevels(mappedLevels);
+    } catch (error) {
+      console.error('Error fetching levels:', error);
+      setLevels([]);
+    }
+  };
+
+  const getQuestionById = async (questionId: number): Promise<Question> => {
+    const res = await questionService.getQuestionById(questionId);
+    console.log('Question by ID:', res);
+    return res;
+  }
+
+  const getAllQuestions = async () => {
+    try {
+      const res = await questionService.getAllQuestions();
+      let questions = res.content || [];
+      questions = questions.filter((question: any) => question?.status === 'APPROVED');
+      console.log('All Questions:', questions);
+      setQuestionList(questions);
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      setQuestionList([]);
+    }
+  }
+
+  // Load data from API
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
+      if (!questionId) {
+        setLoading(false);
+        setError('No question ID provided');
+        return;
+      }
+
       try {
         setLoading(true);
-        console.log('Loading question with ID:', questionId);
 
-        // Mock fields data
-        const mockFields: Field[] = [
-          {
-            fieldId: 'frontend',
-            fieldName: 'Frontend Development',
-            description: 'Frontend development questions',
-          },
-          {
-            fieldId: 'backend',
-            fieldName: 'Backend Development',
-            description: 'Backend development questions',
-          },
-        ];
+        // Load question details
+        const questionData = await getQuestionById(Number(questionId));
+        setQuestion(questionData);
 
-        // Mock topics data
-        const mockTopics: Topic[] = [
-          {
-            topicId: 'react',
-            topicName: 'React.js',
-            description: 'React.js related questions',
-            fieldId: 'frontend',
-          },
-          {
-            topicId: 'javascript',
-            topicName: 'JavaScript',
-            description: 'JavaScript fundamentals',
-            fieldId: 'frontend',
-          },
-          {
-            topicId: 'nodejs',
-            topicName: 'Node.js',
-            description: 'Node.js backend development',
-            fieldId: 'backend',
-          },
-        ];
-
-        // Mock levels data
-        const mockLevels: Level[] = [
-          {
-            levelId: 'fresher',
-            levelName: 'Fresher',
-            description: 'Entry level questions',
-          },
-          {
-            levelId: 'junior',
-            levelName: 'Junior',
-            description: 'Junior level questions',
-          },
-          {
-            levelId: 'middle',
-            levelName: 'Middle',
-            description: 'Mid-level questions',
-          },
-          {
-            levelId: 'senior',
-            levelName: 'Senior',
-            description: 'Senior level questions',
-          },
-        ];
-
-        // Mock questions data that matches InterviewRevision.tsx
-        const mockQuestions: Question[] = [
-          {
-            questionId: 'q1',
-            userId: 'system',
-            questionContent: 'React là gì và tại sao nó lại phổ biến?',
-            fieldId: 'frontend',
-            topicId: 'react',
-            levelId: 'fresher',
-            questionTypeId: 'References',
-            status: 'Approved',
-            language: 'vi',
-            usefulVote: 15,
-            unusefulVote: 2,
-            createdAt: new Date('2025-01-10'),
-          },
-          {
-            questionId: 'q2',
-            userId: 'system',
-            questionContent:
-              'Hooks trong React là gì? Giải thích useEffect và useState.',
-            fieldId: 'frontend',
-            topicId: 'react',
-            levelId: 'middle',
-            questionTypeId: 'References',
-            status: 'Approved',
-            language: 'vi',
-            usefulVote: 22,
-            unusefulVote: 1,
-            createdAt: new Date('2025-01-09'),
-          },
-          {
-            questionId: 'q3',
-            userId: 'system',
-            questionContent:
-              'Var, let và const khác nhau như thế nào trong JavaScript?',
-            fieldId: 'frontend',
-            topicId: 'javascript',
-            levelId: 'junior',
-            questionTypeId: 'References',
-            status: 'Approved',
-            language: 'vi',
-            usefulVote: 18,
-            unusefulVote: 3,
-            createdAt: new Date('2025-01-08'),
-          },
-          {
-            questionId: 'q4',
-            userId: 'system',
-            questionContent: 'Event Loop trong Node.js hoạt động như thế nào?',
-            fieldId: 'backend',
-            topicId: 'nodejs',
-            levelId: 'middle',
-            questionTypeId: 'References',
-            status: 'Approved',
-            language: 'vi',
-            usefulVote: 25,
-            unusefulVote: 2,
-            createdAt: new Date('2025-01-07'),
-          },
-        ];
-
-        // Mock answers data - chỉ câu trả lời mẫu
-        const mockAnswers: Answer[] = [
-          {
-            answerId: 'a1',
-            userId: 'expert-1',
-            questionId: 'q1',
-            questionTypeId: 'References',
-            answerContent: `React là một thư viện JavaScript được phát triển bởi Facebook để xây dựng giao diện người dùng, đặc biệt là các ứng dụng web.
-
-**Các khái niệm cốt lõi:**
-1. **Kiến trúc dựa trên Component**: Ứng dụng React được xây dựng bằng các component có thể tái sử dụng
-2. **Virtual DOM**: React sử dụng một biểu diễn ảo của DOM để cập nhật hiệu quả
-3. **Lập trình Declarative**: Bạn mô tả UI nên trông như thế nào, không phải cách thực hiện
-
-**Tại sao React phổ biến:**
-- **Hiệu suất cao**: Virtual DOM giúp tối ưu hóa việc cập nhật giao diện
-- **Cộng đồng lớn**: Nhiều tài liệu, thư viện hỗ trợ
-- **Linh hoạt**: Có thể tích hợp với các thư viện khác dễ dàng
-- **Developer Experience**: Công cụ phát triển tuyệt vời
-
-**Ví dụ đơn giản:**
-\`\`\`jsx
-function Welcome(props) {
-  return <h1>Xin chào, {props.name}!</h1>;
-}
-
-function App() {
-  return (
-    <div>
-      <Welcome name="Đức" />
-      <Welcome name="Mai" />
-    </div>
-  );
-}
-\`\`\``,
+        // Create answer from questionAnswer
+        if (questionData.questionAnswer) {
+          const answer: Answer = {
+            answerId: questionData.id, // Use question id as answer id for simplicity
+            userId: questionData.userId,
+            questionId: questionData.id,
+            questionVariantId: 1,
+            answerContent: questionData.questionAnswer,
             isSampleAnswer: true,
-            usefulVote: 45,
-            unusefulVote: 2,
-            createdAt: new Date('2025-01-11'),
-          },
-          {
-            answerId: 'a3',
-            userId: 'expert-2',
-            questionId: 'q2',
-            questionTypeId: 'References',
-            answerContent: `React Hooks là các hàm đặc biệt cho phép bạn "hook into" các tính năng của React từ function components.
-
-**useState Hook:**
-\`\`\`jsx
-import React, { useState } from 'react';
-
-function Counter() {
-  const [count, setCount] = useState(0);
-  
-  return (
-    <div>
-      <p>Bạn đã click {count} lần</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
-    </div>
-  );
-}
-\`\`\`
-
-**useEffect Hook:**
-\`\`\`jsx
-import React, { useState, useEffect } from 'react';
-
-function UserProfile({ userId }) {
-  const [user, setUser] = useState(null);
-  
-  useEffect(() => {
-    // Chạy sau mỗi render
-    fetchUser(userId).then(setUser);
-  }, [userId]); // Chỉ chạy lại khi userId thay đổi
-  
-  return user ? <div>Xin chào {user.name}</div> : <div>Đang tải...</div>;
-}
-\`\`\`
-
-**Quy tắc của Hooks:**
-1. Chỉ gọi Hooks ở top level của function
-2. Chỉ gọi Hooks từ React functions
-3. Sử dụng ESLint plugin để đảm bảo quy tắc`,
-            isSampleAnswer: true,
-            usefulVote: 38,
-            unusefulVote: 1,
-            createdAt: new Date('2025-01-10'),
-          },
-          {
-            answerId: 'a4',
-            userId: 'expert-3',
-            questionId: 'q3',
-            questionTypeId: 'References',
-            answerContent: `Trong JavaScript có 3 cách để khai báo biến: var, let và const. Mỗi cách có đặc điểm riêng:
-
-**var:**
-- **Scope**: Function scope hoặc global scope
-- **Hoisting**: Được hoisted và initialized với undefined
-- **Re-declaration**: Có thể khai báo lại trong cùng scope
-
-\`\`\`javascript
-function example() {
-  console.log(x); // undefined (không lỗi)
-  var x = 1;
-  var x = 2; // OK - có thể khai báo lại
-}
-\`\`\`
-
-**let:**
-- **Scope**: Block scope
-- **Hoisting**: Được hoisted nhưng không initialized (Temporal Dead Zone)
-- **Re-declaration**: Không thể khai báo lại trong cùng scope
-
-\`\`\`javascript
-function example() {
-  console.log(y); // ReferenceError
-  let y = 1;
-  // let y = 2; // SyntaxError - không thể khai báo lại
-}
-\`\`\`
-
-**const:**
-- **Scope**: Block scope
-- **Hoisting**: Được hoisted nhưng không initialized
-- **Re-assignment**: Không thể gán lại giá trị
-- **Re-declaration**: Không thể khai báo lại
-
-\`\`\`javascript
-const z = 1;
-// z = 2; // TypeError - không thể gán lại
-// const z = 2; // SyntaxError - không thể khai báo lại
-\`\`\`
-
-**Khuyến nghị sử dụng:**
-1. Sử dụng const mặc định
-2. Sử dụng let khi cần thay đổi giá trị
-3. Tránh sử dụng var trong code hiện đại`,
-            isSampleAnswer: true,
-            usefulVote: 32,
-            unusefulVote: 1,
-            createdAt: new Date('2025-01-09'),
-          },
-          {
-            answerId: 'a5',
-            userId: 'expert-4',
-            questionId: 'q4',
-            questionTypeId: 'References',
-            answerContent: `Event Loop là cơ chế cho phép Node.js thực hiện các thao tác I/O không đồng bộ mặc dù JavaScript là single-threaded.
-
-**Cách hoạt động:**
-
-**1. Call Stack:**
-- Nơi thực thi các function calls
-- Hoạt động theo nguyên tắc LIFO (Last In, First Out)
-
-**2. Event Queue (Task Queue):**
-- Chứa các callback functions chờ được thực thi
-- Bao gồm: Timer Queue, I/O Queue, Check Queue
-
-**3. Event Loop Process:**
-\`\`\`javascript
-// Ví dụ minh họa
-console.log('Start'); // 1
-
-setTimeout(() => {
-  console.log('Timeout'); // 4
-}, 0);
-
-setImmediate(() => {
-  console.log('Immediate'); // 5
-});
-
-process.nextTick(() => {
-  console.log('Next Tick'); // 3
-});
-
-console.log('End'); // 2
-
-// Output: Start -> End -> Next Tick -> Timeout -> Immediate
-\`\`\`
-
-**Thứ tự ưu tiên:**
-1. **Call Stack** - Thực thi code đồng bộ
-2. **Process.nextTick Queue** - Ưu tiên cao nhất
-3. **Promise Queue** (Microtasks)
-4. **Timer Queue** - setTimeout, setInterval
-5. **I/O Queue** - File system, network operations  
-6. **Check Queue** - setImmediate
-
-**Ý nghĩa:**
-- Cho phép Node.js xử lý hàng ngàn kết nối đồng thời
-- Tránh blocking khi thực hiện I/O operations
-- Đảm bảo performance cao cho server applications`,
-            isSampleAnswer: true,
-            usefulVote: 41,
-            unusefulVote: 2,
-            createdAt: new Date('2025-01-08'),
-          },
-        ];
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Find current question
-        const currentQuestion = mockQuestions.find(
-          (q) => q.questionId === questionId
-        );
-
-        console.log('Found question:', currentQuestion);
-
-        if (!currentQuestion) {
-          console.log('Question not found for ID:', questionId);
-          setError('Question not found');
-          return;
+            usefulVote: 0, // API doesn't provide, set to 0
+            unusefulVote: 0,
+            createdAt: new Date(questionData.createdAt),
+          };
+          setAnswers([answer]);
+        } else {
+          setAnswers([]);
         }
 
-        // Filter answers for current question
-        const questionAnswers = mockAnswers.filter(
-          (a) => a.questionId === questionId
-        );
+        // Load supporting data
+        if (filteredQuestions) {
+          // Use filtered questions from navigation state
+          setQuestionList(filteredQuestions);
+        } else {
+          // Load all questions if no filtered list provided
+          await getAllQuestions();
+        }
 
-        console.log('Found answers:', questionAnswers);
+        await Promise.all([
+          getAllFields(),
+          getAllTopics(),
+          getAllLevels(),
+        ]);
 
-        // Set state
-        setQuestion(currentQuestion);
-        setAnswers(questionAnswers);
-        setAllQuestions(mockQuestions);
-        setFields(mockFields);
-        setTopics(mockTopics);
-        setLevels(mockLevels);
-
-        console.log('Data loaded successfully');
       } catch (err) {
-        console.error('Error loading question:', err);
+        console.error('Error loading data:', err);
         setError('Failed to load question data');
       } finally {
         setLoading(false);
       }
     };
 
-    if (questionId) {
-      fetchData();
-    } else {
-      console.log('No questionId provided');
-      setLoading(false);
-      setError('No question ID provided');
-    }
-  }, [questionId]);
+    loadData();
+  }, [questionId, filteredQuestions]);
 
   // Navigation handlers
   const handleBackToList = () => {
-    navigate(RouterLink.InterviewRevision);
+    navigate(`/${RouterLink.InterviewRevision}`);
   };
 
-  const handleQuestionClick = (newQuestionId: string) => {
-    navigate(`/student/interview-question-detail/${newQuestionId}`);
+  const handleQuestionClick = (newQuestionId: number) => {
+    navigate(`/interview-question-detail/${newQuestionId}`, {
+      state: { filteredQuestions }
+    });
   };
 
   const handleVoteQuestion = (
-    questionId: string,
+    questionId: number,
     voteType: 'useful' | 'unuseful'
   ) => {
     if (!question) return;
@@ -435,7 +191,7 @@ console.log('End'); // 2
   };
 
   const handleVoteAnswer = (
-    answerId: string,
+    answerId: number,
     voteType: 'useful' | 'unuseful'
   ) => {
     // Mock vote handling - replace with actual API call
@@ -474,7 +230,7 @@ console.log('End'); // 2
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">😞</div>
+          <div className="text-6xl mb-4 text-neutral-400">:(</div>
           <h1 className="text-2xl font-bold text-neutral-900 mb-2">
             Không tìm thấy câu hỏi
           </h1>
@@ -496,9 +252,9 @@ console.log('End'); // 2
           {/* Question Header */}
           <QuestionDetailHeader
             question={question}
-            field={fields.find((f) => f.fieldId === question.fieldId)}
-            topic={topics.find((t) => t.topicId === question.topicId)}
-            level={levels.find((l) => l.levelId === question.levelId)}
+            field={fields.find((f) => f.id === question.fieldId)}
+            topic={topics.find((t) => t.id === question.topicId)}
+            level={levels.find((l) => l.id === question.levelId)}
             onBack={handleBackToList}
             onVote={handleVoteQuestion}
           />
@@ -508,9 +264,9 @@ console.log('End'); // 2
 
           {/* Question Navigation - điều hướng giữa các câu hỏi */}
           <QuestionNavigation
-            currentQuestionId={question.questionId}
-            allQuestions={allQuestions.map((q) => ({
-              questionId: q.questionId,
+            currentQuestionId={question.id}
+            allQuestions={questionList.map((q) => ({
+              id: q.id,
               questionContent: q.questionContent,
             }))}
             onQuestionClick={handleQuestionClick}

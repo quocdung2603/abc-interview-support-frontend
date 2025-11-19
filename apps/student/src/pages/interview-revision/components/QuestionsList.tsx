@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { QuestionCard } from './QuestionCard';
 import {
-  Answer,
   Field,
   Level,
   Question,
@@ -10,25 +9,21 @@ import {
 
 interface QuestionsListProps {
   questions: Question[];
-  answers: Answer[];
   fields: Field[];
   topics: Topic[];
   levels: Level[];
   loading: boolean;
-  onVote: (questionId: string, vote: 'useful' | 'unuseful') => void;
-  onAnswerVote: (answerId: string, vote: 'useful' | 'unuseful') => void;
-  onQuestionClick: (questionId: string) => void;
+  onVote: (questionId: number, vote: 'useful' | 'unuseful') => void;
+  onQuestionClick: (questionId: number) => void;
 }
 
 export const QuestionsList: React.FC<QuestionsListProps> = ({
   questions,
-  answers,
   fields,
   topics,
   levels,
   loading,
   onVote,
-  onAnswerVote,
   onQuestionClick,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,20 +34,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   const endIndex = startIndex + questionsPerPage;
   const currentQuestions = questions.slice(startIndex, endIndex);
 
-  const getQuestionAnswers = (questionId: string) => {
-    return answers.filter((answer) => answer.questionId === questionId);
+  const getField = (fieldId: number) => {
+    return fields.find((field) => field.id === fieldId);
   };
 
-  const getField = (fieldId: string) => {
-    return fields.find((field) => field.fieldId === fieldId);
+  const getTopic = (topicId: number) => {
+    return topics.find((topic) => topic.id === topicId);
   };
 
-  const getTopic = (topicId: string) => {
-    return topics.find((topic) => topic.topicId === topicId);
-  };
-
-  const getLevel = (levelId: string) => {
-    return levels.find((level) => level.levelId === levelId);
+  const getLevel = (levelId: number) => {
+    return levels.find((level) => level.id === levelId);
   };
 
   if (loading) {
@@ -124,7 +115,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           const field = getField(question.fieldId);
           const topic = getTopic(question.topicId);
           const level = getLevel(question.levelId);
-          const questionAnswers = getQuestionAnswers(question.questionId);
 
           if (!field || !topic || !level) {
             return null; // Skip questions with missing data
@@ -132,14 +122,12 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
           return (
             <QuestionCard
-              key={question.questionId}
+              key={question.id}
               question={question}
-              answers={questionAnswers}
               field={field}
               topic={topic}
               level={level}
               onVote={onVote}
-              onAnswerVote={onAnswerVote}
               onQuestionClick={onQuestionClick}
             />
           );
@@ -176,7 +164,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
             </button>
 
             <div className="flex space-x-1">
-              {[...Array(totalPages)].map((_, index) => {
+              {new Array(totalPages).fill(0).map((_, index) => {
                 const page = index + 1;
                 const isCurrentPage = page === currentPage;
                 const isNearCurrentPage = Math.abs(page - currentPage) <= 2;
@@ -197,11 +185,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isCurrentPage
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isCurrentPage
                         ? 'bg-primary text-white'
                         : 'text-neutral-600 hover:text-primary hover:bg-neutral-50'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>

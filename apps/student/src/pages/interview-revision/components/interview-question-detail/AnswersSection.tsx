@@ -3,7 +3,7 @@ import React from 'react';
 
 interface AnswersSectionProps {
   answers: Answer[];
-  onAnswerVote: (answerId: string, vote: 'useful' | 'unuseful') => void;
+  onAnswerVote: (answerId: number, vote: 'useful' | 'unuseful') => void;
 }
 
 export const AnswersSection: React.FC<AnswersSectionProps> = ({
@@ -15,7 +15,7 @@ export const AnswersSection: React.FC<AnswersSectionProps> = ({
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }).format(new Date(date));
+    }).format(date);
   };
 
   // Chỉ lấy câu trả lời mẫu

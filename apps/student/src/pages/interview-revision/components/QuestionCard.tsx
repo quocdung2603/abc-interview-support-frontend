@@ -1,5 +1,4 @@
 import {
-  Answer,
   Field,
   Level,
   Question,
@@ -9,28 +8,24 @@ import React, { useState } from 'react';
 
 interface QuestionCardProps {
   question: Question;
-  answers: Answer[];
   field: Field;
   topic: Topic;
   level: Level;
-  onVote: (questionId: string, vote: 'useful' | 'unuseful') => void;
-  onAnswerVote: (answerId: string, vote: 'useful' | 'unuseful') => void;
-  onQuestionClick: (questionId: string) => void;
+  onVote: (questionId: number, vote: 'useful' | 'unuseful') => void;
+  onQuestionClick: (questionId: number) => void;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
-  answers,
   field,
   topic,
   level,
   onVote,
-  onAnswerVote,
   onQuestionClick,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string) => {
     return new Intl.DateTimeFormat('vi-VN', {
       day: '2-digit',
       month: '2-digit',
@@ -59,16 +54,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   // Get best answer for preview
-  const sortedAnswers = [...answers].sort((a, b) => {
-    if (a.isSampleAnswer && !b.isSampleAnswer) return -1;
-    if (!a.isSampleAnswer && b.isSampleAnswer) return 1;
-    return b.usefulVote - b.unusefulVote - (a.usefulVote - a.unusefulVote);
-  });
-  const bestAnswer =
-    sortedAnswers.find((answer) => answer.isSampleAnswer) || sortedAnswers[0];
+  const answerContent = question.questionAnswer || 'Chưa có câu trả lời mẫu.';
 
   const handleQuestionClick = () => {
-    onQuestionClick(question.questionId);
+    onQuestionClick(question.id);
   };
 
   return (
@@ -97,14 +86,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               className="text-heading-4 text-neutral-900 mb-2 cursor-pointer hover:text-primary transition-colors text-left w-full"
               onClick={handleQuestionClick}
             >
-              {question.questionContent}
+              #{question.id}: {question.questionContent}
             </button>
           </div>
 
           {/* Question Vote */}
           <div className="flex flex-col items-center gap-1 min-w-[60px]">
             <button
-              onClick={() => onVote(question.questionId, 'useful')}
+              onClick={() => onVote(question.id, 'useful')}
               className="p-1 rounded hover:bg-green-50 text-neutral-400 hover:text-green-600 transition-colors"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -115,7 +104,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               {question.usefulVote - question.unusefulVote}
             </span>
             <button
-              onClick={() => onVote(question.questionId, 'unuseful')}
+              onClick={() => onVote(question.id, 'unuseful')}
               className="p-1 rounded hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
             >
               <svg
@@ -134,11 +123,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="flex justify-center">
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
-              showPreview
+            className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${showPreview
                 ? 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                 : 'bg-primary text-white hover:bg-primary-dark'
-            }`}
+              }`}
           >
             {showPreview ? (
               <>
@@ -178,7 +166,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                   />
                 </svg>
-                Xem nhanh ({answers.length})
+                Xem nhanh
               </>
             )}
           </button>
@@ -186,7 +174,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       </div>
 
       {/* Preview Mode - Hiển thị 1 phần câu trả lời */}
-      {showPreview && bestAnswer && (
+      {showPreview && (
         <div className="border-t border-neutral-200 overflow-hidden transition-all duration-300 ease-out transform">
           <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 animate-fadeIn">
             <div className="flex items-center gap-2 mb-3">
@@ -202,56 +190,27 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 />
               </svg>
               <span className="text-sm font-medium text-yellow-800">
-                {bestAnswer.isSampleAnswer
-                  ? 'Câu trả lời mẫu'
-                  : 'Câu trả lời hàng đầu'}
+                Câu trả lời mẫu
               </span>
             </div>
 
             <div className="bg-white rounded-lg p-4 relative overflow-hidden">
               <div className="prose prose-sm max-w-none text-neutral-700">
-                {truncateText(bestAnswer.answerContent, 200)}
+                {truncateText(answerContent, 200)}
               </div>
 
-              {bestAnswer.answerContent.length > 200 && (
+              {answerContent.length > 200 && (
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent rounded-b-lg" />
               )}
             </div>
 
             <div className="flex items-center justify-between mt-3">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => onAnswerVote(bestAnswer.answerId, 'useful')}
-                  className="flex items-center gap-1 text-neutral-500 hover:text-green-600 transition-colors"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                  <span className="text-sm">{bestAnswer.usefulVote}</span>
-                </button>
-
-                <button
-                  onClick={() => onAnswerVote(bestAnswer.answerId, 'unuseful')}
-                  className="flex items-center gap-1 text-neutral-500 hover:text-red-600 transition-colors"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    style={{ transform: 'rotate(180deg)' }}
-                  >
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                  <span className="text-sm">{bestAnswer.unusefulVote}</span>
-                </button>
+                {/* Bỏ vote cho answer vì không có answers riêng */}
               </div>
 
               <span className="text-xs text-neutral-500">
-                {formatDate(bestAnswer.createdAt)}
+                {formatDate(question.createdAt)}
               </span>
             </div>
 

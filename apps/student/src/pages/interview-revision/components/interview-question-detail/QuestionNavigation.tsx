@@ -1,9 +1,9 @@
 import React from 'react';
 
 interface QuestionNavigationProps {
-  currentQuestionId: string;
-  allQuestions: Array<{ questionId: string; questionContent: string }>;
-  onQuestionClick: (questionId: string) => void;
+  currentQuestionId: number;
+  allQuestions: Array<{ id: number; questionContent: string }>;
+  onQuestionClick: (questionId: number) => void;
 }
 
 export const QuestionNavigation: React.FC<QuestionNavigationProps> = ({
@@ -13,7 +13,7 @@ export const QuestionNavigation: React.FC<QuestionNavigationProps> = ({
 }) => {
   // Tìm index của câu hỏi hiện tại
   const currentIndex = allQuestions.findIndex(
-    (q) => q.questionId === currentQuestionId
+    (q) => q.id === currentQuestionId
   );
 
   // Tìm câu hỏi trước và sau
@@ -31,7 +31,7 @@ export const QuestionNavigation: React.FC<QuestionNavigationProps> = ({
         <div className="flex-1">
           {previousQuestion ? (
             <button
-              onClick={() => onQuestionClick(previousQuestion.questionId)}
+              onClick={() => onQuestionClick(previousQuestion.id)}
               className="w-full text-left p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-light transition-all duration-200 group"
             >
               <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export const QuestionNavigation: React.FC<QuestionNavigationProps> = ({
         <div className="flex-1">
           {nextQuestion ? (
             <button
-              onClick={() => onQuestionClick(nextQuestion.questionId)}
+              onClick={() => onQuestionClick(nextQuestion.id)}
               className="w-full text-right p-4 rounded-lg border border-neutral-200 hover:border-primary hover:bg-primary-light transition-all duration-200 group"
             >
               <div className="flex items-center gap-3">

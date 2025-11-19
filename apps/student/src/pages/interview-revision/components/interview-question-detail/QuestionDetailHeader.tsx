@@ -11,7 +11,7 @@ interface QuestionDetailHeaderProps {
   field?: Field;
   topic?: Topic;
   level?: Level;
-  onVote: (questionId: string, vote: 'useful' | 'unuseful') => void;
+  onVote: (questionId: number, vote: 'useful' | 'unuseful') => void;
   onBack: () => void;
 }
 
@@ -23,7 +23,7 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
   onVote,
   onBack,
 }) => {
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string) => {
     return new Intl.DateTimeFormat('vi-VN', {
       day: '2-digit',
       month: '2-digit',
@@ -127,7 +127,7 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
         {/* Vote Section */}
         <div className="flex flex-col items-center gap-2 min-w-[80px]">
           <button
-            onClick={() => onVote(question.questionId, 'useful')}
+            onClick={() => onVote(question.id, 'useful')}
             className="p-2 rounded-lg hover:bg-green-50 text-neutral-400 hover:text-green-600 transition-colors"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -141,7 +141,7 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
             <div className="text-xs text-neutral-500">điểm hữu ích</div>
           </div>
           <button
-            onClick={() => onVote(question.questionId, 'unuseful')}
+            onClick={() => onVote(question.id, 'unuseful')}
             className="p-2 rounded-lg hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
           >
             <svg
