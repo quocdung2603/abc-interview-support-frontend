@@ -3,7 +3,7 @@ import {
   Exam,
   ExamRegistration,
   Result,
-} from '../../../../../../libs/types/src/lib/exam-types';
+} from '@abc-interview-support-frontend/types';
 
 interface ExamManagementProps {
   completedExams: (Exam & { result: Result })[];

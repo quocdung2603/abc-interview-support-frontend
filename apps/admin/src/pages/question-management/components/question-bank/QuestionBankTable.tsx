@@ -28,17 +28,17 @@ const QuestionBankTable: React.FC<TableProps> = ({
   levels,
   questionTypes,
 }) => {
-  const getFieldName = (fieldId: string) => {
+  const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
-  const getTopicName = (topicId: string) => {
+  const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
-  const getLevelName = (levelId: string) => {
+  const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
@@ -93,7 +93,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
       dataIndex: 'fieldId',
       key: 'fieldId',
       render: (fieldId: number) => (
-        <Tag color="blue" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getFieldName(fieldId.toString())}</Tag>
+        <Tag color="blue" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getFieldName(fieldId)}</Tag>
       ),
     },
     {
@@ -101,7 +101,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
       dataIndex: 'topicId',
       key: 'topicId',
       render: (topicId: number) => (
-        <Tag color="green" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getTopicName(topicId.toString())}</Tag>
+        <Tag color="green" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getTopicName(topicId)}</Tag>
       ),
     },
     {
@@ -109,7 +109,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
       dataIndex: 'levelId',
       key: 'levelId',
       render: (levelId: number) => (
-        <Tag color="orange" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getLevelName(levelId.toString())}</Tag>
+        <Tag color="orange" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getLevelName(levelId)}</Tag>
       ),
     },
     {

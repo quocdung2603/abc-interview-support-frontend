@@ -76,17 +76,17 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
       [field]: value,
     });
   };
-  const getFieldName = (fieldId: string) => {
+  const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
-  const getTopicName = (topicId: string) => {
+  const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
-  const getLevelName = (levelId: string) => {
+  const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
@@ -568,9 +568,9 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                 flexWrap: 'wrap',
               }}
             >
-              <Tag color="blue">{getFieldName(data.fieldId.toString())}</Tag>
-              <Tag color="green">{getTopicName(data.topicId.toString())}</Tag>
-              <Tag color="orange">{getLevelName(data.levelId.toString())}</Tag>
+              <Tag color="blue">{getFieldName(data.fieldId)}</Tag>
+              <Tag color="green">{getTopicName(data.topicId)}</Tag>
+              <Tag color="orange">{getLevelName(data.levelId)}</Tag>
               <Tag color={getStatusColor(data.status)}>
                 {getStatusText(data.status)}
               </Tag>

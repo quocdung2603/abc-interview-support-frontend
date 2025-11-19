@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EloHistory } from '../../../../../../../libs/types/src/lib/user-types';
+import { EloHistory } from '@abc-interview-support-frontend/types';
 
 interface EloHistoryProps {
   eloHistory: EloHistory[];

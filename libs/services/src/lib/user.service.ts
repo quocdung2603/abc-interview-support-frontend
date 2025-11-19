@@ -1,5 +1,6 @@
 import { AxiosInstance } from 'axios';
 import { createRequestInstance } from './request.config.js';
+import { User } from '@abc-interview-support-frontend/types';
 
 // Type-safe browser API access
 interface Storage {
@@ -28,10 +29,32 @@ export class UserService {
     }
   }
 
+  private getToken(): string | null {
+    // Check for tokens in order of priority: student, recruiter, admin
+    return (
+      sessionStorage?.getItem('student_accessToken') ||
+      sessionStorage?.getItem('recruiter_accessToken') ||
+      sessionStorage?.getItem('admin_accessToken') ||
+      null
+    );
+  }
+
   async getAllUsers() {
-    const token = sessionStorage?.getItem('admin_accessToken');
+    const admin_token = sessionStorage?.getItem('admin_accessToken');
     const response = await this.apiClient.get('/users', {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: admin_token ? { Authorization: `Bearer ${admin_token}` } : {},
+    });
+    return response.data;
+  }
+
+  async updateUser(userId: string, userData: User) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No access token found');
+    }
+    console.log('Updating user with data:', userData);
+    const response = await this.apiClient.put(`/users/${userId}`, userData, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   }

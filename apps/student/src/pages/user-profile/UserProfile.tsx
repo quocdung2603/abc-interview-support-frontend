@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // Import types
-import { User, EloHistory } from '../../../../../libs/types/src/lib/user-types';
+import { User, EloHistory } from '@abc-interview-support-frontend/types';
 
 // Import hooks
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
@@ -13,6 +13,7 @@ import CommunityTabs from './components/community/CommunityTabs';
 import CareerTabs from './components/career/CareerTabs';
 import TabNavigation from './components/TabNavigation';
 import ExamTabs from './components/exam/ExamTabs';
+import { userService } from '@abc-interview-support-frontend/services';
 
 const UserProfile: React.FC = () => {
   // Get authenticated user
@@ -317,8 +318,13 @@ const UserProfile: React.FC = () => {
   ]);
 
   // Handler functions
-  const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
+  const handleUpdateUser = async (updatedUser: User) => {
+    try {
+      const res = await userService.updateUser(user.userId, updatedUser);
+      setUser(res);
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
   };
 
   const handleUploadCV = (cvFile: File) => {
@@ -424,10 +430,10 @@ const UserProfile: React.FC = () => {
             newsItems={newsItems}
             discussions={discussions}
             questions={communityQuestions}
-            onBookmarkNews={() => {}}
-            onJoinDiscussion={() => {}}
-            onAnswerQuestion={() => {}}
-            onVoteQuestion={() => {}}
+            onBookmarkNews={() => { alert('Bookmark news feature coming soon!'); }}
+            onJoinDiscussion={() => { alert('Join discussion feature coming soon!'); }}
+            onAnswerQuestion={() => { alert('Answer question feature coming soon!'); }}
+            onVoteQuestion={() => { alert('Vote question feature coming soon!'); }}
           />
         );
 

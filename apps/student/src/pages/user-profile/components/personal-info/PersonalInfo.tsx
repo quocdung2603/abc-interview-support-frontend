@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User } from '../../../../../../../libs/types/src/lib/user-types';
+import { User } from '@abc-interview-support-frontend/types';
 
 interface PersonalInfoProps {
   user: User;

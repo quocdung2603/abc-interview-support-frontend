@@ -4,7 +4,7 @@ import {
   Field,
   Topic,
 } from '@abc-interview-support-frontend/types';
-import { CareerService } from '@abc-interview-support-frontend/services';
+import { careerService, questionService } from '@abc-interview-support-frontend/services';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import CareerCard from './CareerCard';
 import CreateCareerModal from './CreateCareerModal';
@@ -16,47 +16,10 @@ const CareerTabs: React.FC = () => {
   const [careerPreferences, setCareerPreferences] = useState<
     CareerPreference[]
   >([]);
-  const [fields] = useState<Field[]>([
-    {
-      fieldId: '1',
-      fieldName: 'Frontend Development',
-      description:
-        'Phát triển giao diện người dùng với HTML, CSS, JavaScript và các framework như React, Vue.js, Angular. Tập trung vào trải nghiệm người dùng (UX/UI).',
-    },
-    {
-      fieldId: '2',
-      fieldName: 'Backend Development',
-      description:
-        'Phát triển hệ thống backend, xử lý logic nghiệp vụ, database, API với các công nghệ như Node.js, Spring Boot, Django, .NET.',
-    },
-    {
-      fieldId: '3',
-      fieldName: 'Full Stack Development',
-      description:
-        'Kết hợp cả frontend và backend development. Có khả năng xây dựng ứng dụng web hoàn chỉnh từ giao diện đến server.',
-    },
-    {
-      fieldId: '4',
-      fieldName: 'Mobile Development',
-      description:
-        'Phát triển ứng dụng di động cho iOS, Android với React Native, Flutter, Swift, Kotlin. Tối ưu cho trải nghiệm mobile.',
-    },
-    {
-      fieldId: '5',
-      fieldName: 'DevOps',
-      description:
-        'Vận hành và triển khai ứng dụng. Quản lý CI/CD, container (Docker), orchestration (Kubernetes), cloud infrastructure (AWS, Azure, GCP).',
-    },
-  ]);
-  const [topics] = useState<Topic[]>([
-    { topicId: '1', fieldId: '1', topicName: 'React' },
-    { topicId: '2', fieldId: '1', topicName: 'Vue.js' },
-    { topicId: '3', fieldId: '2', topicName: 'Node.js' },
-    { topicId: '4', fieldId: '2', topicName: 'Spring Boot' },
-    { topicId: '5', fieldId: '4', topicName: 'React Native' },
-  ]);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [topicList, setTopicList] = useState<Topic[]>([]);
+  const [fieldList, setFieldList] = useState<Field[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -67,7 +30,38 @@ const CareerTabs: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState('');
   const [filteredTopics, setFilteredTopics] = useState<Topic[]>([]);
 
-  const careerService = new CareerService();
+  const getAllFields = async () => {
+    try {
+      const res = await questionService.getAllFields();
+      console.log('Fields:', res.content);
+      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
+        id: item.id,
+        fieldName: item.name || item.description || 'Unknown Field',
+        description: item.description || item.name || 'Unknown Field',
+      }));
+      setFieldList(mappedFields);
+    } catch (error) {
+      console.error('Error fetching fields:', error);
+      setFieldList([]);
+    }
+  };
+
+  const getAllTopics = async () => {
+    try {
+      const res = await questionService.getAllTopics();
+      console.log('Topics:', res.content);
+      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
+        id: item.id,
+        fieldId: item.fieldId,
+        topicName: item.name || item.description || 'Unknown Topic',
+        description: item.description || item.name || 'Unknown Topic',
+      }));
+      setTopicList(mappedTopics);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      setTopicList([]);
+    }
+  };
 
   // Helper function to handle different API response structures
   const parseCareerResponse = (response: any): CareerPreference[] => {
@@ -89,9 +83,6 @@ const CareerTabs: React.FC = () => {
     try {
       const response = await careerService.getCareerByUserId(
         Number(user.userId),
-        0,
-        100,
-        'createdAt,desc'
       );
       setCareerPreferences(parseCareerResponse(response));
     } catch (err) {
@@ -111,9 +102,14 @@ const CareerTabs: React.FC = () => {
 
   useEffect(() => {
     setFilteredTopics(
-      selectedFieldId ? topics.filter((t) => t.fieldId === selectedFieldId) : []
+      selectedFieldId ? topicList.filter((t) => t.fieldId === Number(selectedFieldId)) : []
     );
-  }, [selectedFieldId, topics]);
+  }, [selectedFieldId, topicList]);
+
+  useEffect(() => {
+    getAllFields();
+    getAllTopics();
+  }, []);
 
   const resetForm = () => {
     setSelectedFieldId('');
@@ -131,7 +127,7 @@ const CareerTabs: React.FC = () => {
   };
 
   const handleCreateCareer = async () => {
-    if (!user?.userId || !selectedFieldId) {
+    if (!user?.userId || selectedFieldId === undefined) {
       alert('⚠️ Vui lòng chọn lĩnh vực');
       return;
     }
@@ -156,8 +152,7 @@ const CareerTabs: React.FC = () => {
 
   const handleOpenEditModal = (career: CareerPreference) => {
     setSelectedCareer(career);
-    // Convert to string since backend returns number but form expects string
-    setSelectedFieldId(career.fieldId ? String(career.fieldId) : '');
+    setSelectedFieldId(String(career.fieldId));
     setSelectedTopicId(career.topicId ? String(career.topicId) : '');
     setShowEditModal(true);
   };
@@ -320,8 +315,8 @@ const CareerTabs: React.FC = () => {
               <CareerCard
                 key={career.id}
                 career={career}
-                fields={fields}
-                topics={topics}
+                fields={fieldList}
+                topics={topicList}
                 onViewDetail={handleOpenDetailModal}
                 onEdit={handleOpenEditModal}
                 onDelete={handleDeleteCareer}
@@ -334,7 +329,7 @@ const CareerTabs: React.FC = () => {
       {/* Modals */}
       <CreateCareerModal
         isOpen={showCreateModal}
-        fields={fields}
+        fields={fieldList}
         selectedFieldId={selectedFieldId}
         selectedTopicId={selectedTopicId}
         filteredTopics={filteredTopics}
@@ -347,7 +342,7 @@ const CareerTabs: React.FC = () => {
       <EditCareerModal
         isOpen={showEditModal}
         career={selectedCareer}
-        fields={fields}
+        fields={fieldList}
         selectedFieldId={selectedFieldId}
         selectedTopicId={selectedTopicId}
         filteredTopics={filteredTopics}
@@ -360,8 +355,8 @@ const CareerTabs: React.FC = () => {
       <DetailCareerModal
         isOpen={showDetailModal}
         career={selectedCareer}
-        fields={fields}
-        topics={topics}
+        fields={fieldList}
+        topics={topicList}
         onClose={handleCloseDetailModal}
       />
     </>

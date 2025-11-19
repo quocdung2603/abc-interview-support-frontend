@@ -5,6 +5,10 @@ import {
   Topic,
 } from '@abc-interview-support-frontend/types';
 
+import {
+  CalendarOutlined
+} from '@ant-design/icons';
+
 interface CareerCardProps {
   career: CareerPreference;
   fields: Field[];
@@ -26,14 +30,14 @@ const CareerCard: React.FC<CareerCardProps> = ({
     if (!fieldId) return 'N/A';
     // Convert to string for comparison since backend might return number
     const fieldIdStr = String(fieldId);
-    return fields.find((f) => f.fieldId === fieldIdStr)?.fieldName || 'N/A';
+    return fields.find((f) => String(f.id) === fieldIdStr)?.fieldName || 'N/A';
   };
 
   const getTopicName = (topicId?: string | number) => {
     if (!topicId) return 'Chưa chọn';
     // Convert to string for comparison since backend might return number
     const topicIdStr = String(topicId);
-    return topics.find((t) => t.topicId === topicIdStr)?.topicName || 'N/A';
+    return topics.find((t) => String(t.id) === topicIdStr)?.topicName || 'N/A';
   };
 
   return (
@@ -105,43 +109,31 @@ const CareerCard: React.FC<CareerCardProps> = ({
           gap: '0.25rem',
         }}
       >
-        <span>📅</span>
+        <CalendarOutlined  twoToneColor="#52c41a"/>
         <span>
           Tạo ngày: {new Date(career.createdAt).toLocaleDateString('vi-VN')}
         </span>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--spacing-xs)',
-          flexWrap: 'wrap',
-        }}
+      <div className='w-full flex flex-row justify-between gap-[var(--spacing-xs)]'
       >
         <button
-          className="btn-outline btn-sm"
+          className="btn-outline btn-sm w-1/3"
           onClick={() => onViewDetail(career)}
-          style={{ flex: 1, minWidth: '80px' }}
         >
-          👁️ Chi tiết
+          Xem
         </button>
         <button
-          className="btn-outline btn-sm"
+          className="btn-outline btn-sm w-1/3"
           onClick={() => onEdit(career)}
-          style={{ flex: 1, minWidth: '80px' }}
         >
-          ✏️ Sửa
+          Sửa
         </button>
         <button
-          className="btn-outline btn-sm"
+          className="btn-outline btn-sm w-1/3"
           onClick={() => onDelete(career.id)}
-          style={{
-            color: 'var(--color-danger)',
-            borderColor: 'var(--color-danger)',
-            minWidth: '60px',
-          }}
         >
-          🗑️
+          Xóa
         </button>
       </div>
     </div>

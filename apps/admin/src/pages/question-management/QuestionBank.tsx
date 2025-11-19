@@ -39,9 +39,9 @@ const QuestionBank = () => {
       const matchesSearch = item?.questionContent
         ?.toLowerCase()
         .includes(searchText.toLowerCase());
-      const matchesField = fieldFilter === 'all' || item?.fieldId.toString() === fieldFilter;
-      const matchesTopic = topicFilter === 'all' || item?.topicId.toString() === topicFilter;
-      const matchesLevel = levelFilter === 'all' || item?.levelId.toString() === levelFilter;
+      const matchesField = fieldFilter === 'all' || item?.fieldId === Number(fieldFilter);
+      const matchesTopic = topicFilter === 'all' || item?.topicId === Number(topicFilter);
+      const matchesLevel = levelFilter === 'all' || item?.levelId === Number(levelFilter);
 
       return matchesSearch && matchesField && matchesTopic && matchesLevel;
     });
@@ -71,8 +71,8 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllFields();
       console.log('Fields:', res.content);
-      const mappedFields = (res.content || []).map((item: {id: number, name?: string, description?: string}) => ({
-        id: item.id.toString(),
+      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
+        id: item.id,
         fieldName: item.name || item.description || 'Unknown Field',
         description: item.description || item.name || 'Unknown Field',
       }));
@@ -87,9 +87,9 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllTopics();
       console.log('Topics:', res.content);
-      const mappedTopics = (res.content || []).map((item: {id: number, name?: string, description?: string, fieldId: number}) => ({
-        id: item.id.toString(),
-        fieldId: item.fieldId.toString(),
+      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
+        id: item.id,
+        fieldId: item.fieldId,
         topicName: item.name || item.description || 'Unknown Topic',
         description: item.description || item.name || 'Unknown Topic',
       }));
@@ -98,15 +98,14 @@ const QuestionBank = () => {
       console.error('Error fetching topics:', error);
       setTopicData([]);
     }
-
   };
-  
+
   const getAllLevels = async () => {
     try {
       const res = await questionService.getAllLevels();
       console.log('Levels:', res.content);
-      const mappedLevels = (res.content || []).map((item: {id: number, name?: string, description?: string}) => ({
-        id: item.id.toString(),
+      const mappedLevels = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
+        id: item.id,
         levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
         description: item.description || item.name || 'Unknown Level',
       }));
@@ -121,8 +120,8 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllQuestionTypes();
       console.log('Question Types:', res.content);
-      const mappedTypes = (res.content || []).map((item: {id: string, description: string}) => ({
-        id: item.id,
+      const mappedTypes = (res.content || []).map((item: { id: string, description: string }) => ({
+        id: Number(item.id),
         questionTypeName: item.description,
         description: item.description,
       }));

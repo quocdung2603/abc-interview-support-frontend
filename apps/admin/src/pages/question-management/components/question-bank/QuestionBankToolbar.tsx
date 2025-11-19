@@ -36,7 +36,7 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
   levels,
 }) => {
   const filteredTopics = topics.filter(
-    (topic) => fieldFilter === 'all' || topic.fieldId === fieldFilter
+    (topic) => fieldFilter === 'all' || topic.fieldId === Number(fieldFilter)
   );
 
   return (

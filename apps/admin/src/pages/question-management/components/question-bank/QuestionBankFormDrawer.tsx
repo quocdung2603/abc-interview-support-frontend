@@ -49,8 +49,8 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
   questionTypes,
 }) => {
   const [form] = Form.useForm();
-  const [selectedField, setSelectedField] = useState<string>(
-    data?.fieldId.toString() || ''
+  const [selectedField, setSelectedField] = useState<number | undefined>(
+    data?.fieldId
   );
   const [newVariants, setNewVariants] = useState<QuestionVariant[]>([]);
 
@@ -60,13 +60,13 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
       if (data) {
         // Editing existing question
         form.setFieldsValue({
-          fieldId: data.fieldId.toString(),
-          topicId: data.topicId.toString(),
-          levelId: data.levelId.toString(),
+          fieldId: data.fieldId,
+          topicId: data.topicId,
+          levelId: data.levelId,
           questionTitle: data.questionContent,
           questionVariant: '', // API doesn't have this
         });
-        setSelectedField(data.fieldId.toString());
+        setSelectedField(data.fieldId);
       } else {
         // Creating new question
         form.resetFields();
@@ -78,7 +78,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
   }, [data, visible, form]);
 
   // Add new variant for a question type
-  const addNewVariant = (questionTypeId: string) => {
+  const addNewVariant = (questionTypeId: number) => {
     const questionType = questionTypes.find(
       (qt) => qt.id === questionTypeId
     );
@@ -138,13 +138,13 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 
     const newVariant: QuestionVariant = {
       questionVariantId: newVariantId,
-      questionTypeId: questionTypeId,
+      questionTypeId: String(questionTypeId),
       questionContent:
-        mockContents[Number.parseInt(questionTypeId) - 1] || mockContents[0],
+        mockContents[Number.parseInt(String(questionTypeId)) - 1] || mockContents[0],
       questionChoose:
-        mockChoices[Number.parseInt(questionTypeId) - 1] || mockChoices[0],
+        mockChoices[Number.parseInt(String(questionTypeId)) - 1] || mockChoices[0],
       questionAnswer:
-        mockAnswers[Number.parseInt(questionTypeId) - 1] || mockAnswers[0],
+        mockAnswers[Number.parseInt(String(questionTypeId)) - 1] || mockAnswers[0],
     };
 
     setNewVariants((prev) => [...prev, newVariant]);
@@ -154,7 +154,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
   };
 
   const filteredTopics = topics.filter(
-    (topic) => selectedField === '' || topic.fieldId === selectedField
+    (topic) => !selectedField || topic.fieldId === selectedField
   );
 
   // Generate QuestionVariant data from existing question
@@ -212,7 +212,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
     'Xử lý events',
   ];
 
-  const handleFieldChange = (value: string) => {
+  const handleFieldChange = (value: number) => {
     setSelectedField(value);
     form.setFieldsValue({ topicId: undefined }); // Reset topic when field changes
   };
@@ -233,7 +233,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 
   const handleClose = () => {
     form.resetFields();
-    setSelectedField('');
+    setSelectedField(undefined);
     setNewVariants([]);
     onClose();
   };
@@ -598,7 +598,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
               {questionTypes.map((questionType) => {
                 const newVariantsOfType = newVariants.filter(
                   (variant) =>
-                    variant.questionTypeId === questionType.questionTypeId
+                    variant.questionTypeId === String(questionType.id)
                 );
 
                 if (newVariantsOfType.length === 0) {

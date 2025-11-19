@@ -53,48 +53,72 @@ const QuestionApprovalCompareDrawer: React.FC<CompareDrawerProps> = ({
       // Giả lập tìm kiếm câu hỏi tương tự
       const mockSimilarQuestions: Question[] = [
         {
-          questionId: 'similar-1',
-          userId: 'user-1',
+          id: 1001,
+          userId: 1,
           topicId: currentQuestion.topicId,
           fieldId: currentQuestion.fieldId,
           levelId: currentQuestion.levelId,
-          status: 'Approved',
-          questionTitle:
+          questionTypeId: 1,
+          status: 'APPROVED',
+          questionContent:
             'React Hook useEffect được sử dụng để làm gì? (Phiên bản khác)',
           questionVariant: '1,2',
           similarityScore: 85,
           usefulVote: 25,
           unusefulVote: 3,
-          createdAt: new Date('2024-01-15'),
+          createdAt: '2024-01-15T00:00:00.000Z',
+          approvedAt: '2024-01-16T00:00:00.000Z',
+          approvedBy: 1,
+          fieldName: 'Frontend Development',
+          topicName: 'React.js',
+          levelName: 'Junior',
+          questionTypeName: 'SingleChoice',
+          questionAnswer: 'Mock answer',
         },
         {
-          questionId: 'similar-2',
-          userId: 'user-2',
+          id: 1002,
+          userId: 2,
           topicId: currentQuestion.topicId,
           fieldId: currentQuestion.fieldId,
           levelId: currentQuestion.levelId,
-          status: 'Approved',
-          questionTitle:
+          questionTypeId: 1,
+          status: 'APPROVED',
+          questionContent:
             'Cách sử dụng useEffect trong React functional component',
           questionVariant: '1,3,4',
           similarityScore: 72,
           usefulVote: 18,
           unusefulVote: 2,
-          createdAt: new Date('2024-02-20'),
+          createdAt: '2024-02-20T00:00:00.000Z',
+          approvedAt: '2024-02-21T00:00:00.000Z',
+          approvedBy: 1,
+          fieldName: 'Frontend Development',
+          topicName: 'React.js',
+          levelName: 'Junior',
+          questionTypeName: 'SingleChoice',
+          questionAnswer: 'Mock answer',
         },
         {
-          questionId: 'similar-3',
-          userId: 'user-3',
+          id: 1003,
+          userId: 3,
           topicId: currentQuestion.topicId,
           fieldId: currentQuestion.fieldId,
           levelId: currentQuestion.levelId,
-          status: 'Approved',
-          questionTitle: 'useEffect hook trong React - cách hoạt động',
+          questionTypeId: 1,
+          status: 'APPROVED',
+          questionContent: 'useEffect hook trong React - cách hoạt động',
           questionVariant: '1,2,5',
           similarityScore: 68,
           usefulVote: 12,
           unusefulVote: 1,
-          createdAt: new Date('2024-03-10'),
+          createdAt: '2024-03-10T00:00:00.000Z',
+          approvedAt: '2024-03-11T00:00:00.000Z',
+          approvedBy: 1,
+          fieldName: 'Frontend Development',
+          topicName: 'React.js',
+          levelName: 'Junior',
+          questionTypeName: 'SingleChoice',
+          questionAnswer: 'Mock answer',
         },
       ];
 
@@ -102,18 +126,18 @@ const QuestionApprovalCompareDrawer: React.FC<CompareDrawerProps> = ({
     }
   }, [currentQuestion, visible]);
 
-  const getFieldName = (fieldId: string) => {
-    const field = fields.find((f) => f.fieldId === fieldId);
+  const getFieldName = (fieldId: number) => {
+    const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
-  const getTopicName = (topicId: string) => {
-    const topic = topics.find((t) => t.topicId === topicId);
+  const getTopicName = (topicId: number) => {
+    const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
-  const getLevelName = (levelId: string) => {
-    const level = levels.find((l) => l.levelId === levelId);
+  const getLevelName = (levelId: number) => {
+    const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
 

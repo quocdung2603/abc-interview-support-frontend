@@ -26,7 +26,7 @@ const DetailCareerModal: React.FC<DetailCareerModalProps> = ({
     if (!fieldId) return 'Không xác định';
     // Convert to string for comparison since backend might return number
     const fieldIdStr = String(fieldId);
-    const field = fields.find((f) => f.fieldId === fieldIdStr);
+    const field = fields.find((f) => String(f.id) === fieldIdStr);
     return field ? field.fieldName : 'Không xác định';
   };
 
@@ -34,7 +34,7 @@ const DetailCareerModal: React.FC<DetailCareerModalProps> = ({
     if (!topicId) return 'Chưa chọn';
     // Convert to string for comparison since backend might return number
     const topicIdStr = String(topicId);
-    const topic = topics.find((t) => t.topicId === topicIdStr);
+    const topic = topics.find((t) => String(t.id) === topicIdStr);
     return topic ? topic.topicName : 'Không xác định';
   };
 
@@ -44,7 +44,7 @@ const DetailCareerModal: React.FC<DetailCareerModalProps> = ({
     if (!fieldId) return '';
     // Convert to string for comparison since backend might return number
     const fieldIdStr = String(fieldId);
-    const field = fields.find((f) => f.fieldId === fieldIdStr);
+    const field = fields.find((f) => String(f.id) === fieldIdStr);
     return field?.description || 'Không có mô tả';
   };
 

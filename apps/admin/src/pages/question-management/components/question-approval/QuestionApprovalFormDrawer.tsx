@@ -32,8 +32,8 @@ interface FormDrawerProps {
   topics: Topic[];
   levels: Level[];
   questionTypes: QuestionType[];
-  onApprove: (questionId: string, rejectReason?: string) => void;
-  onReject: (questionId: string, rejectReason: string) => void;
+  onApprove: (questionId: number, rejectReason?: string) => void;
+  onReject: (questionId: number, rejectReason: string) => void;
 }
 
 const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
@@ -51,17 +51,17 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
   const [rejectReason, setRejectReason] = useState('');
   const [compareDrawerVisible, setCompareDrawerVisible] = useState(false);
 
-  const getFieldName = (fieldId: string) => {
+  const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
     return field?.fieldName || 'N/A';
   };
 
-  const getTopicName = (topicId: string) => {
+  const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
     return topic?.topicName || 'N/A';
   };
 
-  const getLevelName = (levelId: string) => {
+  const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
     return level?.levelName || 'N/A';
   };
@@ -90,14 +90,14 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
     if (!data) return;
 
     if (decision === 'approve') {
-      onApprove(data.id.toString());
+      onApprove(data.id);
       message.success('Đã duyệt câu hỏi thành công!');
     } else if (decision === 'reject') {
       if (!rejectReason.trim()) {
         message.error('Vui lòng nhập lý do từ chối!');
         return;
       }
-      onReject(data.id.toString(), rejectReason);
+      onReject(data.id, rejectReason);
       message.success('Đã từ chối câu hỏi!');
     } else {
       message.error('Vui lòng chọn quyết định duyệt!');
@@ -189,19 +189,19 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
                 <div>
                   <Text strong>Lĩnh vực:</Text>{' '}
                   <span style={{ color: '#1890ff' }}>
-                    {getFieldName(data.fieldId.toString())}
+                    {getFieldName(data.fieldId)}
                   </span>
                 </div>
                 <div>
                   <Text strong>Chủ đề:</Text>{' '}
                   <span style={{ color: '#52c41a' }}>
-                    {getTopicName(data.topicId.toString())}
+                    {getTopicName(data.topicId)}
                   </span>
                 </div>
                 <div>
                   <Text strong>Mức độ:</Text>{' '}
                   <span style={{ color: '#faad14' }}>
-                    {getLevelName(data.levelId.toString())}
+                    {getLevelName(data.levelId)}
                   </span>
                 </div>
                 <div>

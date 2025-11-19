@@ -26,13 +26,13 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
     }[]
   >(
     userCareerPreferences.reduce((acc, pref) => {
-      const existingField = acc.find((item) => item.fieldId === pref.fieldId);
+      const existingField = acc.find((item) => item.fieldId === String(pref.fieldId));
       if (existingField && pref.topicId) {
-        existingField.topicIds.push(pref.topicId);
+        existingField.topicIds.push(String(pref.topicId));
       } else if (!existingField) {
         acc.push({
-          fieldId: pref.fieldId,
-          topicIds: pref.topicId ? [pref.topicId] : [],
+          fieldId: String(pref.fieldId),
+          topicIds: pref.topicId ? [String(pref.topicId)] : [],
         });
       }
       return acc;
@@ -89,19 +89,19 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
     selectedPreferences.forEach((fieldPref) => {
       if (fieldPref.topicIds.length === 0) {
         newPreferences.push({
-          careerPreferenceId: `${Date.now()}-${fieldPref.fieldId}`,
-          userId: userCareerPreferences[0]?.userId || 'current-user',
-          fieldId: fieldPref.fieldId,
-          createdAt: new Date(),
+          id: Date.now() + Math.random(),
+          userId: Number(userCareerPreferences[0]?.userId) || 0,
+          fieldId: Number(fieldPref.fieldId),
+          createdAt: new Date().toISOString(),
         });
       } else {
-        fieldPref.topicIds.forEach((topicId) => {
+        fieldPref.topicIds.forEach((topicId, index) => {
           newPreferences.push({
-            careerPreferenceId: `${Date.now()}-${fieldPref.fieldId}-${topicId}`,
-            userId: userCareerPreferences[0]?.userId || 'current-user',
-            fieldId: fieldPref.fieldId,
-            topicId,
-            createdAt: new Date(),
+            id: Date.now() + Math.random() + index,
+            userId: Number(userCareerPreferences[0]?.userId) || 0,
+            fieldId: Number(fieldPref.fieldId),
+            topicId: Number(topicId),
+            createdAt: new Date().toISOString(),
           });
         });
       }
@@ -113,13 +113,13 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
 
   const getTopicName = (topicId: string) => {
     return (
-      availableTopics.find((topic) => topic.topicId === topicId)?.topicName ||
+      availableTopics.find((topic) => String(topic.id) === topicId)?.topicName ||
       topicId
     );
   };
 
   const getTopicsForField = (fieldId: string) => {
-    return availableTopics.filter((topic) => topic.fieldId === fieldId);
+    return availableTopics.filter((topic) => topic.fieldId === Number(fieldId));
   };
 
   const getCompanySizeText = (size: string) => {
@@ -213,17 +213,17 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
             <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
               {availableFields.map((field) => {
                 const fieldSelected = selectedPreferences.some(
-                  (pref) => pref.fieldId === field.fieldId
+                  (pref) => pref.fieldId === String(field.id)
                 );
-                const fieldTopics = getTopicsForField(field.fieldId);
+                const fieldTopics = getTopicsForField(String(field.id));
                 const selectedTopics =
                   selectedPreferences.find(
-                    (pref) => pref.fieldId === field.fieldId
+                    (pref) => pref.fieldId === String(field.id)
                   )?.topicIds || [];
 
                 return (
                   <div
-                    key={field.fieldId}
+                    key={field.id}
                     className="card-interactive"
                     style={{ padding: 'var(--spacing-md)' }}
                   >
@@ -238,7 +238,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                       <input
                         type="checkbox"
                         checked={fieldSelected}
-                        onChange={() => handleFieldToggle(field.fieldId)}
+                        onChange={() => handleFieldToggle(String(field.id))}
                         style={{ width: '1.2rem', height: '1.2rem' }}
                       />
                       <div>
@@ -289,7 +289,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                         >
                           {fieldTopics.map((topic) => (
                             <label
-                              key={topic.topicId}
+                              key={topic.id}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -299,11 +299,11 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                             >
                               <input
                                 type="checkbox"
-                                checked={selectedTopics.includes(topic.topicId)}
+                                checked={selectedTopics.includes(String(topic.id))}
                                 onChange={() =>
                                   handleTopicToggle(
-                                    field.fieldId,
-                                    topic.topicId
+                                    String(field.id),
+                                    String(topic.id)
                                   )
                                 }
                               />
@@ -353,12 +353,12 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   {availableFields
                     .filter((field) =>
                       userCareerPreferences.some(
-                        (pref) => pref.fieldId === field.fieldId
+                        (pref) => pref.fieldId === field.id
                       )
                     )
                     .map((field) => {
                       const fieldPreferences = userCareerPreferences.filter(
-                        (pref) => pref.fieldId === field.fieldId
+                        (pref) => pref.fieldId === field.id
                       );
                       const hasTopicPreferences = fieldPreferences.some(
                         (pref) => pref.topicId
@@ -366,7 +366,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
 
                       return (
                         <div
-                          key={field.fieldId}
+                          key={field.id}
                           className="card-interactive"
                           style={{ padding: 'var(--spacing-md)' }}
                         >
@@ -394,10 +394,10 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                                 .filter((pref) => pref.topicId)
                                 .map((pref) => (
                                   <span
-                                    key={pref.careerPreferenceId}
+                                    key={pref.id}
                                     className="badge-secondary"
                                   >
-                                    {pref.topicId && getTopicName(pref.topicId)}
+                                    {pref.topicId && getTopicName(String(pref.topicId))}
                                   </span>
                                 ))}
                             </div>

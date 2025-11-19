@@ -123,7 +123,7 @@ const CreateCareerModal: React.FC<CreateCareerModalProps> = ({
           >
             <option value="">-- Chọn lĩnh vực --</option>
             {fields.map((field) => (
-              <option key={field.fieldId} value={field.fieldId}>
+              <option key={field.id} value={field.id}>
                 {field.fieldName}
               </option>
             ))}
@@ -159,7 +159,7 @@ const CreateCareerModal: React.FC<CreateCareerModalProps> = ({
           >
             <option value="">-- Chọn chủ đề --</option>
             {filteredTopics.map((topic) => (
-              <option key={topic.topicId} value={topic.topicId}>
+              <option key={topic.id} value={topic.id}>
                 {topic.topicName}
               </option>
             ))}

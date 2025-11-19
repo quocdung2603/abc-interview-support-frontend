@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   User,
   EloHistory,
-} from '../../../../../../../libs/types/src/lib/user-types';
+} from '@abc-interview-support-frontend/types';
 import PersonalInfo from './PersonalInfo';
 import EloRankInfo from './EloRankInfo';
 import EloHistoryTable from './EloHistoryTable';

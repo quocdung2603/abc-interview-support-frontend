@@ -24,15 +24,8 @@ export class CareerService {
     return res.data;
   }
 
-  async getCareerByUserId(
-    userId: number,
-    page: number,
-    size: number,
-    sort: string
-  ) {
-    const res = await this.apiClient.get(`/career/preferences/${userId}`, {
-      params: { page, size, sort },
-    });
+  async getCareerByUserId(userId: number) {
+    const res = await this.apiClient.get(`/career/preferences/${userId}`);
     return res.data;
   }
 
