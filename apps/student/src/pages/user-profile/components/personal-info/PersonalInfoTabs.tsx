@@ -7,6 +7,7 @@ import PersonalInfo from './PersonalInfo';
 import EloRankInfo from './EloRankInfo';
 import EloHistoryTable from './EloHistoryTable';
 import TabNavigation from '../TabNavigation';
+import RecruiterRegistration from './RecruiterRegistration';
 
 interface PersonalInfoTabsProps {
   user: User;
@@ -36,6 +37,12 @@ const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
       description: 'Thông tin ELO và lịch sử cộng điểm',
       badge: eloHistory.length || undefined,
     },
+    {
+      id: 'recruiter',
+      label: 'Đăng ký nhà tuyển dụng',
+      icon: '',
+      description: 'Đăng ký nếu bạn là nhà tuyển dụng từ doanh nghiệp',
+    },
   ];
 
   const renderSubTabContent = () => {
@@ -50,6 +57,10 @@ const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
             <EloRankInfo user={user} />
             <EloHistoryTable eloHistory={eloHistory as any} />
           </div>
+        );  
+      case 'recruiter':
+        return (
+          <RecruiterRegistration /> 
         );
       default:
         return null;

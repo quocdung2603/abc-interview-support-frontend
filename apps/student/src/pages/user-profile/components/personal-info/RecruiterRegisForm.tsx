@@ -1,22 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Steps,
-  Form,
-  Input,
-  Upload,
-  Button,
-  Checkbox,
-  message,
-  Tooltip,
-  Progress,
-} from 'antd';
-import {
-  InboxOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { Form, Input, Modal, Steps, Button, Checkbox, message, Progress, Upload } from 'antd';
+import { UserOutlined, MailOutlined, GlobalOutlined, IdcardOutlined, FormOutlined, InboxOutlined, CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 
 const { Step } = Steps;
@@ -36,10 +20,20 @@ interface DocumentStatus {
   name: string;
   status: 'not_submitted' | 'pending' | 'approved' | 'rejected';
   feedback?: string;
-  uploadedFile?: any;
+  uploadedFile?: File;
 }
 
-const VerificationPage: React.FC = () => {
+interface RecruiterRegisFormProps {
+  visible: boolean;
+  onCancel: () => void;
+  onSubmit: (values: CompanyInfo) => void;
+}
+
+const RecruiterRegisForm: React.FC<RecruiterRegisFormProps> = ({
+  visible,
+  onCancel,
+  onSubmit,
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [companyForm] = Form.useForm<CompanyInfo>();
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
@@ -59,15 +53,9 @@ const VerificationPage: React.FC = () => {
     {
       id: 'business_license',
       name: 'Giấy phép kinh doanh',
-      status: 'approved',
+      status: 'not_submitted',
     },
-    { id: 'tax_cert', name: 'Hồ sơ thuế', status: 'pending' },
-    {
-      id: 'digital_signature',
-      name: 'Chữ ký số',
-      status: 'rejected',
-      feedback: 'Chữ ký số đã hết hạn, vui lòng cập nhật phiên bản mới',
-    },
+    { id: 'tax_cert', name: 'Hồ sơ thuế', status: 'not_submitted' },
   ]);
 
   const [hrDocs, setHrDocs] = useState<DocumentStatus[]>([
@@ -77,11 +65,6 @@ const VerificationPage: React.FC = () => {
       status: 'not_submitted',
     },
     { id: 'employee_card', name: 'Thẻ nhân viên', status: 'not_submitted' },
-    {
-      id: 'employee_confirmation',
-      name: 'Giấy xác nhận nhân viên',
-      status: 'approved',
-    },
   ]);
 
   const getStatusIcon = (status: DocumentStatus['status']) => {
@@ -99,9 +82,7 @@ const VerificationPage: React.FC = () => {
           <ExclamationCircleOutlined style={{ color: 'var(--color-danger)' }} />
         );
       default:
-        return (
-          <InfoCircleOutlined style={{ color: 'var(--color-neutral-400)' }} />
-        );
+        return null;
     }
   };
 
@@ -156,8 +137,45 @@ const VerificationPage: React.FC = () => {
     },
   };
 
+  const handleSubmit = async () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    try {
+      const values = await companyForm.validateFields();
+      onSubmit(values);
+      // Reset form
+      companyForm.resetFields();
+      setCurrentStep(0);
+      setCompanyInfo({
+        companyName: '',
+        taxId: '',
+        address: '',
+        website: '',
+        contactEmail: '',
+      });
+    } catch (error) {
+      console.error('Validation failed:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    companyForm.resetFields();
+    setCurrentStep(0);
+    setCompanyInfo({
+      companyName: '',
+      taxId: '',
+      address: '',
+      website: '',
+      contactEmail: '',
+    });
+    onCancel();
+  };
+
   const renderCompanyInfoStep = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-xl)' }}>
+    <div style={{ padding: 'var(--spacing-lg) 0' }}>
       <div
         className="text-heading-3"
         style={{
@@ -165,7 +183,7 @@ const VerificationPage: React.FC = () => {
           color: 'var(--color-primary)',
         }}
       >
-        📋 Thông tin doanh nghiệp
+        Thông tin doanh nghiệp
       </div>
 
       <Form
@@ -173,6 +191,7 @@ const VerificationPage: React.FC = () => {
         layout="vertical"
         initialValues={companyInfo}
         onValuesChange={(_, values) => setCompanyInfo(values)}
+        size="large"
       >
         <div className="content-grid">
           <Form.Item
@@ -181,6 +200,7 @@ const VerificationPage: React.FC = () => {
             rules={[{ required: true, message: 'Vui lòng nhập tên công ty' }]}
           >
             <Input
+              prefix={<UserOutlined style={{ color: 'var(--color-neutral-400)' }} />}
               placeholder="Nhập tên công ty đầy đủ"
               className="input-field"
             />
@@ -191,7 +211,11 @@ const VerificationPage: React.FC = () => {
             label="Mã số thuế"
             rules={[{ required: true, message: 'Vui lòng nhập mã số thuế' }]}
           >
-            <Input placeholder="Nhập mã số thuế" className="input-field" />
+            <Input
+              prefix={<IdcardOutlined style={{ color: 'var(--color-neutral-400)' }} />}
+              placeholder="Nhập mã số thuế"
+              className="input-field"
+            />
           </Form.Item>
         </div>
 
@@ -213,7 +237,11 @@ const VerificationPage: React.FC = () => {
             label="Website"
             rules={[{ type: 'url', message: 'Vui lòng nhập URL hợp lệ' }]}
           >
-            <Input placeholder="https://company.com" className="input-field" />
+            <Input
+              prefix={<GlobalOutlined style={{ color: 'var(--color-neutral-400)' }} />}
+              placeholder="https://company.com"
+              className="input-field"
+            />
           </Form.Item>
 
           <Form.Item
@@ -224,7 +252,11 @@ const VerificationPage: React.FC = () => {
               { type: 'email', message: 'Vui lòng nhập email hợp lệ' },
             ]}
           >
-            <Input placeholder="contact@company.com" className="input-field" />
+            <Input
+              prefix={<MailOutlined style={{ color: 'var(--color-neutral-400)' }} />}
+              placeholder="contact@company.com"
+              className="input-field"
+            />
           </Form.Item>
         </div>
       </Form>
@@ -233,11 +265,10 @@ const VerificationPage: React.FC = () => {
 
   const renderDocumentSection = (
     title: string,
-    icon: string,
     docs: DocumentStatus[],
     setDocs: React.Dispatch<React.SetStateAction<DocumentStatus[]>>
   ) => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-xl)' }}>
+    <div style={{ padding: 'var(--spacing-lg) 0' }}>
       <div
         className="text-heading-3"
         style={{
@@ -245,69 +276,85 @@ const VerificationPage: React.FC = () => {
           color: 'var(--color-primary)',
         }}
       >
-        {icon} {title}
+        {title}
       </div>
 
       <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
         {docs.map((doc) => (
           <div
             key={doc.id}
-            className="card-interactive"
-            style={{ padding: 'var(--spacing-md)' }}
+            style={{
+              border: '1px solid var(--color-neutral-200)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--color-neutral-50)',
+              overflow: 'hidden',
+            }}
           >
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 'var(--spacing-sm)',
+                padding: 'var(--spacing-md)',
+                borderBottom: doc.feedback ? '1px solid var(--color-neutral-200)' : 'none',
               }}
             >
               <div
                 style={{
                   display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  gap: 'var(--spacing-sm)',
-                }}
-              >
-                {getStatusIcon(doc.status)}
-                <span className="text-body" style={{ fontWeight: 500 }}>
-                  {doc.name}
-                </span>
-              </div>
-              <div
-                className="badge-neutral"
-                style={{
-                  background: getStatusColor(doc.status),
-                  color: 'white',
-                }}
-              >
-                {getStatusText(doc.status)}
-              </div>
-            </div>
-
-            {doc.feedback && (
-              <div
-                style={{
-                  background: 'var(--color-accent-10)',
-                  padding: 'var(--spacing-sm)',
-                  borderRadius: 'var(--radius-md)',
                   marginBottom: 'var(--spacing-sm)',
                 }}
               >
-                <span
-                  className="text-caption"
-                  style={{ color: 'var(--color-danger)' }}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-sm)',
+                  }}
                 >
-                  💬 {doc.feedback}
-                </span>
+                  {getStatusIcon(doc.status)}
+                  <span className="text-body" style={{ fontWeight: 500 }}>
+                    {doc.name}
+                  </span>
+                </div>
+                <div
+                  className="badge-neutral"
+                  style={{
+                    background: getStatusColor(doc.status),
+                    color: 'white',
+                  }}
+                >
+                  {getStatusText(doc.status)}
+                </div>
               </div>
-            )}
 
-            {doc.status !== 'approved' && (
+              {doc.feedback && (
+                <div
+                  style={{
+                    background: 'var(--color-accent-10)',
+                    padding: 'var(--spacing-sm)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 'var(--spacing-sm)',
+                  }}
+                >
+                  <span
+                    className="text-caption"
+                    style={{ color: 'var(--color-danger)' }}
+                  >
+                    {doc.feedback}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div style={{ padding: '0 var(--spacing-md) var(--spacing-md)' }}>
               <Dragger
                 {...uploadProps}
-                style={{ marginTop: 'var(--spacing-sm)' }}
+                style={{
+                  border: '2px dashed var(--color-neutral-300)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-neutral-50)',
+                  minHeight: '120px',
+                }}
               >
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
@@ -319,38 +366,22 @@ const VerificationPage: React.FC = () => {
                   Chỉ chấp nhận file PDF, dung lượng tối đa 5MB
                 </p>
               </Dragger>
-            )}
+            </div>
           </div>
         ))}
-      </div>
-
-      <div
-        className="stats-card"
-        style={{
-          marginTop: 'var(--spacing-lg)',
-          background: 'var(--color-accent-10)',
-        }}
-      >
-        <div className="text-body-small">
-          📖 <strong>Hướng dẫn:</strong> Tải xuống mẫu tài liệu tại{' '}
-          <a href="#" style={{ color: 'var(--color-accent)' }}>
-            đây
-          </a>
-          . Đảm bảo file ở định dạng PDF và dung lượng dưới 5MB.
-        </div>
       </div>
     </div>
   );
 
   const renderConfirmationStep = () => {
     const totalDocs = legalDocs.length + hrDocs.length;
-    const approvedDocs = [...legalDocs, ...hrDocs].filter(
-      (doc) => doc.status === 'approved'
+    const submittedDocs = [...legalDocs, ...hrDocs].filter(
+      (doc) => doc.status !== 'not_submitted'
     ).length;
-    const completionRate = Math.round((approvedDocs / totalDocs) * 100);
+    const completionRate = Math.round((submittedDocs / totalDocs) * 100);
 
     return (
-      <div className="card-elevated" style={{ padding: 'var(--spacing-xl)' }}>
+      <div style={{ padding: 'var(--spacing-lg) 0' }}>
         <div
           className="text-heading-3"
           style={{
@@ -358,7 +389,7 @@ const VerificationPage: React.FC = () => {
             color: 'var(--color-primary)',
           }}
         >
-          ✅ Xác nhận & Gửi duyệt
+          Xác nhận & Gửi đăng ký
         </div>
 
         <div
@@ -386,7 +417,7 @@ const VerificationPage: React.FC = () => {
               color: 'var(--color-neutral-500)',
             }}
           >
-            {approvedDocs}/{totalDocs} tài liệu đã được duyệt
+            {submittedDocs}/{totalDocs} tài liệu đã tải lên
           </div>
         </div>
 
@@ -397,56 +428,17 @@ const VerificationPage: React.FC = () => {
           </Checkbox>
           <Checkbox style={{ marginBottom: 'var(--spacing-sm)' }}>
             Tôi đồng ý với{' '}
-            <a href="#" style={{ color: 'var(--color-accent)' }}>
+            <span style={{ color: 'var(--color-accent)', cursor: 'pointer', textDecoration: 'underline' }}>
               Điều khoản sử dụng
-            </a>{' '}
+            </span>{' '}
             và{' '}
-            <a href="#" style={{ color: 'var(--color-accent)' }}>
+            <span style={{ color: 'var(--color-accent)', cursor: 'pointer', textDecoration: 'underline' }}>
               Chính sách bảo mật
-            </a>
-            .
+            </span>.
           </Checkbox>
           <Checkbox>
-            Tôi cho phép hệ thống liên hệ qua email để cập nhật tiến độ xác
-            thực.
+            Tôi cho phép hệ thống liên hệ qua email để cập nhật tiến độ đăng ký.
           </Checkbox>
-        </div>
-
-        <div className="content-grid">
-          <div>
-            <Button
-              size="large"
-              style={{ width: '100%' }}
-              onClick={() => setCurrentStep(currentStep - 1)}
-            >
-              ← Quay lại
-            </Button>
-          </div>
-          <div>
-            <Tooltip
-              title={
-                completionRate < 100
-                  ? 'Cần hoàn thành đủ tài liệu trước khi gửi duyệt'
-                  : ''
-              }
-            >
-              <Button
-                type="primary"
-                size="large"
-                disabled={completionRate < 100}
-                style={{
-                  width: '100%',
-                  background:
-                    completionRate === 100 ? 'var(--color-success)' : undefined,
-                }}
-                onClick={() => {
-                  message.success('Hồ sơ đã được gửi duyệt thành công!');
-                }}
-              >
-                🚀 Gửi duyệt
-              </Button>
-            </Tooltip>
-          </div>
         </div>
       </div>
     );
@@ -461,7 +453,6 @@ const VerificationPage: React.FC = () => {
       title: 'Tài liệu pháp lý',
       content: renderDocumentSection(
         'Tài liệu pháp lý',
-        '📄',
         legalDocs,
         setLegalDocs
       ),
@@ -470,84 +461,100 @@ const VerificationPage: React.FC = () => {
       title: 'Tài liệu nhân sự',
       content: renderDocumentSection(
         'Tài liệu nhân sự',
-        '👥',
         hrDocs,
         setHrDocs
       ),
     },
     {
-      title: 'Xác nhận & Gửi duyệt',
+      title: 'Xác nhận',
       content: renderConfirmationStep(),
     },
   ];
 
-  return (
-    <div className="container-center animate-fade-in-up">
-      <div style={{ marginBottom: 'var(--spacing-xl)' }}>
-        <div
-          className="text-heading-2 text-gradient-primary"
-          style={{ marginBottom: 'var(--spacing-sm)' }}
+  const getModalFooter = () => {
+    if (currentStep === steps.length - 1) {
+      return [
+        <Button key="back" onClick={() => setCurrentStep(currentStep - 1)}>
+          Quay lại
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          onClick={handleSubmit}
+          style={{ backgroundColor: 'var(--color-accent)' }}
         >
-          🏢 Xác thực doanh nghiệp
-        </div>
-        <div className="text-body text-neutral-600">
-          Hoàn tất quy trình xác thực để sử dụng đầy đủ tính năng của hệ thống
-        </div>
-      </div>
+          Gửi đăng ký
+        </Button>,
+      ];
+    }
 
-      <div
-        className="card-elevated"
-        style={{
-          padding: 'var(--spacing-lg)',
-          marginBottom: 'var(--spacing-lg)',
-        }}
+    return [
+      <Button key="cancel" onClick={handleCancel}>
+        Hủy
+      </Button>,
+      currentStep > 0 && (
+        <Button key="back" onClick={() => setCurrentStep(currentStep - 1)}>
+          Quay lại
+        </Button>
+      ),
+      <Button
+        key="next"
+        type="primary"
+        onClick={handleSubmit}
+        style={{ backgroundColor: 'var(--color-accent)' }}
       >
-        <Steps current={currentStep} size="small">
-          {steps.map((item, index) => (
-            <Step
-              key={index}
-              title={item.title}
-              style={{
-                cursor: 'pointer',
-              }}
-              onClick={() => setCurrentStep(index)}
-            />
-          ))}
-        </Steps>
-      </div>
+        Tiếp theo
+      </Button>,
+    ].filter(Boolean);
+  };
 
-      <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-        {steps[currentStep].content}
-      </div>
-
-      {currentStep < steps.length - 1 && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 'var(--spacing-md)',
-          }}
-        >
-          {currentStep > 0 && (
-            <Button
-              size="large"
-              onClick={() => setCurrentStep(currentStep - 1)}
-            >
-              ← Quay lại
-            </Button>
-          )}
-          <Button
-            type="primary"
-            size="large"
-            onClick={() => setCurrentStep(currentStep + 1)}
-            style={{ minWidth: '120px' }}
-          >
-            Tiếp theo →
-          </Button>
+  return (
+    <Modal
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+          <FormOutlined style={{ fontSize: '1.25rem', color: 'var(--color-accent)' }} />
+          <span className="text-heading-2" style={{ color: 'var(--color-primary)' }}>
+            Đăng ký nhà tuyển dụng
+          </span>
         </div>
-      )}
-    </div>
+      }
+      open={visible}
+      onCancel={handleCancel}
+      footer={getModalFooter()}
+      width="95vw"
+      height="95vh"
+      centered
+      styles={{
+        body: {
+          height: 'calc(95vh - 110px)', // Trừ đi header và footer
+          overflow: 'auto',
+          padding: 0,
+        },
+      }}
+    >
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '100%'
+      }}>
+        <div style={{ marginBottom: 'var(--spacing-lg)', padding: '0 var(--spacing-xl)' }}>
+          <Steps current={currentStep} size="small">
+            {steps.map((item, index) => (
+              <Step
+                key={item.title}
+                title={item.title}
+              />
+            ))}
+          </Steps>
+        </div>
+
+        <div style={{ flex: 1, padding: '0 var(--spacing-xl) var(--spacing-xl)', overflow: 'auto' }}>
+          {steps[currentStep].content}
+        </div>
+      </div>
+    </Modal>
   );
 };
 
-export default VerificationPage;
+export default RecruiterRegisForm;
