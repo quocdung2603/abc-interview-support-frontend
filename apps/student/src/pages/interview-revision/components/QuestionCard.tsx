@@ -83,7 +83,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
             {/* Clickable Question Title */}
             <button
-              className="text-heading-4 text-neutral-900 mb-2 cursor-pointer hover:text-primary transition-colors text-left w-full"
+              className="text-heading-3 text-neutral-900 mb-2 cursor-pointer hover:text-primary transition-colors text-left w-full"
               onClick={handleQuestionClick}
             >
               #{question.id}: {question.questionContent}

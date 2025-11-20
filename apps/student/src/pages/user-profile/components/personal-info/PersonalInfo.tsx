@@ -71,7 +71,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
         }}
       >
         <h2
-          className="text-heading-2"
+          className="text-heading-1"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Thông tin cá nhân

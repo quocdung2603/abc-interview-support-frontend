@@ -121,7 +121,7 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
         }}
       >
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Tin tức tuyển dụng
@@ -256,7 +256,7 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
         }}
       >
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Cuộc thảo luận
@@ -399,7 +399,7 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
         }}
       >
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Câu hỏi phỏng vấn

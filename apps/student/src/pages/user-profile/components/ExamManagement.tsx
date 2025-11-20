@@ -601,7 +601,7 @@ const ExamManagement: React.FC<ExamManagementProps> = ({
       }}
     >
       <h2
-        className="text-heading-2"
+        className="text-heading-1"
         style={{
           color: 'var(--color-primary)',
           margin: '0 0 var(--spacing-md) 0',

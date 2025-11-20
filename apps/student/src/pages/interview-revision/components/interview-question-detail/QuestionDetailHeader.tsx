@@ -135,7 +135,7 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
             </svg>
           </button>
           <div className="text-center">
-            <div className="text-lg font-bold text-neutral-800">
+            <div className="text-sm font-bold text-neutral-800">
               {question.usefulVote - question.unusefulVote}
             </div>
             <div className="text-xs text-neutral-500">điểm hữu ích</div>

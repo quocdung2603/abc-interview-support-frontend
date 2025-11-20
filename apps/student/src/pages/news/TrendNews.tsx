@@ -177,10 +177,10 @@ export const TrendNews: React.FC = () => {
       {!loading && filteredAndSortedNews.length > 0 && (
         <div className="bg-gradient-accent py-12">
           <div className="container-center text-center">
-            <h2 className="text-heading-2 text-white mb-3">
+            <h2 className="text-heading-1 text-white mb-3">
               Muốn cập nhật xu hướng mới nhất?
             </h2>
-            <p className="text-heading-3 text-white-90 mb-6 max-w-2xl mx-auto">
+            <p className="text-heading-2 text-white-90 mb-6 max-w-2xl mx-auto">
               Đăng ký nhận thông báo để không bỏ lỡ những tin tức xu hướng quan
               trọng nhất
             </p>

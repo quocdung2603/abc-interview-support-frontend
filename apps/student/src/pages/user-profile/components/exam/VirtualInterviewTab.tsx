@@ -185,7 +185,7 @@ const VirtualInterviewTab: React.FC<Props> = ({
       >
         <span aria-hidden>🎥</span>
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ margin: 0, color: 'var(--color-neutral-800)' }}
         >
           Virtual Interview — {total} mục

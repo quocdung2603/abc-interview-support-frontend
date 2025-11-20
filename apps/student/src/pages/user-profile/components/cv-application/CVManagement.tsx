@@ -475,7 +475,7 @@ const CVManagement: React.FC<CVManagementProps> = ({
       }}
     >
       <h2
-        className="text-heading-2"
+        className="text-heading-1"
         style={{
           color: 'var(--color-primary)',
           margin: '0 0 var(--spacing-md) 0',

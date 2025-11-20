@@ -163,10 +163,10 @@ const MockInterview = () => {
         <div className="max-w-5xl mx-auto">
           {/* Page Header */}
           <div className="text-center mb-6 animate-fade-in-up">
-            <h1 className="text-3xl font-bold text-gradient-primary mb-3">
+            <h1 className="text-2xl font-bold text-gradient-primary mb-3">
               Phỏng Vấn Giả Lập
             </h1>
-            <p className="text-base text-neutral-600 max-w-xl mx-auto">
+            <p className="text-sm text-neutral-600 max-w-xl mx-auto">
               Tạo và thực hiện các bài kiểm tra phỏng vấn để chuẩn bị tốt nhất
               cho cuộc phỏng vấn thực tế của bạn
             </p>

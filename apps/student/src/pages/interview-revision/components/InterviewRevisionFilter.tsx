@@ -35,7 +35,7 @@ export const InterviewRevisionFilter: React.FC<
           <h2 className="text-heading-2 text-neutral-900 mb-2">
             Ôn tập phỏng vấn
           </h2>
-          <p className="text-body text-neutral-600">
+          <p className="text-caption text-neutral-600">
             Chọn lĩnh vực, chủ đề và cấp độ để bắt đầu ôn tập
           </p>
         </div>

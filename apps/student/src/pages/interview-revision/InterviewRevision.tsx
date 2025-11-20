@@ -195,7 +195,7 @@ const InterviewRevision: React.FC = () => {
           />
         ) : (
           <div className="text-center py-12">
-            <div className="text-neutral-500 text-lg mb-2">
+            <div className="text-neutral-500 text-sm mb-2">
               Chọn lĩnh vực, chủ đề hoặc cấp độ để xem câu hỏi ôn tập
             </div>
             <div className="text-neutral-400">

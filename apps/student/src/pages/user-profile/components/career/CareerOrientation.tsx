@@ -169,7 +169,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
         }}
       >
         <h2
-          className="text-heading-2"
+          className="text-heading-1"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Định hướng nghề nghiệp
@@ -200,7 +200,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
         {/* Career Fields & Topics */}
         <div>
           <h3
-            className="text-heading-3"
+            className="text-heading-2"
             style={{
               margin: '0 0 var(--spacing-md) 0',
               color: 'var(--color-neutral-800)',
@@ -414,7 +414,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
         {/* Career Goals */}
         <div>
           <h3
-            className="text-heading-3"
+            className="text-heading-2"
             style={{
               margin: '0 0 var(--spacing-md) 0',
               color: 'var(--color-neutral-800)',

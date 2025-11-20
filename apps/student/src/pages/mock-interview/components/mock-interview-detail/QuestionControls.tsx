@@ -38,7 +38,7 @@ const QuestionControls: React.FC<QuestionControlsProps> = ({
     warning:
       'bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md transform hover:-translate-y-0.5',
     success:
-      'bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 font-bold text-lg',
+      'bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 font-bold text-base',
     disabled:
       'bg-gray-300 text-gray-500 font-medium px-4 py-2 rounded-lg cursor-not-allowed',
   };
@@ -48,7 +48,7 @@ const QuestionControls: React.FC<QuestionControlsProps> = ({
       {/* Question info */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-base font-semibold text-gray-800">
             Câu hỏi {currentQuestionIndex + 1} / {totalQuestions}
           </h3>
           <div className="flex items-center space-x-2">

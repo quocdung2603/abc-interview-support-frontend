@@ -99,7 +99,7 @@ const CVApplicationTabs: React.FC<CVApplicationTabsProps> = ({
         }}
       >
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ color: 'var(--color-primary)', margin: 0 }}
         >
           Danh sách CV
@@ -262,7 +262,7 @@ const CVApplicationTabs: React.FC<CVApplicationTabsProps> = ({
   const renderApplications = () => (
     <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
       <h3
-        className="text-heading-3"
+        className="text-heading-2"
         style={{
           color: 'var(--color-primary)',
           margin: '0 0 var(--spacing-lg) 0',

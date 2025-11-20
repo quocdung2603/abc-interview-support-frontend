@@ -144,7 +144,7 @@ const EloRankInfo: React.FC<EloRankInfoProps> = ({ user }) => {
       }}
     >
       <h2
-        className="text-heading-2"
+        className="text-heading-1"
         style={{
           color: 'var(--color-primary)',
           margin: '0 0 var(--spacing-md) 0',
@@ -229,7 +229,7 @@ const EloRankInfo: React.FC<EloRankInfoProps> = ({ user }) => {
               }}
             >
               <span
-                className="text-heading-3"
+                className="text-heading-2"
                 style={{ color: 'var(--color-accent)' }}
               >
                 {eloScore} ELO
@@ -274,7 +274,7 @@ const EloRankInfo: React.FC<EloRankInfoProps> = ({ user }) => {
               style={{ textAlign: 'center', padding: 'var(--spacing-md)' }}
             >
               <div
-                className="text-heading-3"
+                className="text-heading-2"
                 style={{
                   color: 'var(--color-success)',
                   margin: '0 0 0.25rem 0',
@@ -297,7 +297,7 @@ const EloRankInfo: React.FC<EloRankInfoProps> = ({ user }) => {
               style={{ textAlign: 'center', padding: 'var(--spacing-md)' }}
             >
               <div
-                className="text-heading-3"
+                className="text-heading-2"
                 style={{
                   color: 'var(--color-warning)',
                   margin: '0 0 0.25rem 0',

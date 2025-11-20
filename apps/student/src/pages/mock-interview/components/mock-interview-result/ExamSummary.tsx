@@ -49,13 +49,13 @@ const ExamSummary: React.FC<ExamSummaryProps> = ({
     >
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h1
-          className="text-heading-2"
+          className="text-heading-1"
           style={{ marginBottom: '0.5rem', color: '#1e293b' }}
         >
           Kết quả bài kiểm tra
         </h1>
         <h2
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ color: '#64748b', fontWeight: '500' }}
         >
           {exam.title}

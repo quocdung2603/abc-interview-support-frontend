@@ -610,7 +610,7 @@ const MockInterviewDetail = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-800">{exam.title}</h1>
+              <h1 className="text-lg font-bold text-gray-800">{exam.title}</h1>
               <p className="text-sm text-gray-600">
                 {exam.position} • {questions.length} câu hỏi • {exam.duration}{' '}
                 phút

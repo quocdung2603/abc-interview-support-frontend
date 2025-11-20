@@ -191,7 +191,7 @@ const ScreeningExamTab: React.FC<Props> = ({
       >
         <span aria-hidden>🧪</span>
         <h3
-          className="text-heading-3"
+          className="text-heading-2"
           style={{ margin: 0, color: 'var(--color-neutral-800)' }}
         >
           Screening Exam (Recruiter) — {total} mục

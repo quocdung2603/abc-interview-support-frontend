@@ -72,11 +72,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
               }
             }}
           >
-            <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span>
+            <span style={{ fontSize: '1rem' }}>{tab.icon}</span>
             <div style={{ textAlign: 'left' }}>
               <div
                 style={{
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   lineHeight: '1.2',
                   display: 'flex',
                   alignItems: 'center',

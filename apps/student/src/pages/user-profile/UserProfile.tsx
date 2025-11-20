@@ -457,7 +457,7 @@ const UserProfile: React.FC = () => {
         {/* Header */}
         <div style={{ marginBottom: 'var(--spacing-lg)' }}>
           <h1
-            className="text-display"
+            className="text-heading-1"
             style={{
               margin: '0 0 var(--spacing-sm) 0',
               background:
@@ -473,7 +473,7 @@ const UserProfile: React.FC = () => {
             style={{
               margin: 0,
               color: 'var(--color-neutral-600)',
-              fontSize: '1.125rem',
+              fontSize: '1rem',
             }}
           >
             Quản lý thông tin cá nhân và theo dõi tiến trình học tập của bạn

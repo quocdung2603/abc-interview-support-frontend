@@ -230,8 +230,8 @@ export const InterviewQuestionDetail: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 text-neutral-400">:(</div>
-          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+          <div className="text-4xl mb-4 text-neutral-400">:(</div>
+          <h1 className="text-lg font-bold text-neutral-900 mb-2">
             Không tìm thấy câu hỏi
           </h1>
           <p className="text-neutral-600 mb-6">

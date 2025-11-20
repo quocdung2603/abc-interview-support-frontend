@@ -168,7 +168,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-            <h3 className="text-lg font-bold text-primary mb-4">
+            <h3 className="text-base font-bold text-primary mb-4">
               Xác Nhận Bắt Đầu Bài Kiểm Tra
             </h3>
 

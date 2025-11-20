@@ -37,7 +37,7 @@ const ExamList: React.FC<ExamListProps> = ({
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-lg text-primary font-semibold">{title}</h2>
+        <h2 className="text-base text-primary font-semibold">{title}</h2>
         <span className="badge-secondary text-sm">{exams.length}</span>
       </div>
 

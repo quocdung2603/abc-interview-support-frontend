@@ -518,7 +518,7 @@ const MockInterviewResult = () => {
 
         {/* Questions and Results */}
         <div className="card-elevated" style={{ padding: '2rem' }}>
-          <h3 className="text-heading-3" style={{ marginBottom: '1.5rem' }}>
+          <h3 className="text-heading-2" style={{ marginBottom: '1.5rem' }}>
             Chi tiết kết quả từng câu hỏi
           </h3>
 
