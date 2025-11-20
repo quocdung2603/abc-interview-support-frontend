@@ -26,7 +26,7 @@ export const TrendNewsList = ({
   if (loading) {
     return (
       <div className="animate-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {skeletonItems.map((skeletonId) => (
             <div key={skeletonId} className="card-elevated animate-pulse">
               <div className="p-6">
@@ -102,7 +102,7 @@ export const TrendNewsList = ({
 
       {/* Load More Button - Placeholder for future pagination */}
       {trendNewsOnly.length > 0 && (
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <button className="btn-outline">Xem thêm tin tức</button>
         </div>
       )}

@@ -113,7 +113,7 @@ export const RecruitmentNews: React.FC = () => {
 
   // Filter and sort news - CHỈ XỬ LÝ TIN TỨC TUYỂN DỤNG
   const filteredAndSortedNews = useMemo(() => {
-    let filtered = news.filter((newsItem) => {
+    const filtered = news.filter((newsItem) => {
       // CHỈ LẤY TIN TỨC CÓ NEWSTYPE LÀ 'RECRUITMENT'
       const isRecruitmentNews = newsItem.newsType === 'recruitment';
 
@@ -212,7 +212,7 @@ export const RecruitmentNews: React.FC = () => {
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to recruitment news detail page
-    navigate(`/student/recruitment-news-detail/${newsItem.newsId}`);
+    navigate(`/recruitment-news-detail/${newsItem.newsId}`);
   };
 
   return (
@@ -246,16 +246,16 @@ export const RecruitmentNews: React.FC = () => {
 
       {/* Call to Action Section */}
       {!loading && filteredAndSortedNews.length > 0 && (
-        <div className="bg-gradient-primary py-16">
+        <div className="bg-gradient-primary py-12">
           <div className="container-center text-center">
-            <h2 className="text-heading-2 text-white mb-4">
+            <h2 className="text-heading-2 text-white mb-3">
               Bạn là nhà tuyển dụng?
             </h2>
-            <p className="text-body-large text-white-90 mb-8 max-w-2xl mx-auto">
+            <p className="text-body-large text-white-90 mb-6 max-w-2xl mx-auto">
               Đăng tin tuyển dụng miễn phí và tiếp cận hàng nghìn ứng viên tiềm
               năng
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-3">
               <button className="btn-secondary">Đăng tin tuyển dụng</button>
               <button className="btn-outline bg-white text-primary border-white hover:bg-neutral-100">
                 Tìm hiểu thêm

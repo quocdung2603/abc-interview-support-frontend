@@ -41,13 +41,13 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   const allLevels = [{ levelId: 'all', levelName: 'Tất cả cấp độ' }, ...levels];
 
   return (
-    <div className="card-elevated p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="card-elevated p-4">
+      <h3 className="text-lg font-semibold text-gray-900 mb-3">
         Tìm kiếm & Lọc
       </h3>
 
       {/* Search */}
-      <div className="relative mb-6">
+      <div className="relative mb-4">
         <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <input
           type="text"
@@ -59,10 +59,10 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       </div>
 
       {/* Field Filter */}
-      <div className="mb-6">
+      <div className="mb-4">
         <label
           htmlFor="field-select"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Lĩnh vực
         </label>
@@ -84,7 +84,7 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       <div>
         <label
           htmlFor="level-select"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Cấp độ
         </label>

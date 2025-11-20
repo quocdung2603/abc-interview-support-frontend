@@ -109,7 +109,7 @@ export const TrendNews: React.FC = () => {
 
   // Filter and sort news - CHỈ XỬ LÝ TIN TỨC XU HƯỚNG
   const filteredAndSortedNews = useMemo(() => {
-    let filtered = news.filter((newsItem) => {
+    const filtered = news.filter((newsItem) => {
       // CHỈ LẤY TIN TỨC CÓ NEWSTYPE LÀ 'TREND'
       const isTrendNews = newsItem.newsType === 'trend';
 
@@ -145,7 +145,7 @@ export const TrendNews: React.FC = () => {
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to news detail page
-    navigate(`/student/trend-news-detail/${newsItem.newsId}`);
+    navigate(`/trend-news-detail/${newsItem.newsId}`);
   };
 
   return (
@@ -175,16 +175,16 @@ export const TrendNews: React.FC = () => {
 
       {/* Call to Action Section */}
       {!loading && filteredAndSortedNews.length > 0 && (
-        <div className="bg-gradient-accent py-16">
+        <div className="bg-gradient-accent py-12">
           <div className="container-center text-center">
-            <h2 className="text-heading-2 text-white mb-4">
+            <h2 className="text-heading-2 text-white mb-3">
               Muốn cập nhật xu hướng mới nhất?
             </h2>
-            <p className="text-heading-3 text-white-90 mb-8 max-w-2xl mx-auto">
+            <p className="text-heading-3 text-white-90 mb-6 max-w-2xl mx-auto">
               Đăng ký nhận thông báo để không bỏ lỡ những tin tức xu hướng quan
               trọng nhất
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Nhập email của bạn"

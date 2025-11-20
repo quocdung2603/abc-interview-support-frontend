@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Question, Answer, Exam } from '../../../../../libs/types/src/index';
+import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
 import ExamSummary from './components/mock-interview-result/ExamSummary';
 import QuestionResultItem from './components/mock-interview-result/QuestionResultItem';
 import AIReviewModal from './components/mock-interview-result/AIReviewModal';
@@ -349,7 +349,7 @@ const MockInterviewResult = () => {
   // Calculate results
   const calculateResults = () => {
     let correctAnswers = 0;
-    let totalQuestions = questions.length;
+    const totalQuestions = questions.length;
 
     questions.forEach((question) => {
       const userAnswer = userAnswers[question.questionId];
@@ -471,7 +471,7 @@ const MockInterviewResult = () => {
             Không tìm thấy kết quả bài kiểm tra
           </p>
           <button
-            onClick={() => navigate('/student/mock-interview')}
+            onClick={() => navigate('/mock-interview')}
             className="btn-primary"
           >
             Quay lại danh sách
@@ -491,7 +491,7 @@ const MockInterviewResult = () => {
           <div className="flex items-center justify-between">
             <div>
               <button
-                onClick={() => navigate('/student/mock-interview')}
+                onClick={() => navigate('/mock-interview')}
                 className="btn-outline btn-sm"
                 style={{ marginRight: '1rem' }}
               >

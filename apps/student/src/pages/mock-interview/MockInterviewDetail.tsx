@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Question, Answer, Exam } from '../../../../../libs/types/src/index';
+import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
 import SingleChoiceQuestion from './components/mock-interview-detail/SingleChoiceQuestion';
 import MultipleChoiceQuestion from './components/mock-interview-detail/MultipleChoiceQuestion';
 import FillInTheBlankQuestion from './components/mock-interview-detail/FillInTheBlankQuestion';
@@ -492,7 +492,6 @@ const MockInterviewDetail = () => {
         e.preventDefault();
         const message =
           'Bạn có chắc chắn muốn rời khỏi trang? Tiến trình làm bài sẽ bị mất.';
-        // eslint-disable-next-line deprecation/deprecation
         e.returnValue = message;
         return message;
       }
@@ -588,7 +587,7 @@ const MockInterviewDetail = () => {
         <div className="text-center">
           <p className="text-red-600">Không tìm thấy bài kiểm tra</p>
           <button
-            onClick={() => navigate('/student/mock-interview')}
+            onClick={() => navigate('/mock-interview')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Quay lại

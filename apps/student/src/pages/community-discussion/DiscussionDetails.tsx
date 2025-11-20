@@ -266,11 +266,11 @@ const DiscussionDetails: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Question and Answers */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4">
             {/* Question */}
             <DiscussionQuestion
               title={mockDiscussion.title}
@@ -285,7 +285,7 @@ const DiscussionDetails: React.FC = () => {
             />
           </div>
 
-          <div className="lg:col-span-1 space-y-5">
+          <div className="lg:col-span-1 space-y-3">
             <DiscussionTimer endDate={mockDiscussion.endDate} />
             <VoteRemaining remainingVotes={remainingVotes} maxVotes={3} />
           </div>
@@ -295,7 +295,7 @@ const DiscussionDetails: React.FC = () => {
         <div id="answers-section">
           {/* Show Best Answer Result if discussion ended */}
           {isDiscussionEnded && bestAnswer && (
-            <div className="mb-6">
+            <div className="mb-4">
               <BestAnswerResult
                 answer={{
                   ...bestAnswer,

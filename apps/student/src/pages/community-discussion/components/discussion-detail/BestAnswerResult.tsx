@@ -30,9 +30,9 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
   } = answer;
 
   return (
-    <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-xl p-6 shadow-lg">
+    <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-xl p-4 shadow-lg">
       {/* Header with Best Answer Badge */}
-      <div className="flex justify-center items-center gap-3 mb-4">
+      <div className="flex justify-center items-center gap-3 mb-3">
         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-2 rounded-full shadow-md">
           <TrophyOutlined className="text-lg" />
           <span className="font-bold text-sm">
@@ -41,7 +41,7 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
         </div>
       </div>
       {/* Best Answer Content */}
-      <div className="bg-white rounded-lg p-4 mb-4 border border-yellow-200">
+      <div className="bg-white rounded-lg p-3 mb-3 border border-yellow-200">
         <div className="prose prose-sm max-w-none">
           <div className="text-sm whitespace-pre-wrap text-gray-800 leading-relaxed">
             {content}
@@ -51,7 +51,7 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
 
       {/* Author and Stats */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <img
             src={authorAvatar}
             alt={author}
@@ -66,8 +66,8 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
         </div>
 
         {/* Score Display */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 text-sm text-gray-600">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               {upvotes} Hữu ích

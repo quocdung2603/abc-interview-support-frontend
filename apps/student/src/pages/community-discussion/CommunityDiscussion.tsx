@@ -266,7 +266,7 @@ const CommunityDiscussion: React.FC = () => {
 
   const handlePostClick = (postId: string) => {
     console.log('Navigate to post:', postId);
-    navigate(`/student/community-discussion-details/${postId}`);
+    navigate(`/community-discussion-details/${postId}`);
   };
 
   const handleLoadMore = () => {
@@ -285,10 +285,10 @@ const CommunityDiscussion: React.FC = () => {
       {/* Main Content */}
       <div className="section-padding">
         <div className="container-center">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
             {/* Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="sticky top-24 space-y-6">
+                <div className="sticky top-24 space-y-4">
                 {/* Search and Filters */}
                 <SearchAndFilters
                   searchQuery={searchQuery}
@@ -313,7 +313,7 @@ const CommunityDiscussion: React.FC = () => {
             {/* Posts List */}
             <div className="lg:col-span-3 order-1 lg:order-2">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-lg font-bold text-gray-900 mb-2">
                   Thảo luận gần đây
                 </h2>
                 <p className="text-gray-600">

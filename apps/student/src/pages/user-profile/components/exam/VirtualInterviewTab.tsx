@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ExamFilter from './ExamFilter';
 import { Exam } from '@abc-interview-support-frontend/types';
-import { truncate } from 'fs';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 interface Props {
   exams: Exam[]; // truyền toàn bộ danh sách
@@ -85,37 +85,52 @@ const VirtualInterviewTab: React.FC<Props> = ({
 }) => {
   // 1) Lọc Virtual
   const virtualExams = useMemo(
-    () => (exams || []).filter((e) => e.examType === 'Virtual'),
+    () => (exams || []).filter((e) => e.examType === 'VIRTUAL'),
     [exams]
   );
 
-  // 2) Options cho bộ lọc dùng lại
-  const allFields = useMemo(() => {
-    const s = new Set<string>();
-    virtualExams.forEach((e) => e.position && s.add(e.position));
-    return Array.from(s).sort();
-  }, [virtualExams]);
+  // 2) State cho options từ API
+  const [fieldOptions, setFieldOptions] = useState<string[]>([]);
+  const [topicOptions, setTopicOptions] = useState<string[]>([]);
 
-  const allTopics = useMemo(() => {
-    const s = new Set<string>();
-    virtualExams.forEach((e) =>
-      parseJsonArray(e.topics).forEach((t) => t && s.add(t))
-    );
-    return Array.from(s).sort();
-  }, [virtualExams]);
-
-  const allLevels = useMemo(() => {
-    const s = new Set<string>();
-    virtualExams.forEach((e: any) => {
-      if (e.level) s.add(String(e.level));
+  // Helper function to process API response
+  const processResponse = (res: unknown): string[] => {
+    if (!Array.isArray(res)) return [];
+    const descriptions = res.map((item: unknown) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object' && 'description' in item) {
+        return String((item as { description: unknown }).description);
+      }
+      return String(item);
     });
-    return Array.from(s).sort();
-  }, [virtualExams]);
+    // Remove duplicates
+    return [...new Set(descriptions)];
+  };
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        console.log('Fetching options from API...');
+        const [fieldsRes, topicsRes] = await Promise.all([
+          questionService.getAllFields(),
+          questionService.getAllTopics(),
+        ]);
+        
+        setFieldOptions(processResponse(fieldsRes.content));
+        setTopicOptions(processResponse(topicsRes.content));
+        
+        console.log('Options set successfully');
+      } catch (error) {
+        console.error('Failed to fetch options:', error);
+        // Fallback to empty arrays
+      }
+    };
+    fetchOptions();
+  }, []);
 
   // 3) State bộ lọc + phân trang
   const [field, setField] = useState<string>('');
   const [topic, setTopic] = useState<string>('');
-  const [level, setLevel] = useState<string>('');
   const [search, setSearch] = useState<string>('');
 
   const [page, setPage] = useState<number>(1); // 1-based
@@ -124,7 +139,6 @@ const VirtualInterviewTab: React.FC<Props> = ({
   const resetFilters = () => {
     setField('');
     setTopic('');
-    setLevel('');
     setSearch('');
     setPage(1);
   };
@@ -135,20 +149,19 @@ const VirtualInterviewTab: React.FC<Props> = ({
     return virtualExams.filter((e: any) => {
       if (field && e.position !== field) return false;
       if (topic) {
-        const topics = parseJsonArray(e.topics);
+        const topics = e.topics.map(String);
         if (!topics.includes(topic)) return false;
       }
-      if (level && String(e.level || '') !== level) return false;
 
       if (term) {
-        const hay = `${e.examId} ${e.title} ${e.position || ''} ${
+        const hay = `${e.id} ${e.title} ${e.position || ''} ${
           e.language || ''
         }`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
     });
-  }, [virtualExams, field, topic, level, search]);
+  }, [virtualExams, field, topic, search]);
 
   // 5) Phân trang
   const total = filtered.length;
@@ -185,19 +198,13 @@ const VirtualInterviewTab: React.FC<Props> = ({
           setField(v);
           setPage(1);
         }}
-        fieldOptions={allFields}
+        fieldOptions={fieldOptions}
         topic={topic}
         onTopicChange={(v) => {
           setTopic(v);
           setPage(1);
         }}
-        topicOptions={allTopics}
-        level={level}
-        onLevelChange={(v) => {
-          setLevel(v);
-          setPage(1);
-        }}
-        levelOptions={allLevels}
+        topicOptions={topicOptions}
         page={currentPage}
         pageSize={pageSize}
         total={total}
@@ -221,7 +228,6 @@ const VirtualInterviewTab: React.FC<Props> = ({
               {[
                 'Bài kiểm tra',
                 'Field',
-                'Level',
                 'Topic',
                 'Loại câu hỏi',
                 'Thời lượng',
@@ -252,13 +258,13 @@ const VirtualInterviewTab: React.FC<Props> = ({
           </thead>
           <tbody>
             {pageData.map((ex: any) => {
-              const topics = parseJsonArray(ex.topics);
-              const qTypes = parseJsonArray(ex.questionTypes);
+              const topics = ex.topics.map(String);
+              const qTypes = ex.questionTypes.map(String);
               const rt = runtimeStateOf(ex);
 
               return (
                 <tr
-                  key={ex.examId}
+                  key={ex.id}
                   style={{
                     borderBottom: '1px solid var(--color-neutral-200)',
                     transition: 'background-color 0.15s',
@@ -287,18 +293,11 @@ const VirtualInterviewTab: React.FC<Props> = ({
                         color: 'var(--color-neutral-500)',
                       }}
                     >
-                      ID: {ex.examId}
+                      ID: {ex.id}
                     </div>
                   </td>
                   <td style={{ padding: 'var(--spacing-sm)' }}>
                     {ex.position || (
-                      <span style={{ color: 'var(--color-neutral-400)' }}>
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td style={{ padding: 'var(--spacing-sm)' }}>
-                    {ex.level || (
                       <span style={{ color: 'var(--color-neutral-400)' }}>
                         —
                       </span>
@@ -310,8 +309,8 @@ const VirtualInterviewTab: React.FC<Props> = ({
                   >
                     {topics.length ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                        {topics.map((t, i) => (
-                          <span key={i} style={badgeBase}>
+                        {topics.map((t) => (
+                          <span key={t} style={badgeBase}>
                             {t}
                           </span>
                         ))}
@@ -328,8 +327,8 @@ const VirtualInterviewTab: React.FC<Props> = ({
                   >
                     {qTypes.length ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                        {qTypes.map((t, i) => (
-                          <span key={i} style={badgeBase}>
+                        {qTypes.map((t) => (
+                          <span key={t} style={badgeBase}>
                             {t}
                           </span>
                         ))}
@@ -411,21 +410,21 @@ const VirtualInterviewTab: React.FC<Props> = ({
                       {rt === 'ONGOING' ? (
                         <button
                           className="btn-primary btn-sm"
-                          onClick={() => onJoin?.(ex.examId)}
+                          onClick={() => onJoin?.(ex.id)}
                         >
                           Tham gia
                         </button>
                       ) : rt === 'DONE' ? (
                         <button
                           className="btn-accent btn-sm"
-                          onClick={() => onOpen?.(ex.examId)}
+                          onClick={() => onOpen?.(ex.id)}
                         >
                           Mở
                         </button>
                       ) : (
                         <button
                           className="btn-outline btn-sm"
-                          onClick={() => onDetails?.(ex.examId)}
+                          onClick={() => onDetails?.(ex.id)}
                         >
                           Chi tiết
                         </button>
@@ -438,7 +437,7 @@ const VirtualInterviewTab: React.FC<Props> = ({
             {pageData.length === 0 && (
               <tr>
                 <td
-                  colSpan={12}
+                  colSpan={7}
                   style={{
                     padding: 'var(--spacing-lg)',
                     textAlign: 'center',

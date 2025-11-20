@@ -24,16 +24,16 @@ const CommunityHero: React.FC<CommunityHeroProps> = ({
 
       <div className="relative container-center">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-display text-white mb-6 animate-fade-in-up">
+          <h1 className="text-display text-white mb-4 animate-fade-in-up">
             Câu hỏi <span className="text-accent">phỏng vấn</span>
           </h1>
           <p className="text-body-large text-white-90 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
             Tham gia trả lời các câu hỏi phỏng vấn được đặt ra bởi admin. Chia
-            sẻ kinh nghiệm, đánh giá câu trả lời và học hỏi từ cộng đồng.
+            Chia sẻ kinh nghiệm, đánh giá câu trả lời và học hỏi từ cộng đồng.
           </p>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-8 mb-8 animate-fade-in-up">
+          <div className="flex items-center justify-center gap-6 mb-6 animate-fade-in-up">
             <div className="stats-card-accent text-center">
               <div className="text-heading-2 text-white font-bold mb-2">
                 {totalQuestions}

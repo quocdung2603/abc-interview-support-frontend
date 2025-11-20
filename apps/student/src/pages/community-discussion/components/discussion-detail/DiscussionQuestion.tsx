@@ -32,10 +32,10 @@ const DiscussionQuestion: React.FC<DiscussionQuestionProps> = ({
   replies,
 }) => {
   return (
-    <div className="card-elevated p-6 mb-6">
+    <div className="card-elevated p-4 mb-6">
       {/* Header with author info */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="relative">
             <img
               src={authorAvatar}
@@ -60,19 +60,19 @@ const DiscussionQuestion: React.FC<DiscussionQuestionProps> = ({
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <span className="badge-primary">{field}</span>
           <span className="badge-secondary">{level}</span>
         </div>
       </div>
 
       {/* Question title */}
-      <h1 className="text-2xl md:text-xl font-bold text-gray-900 mb-4 leading-tight">
+      <h1 className="text-lg md:text-base font-bold text-gray-900 mb-3 leading-tight">
         {title}
       </h1>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-1 mb-4">
         {tags.map((tag) => (
           <span key={tag} className="badge-accent text-xs">
             #{tag}
@@ -81,13 +81,13 @@ const DiscussionQuestion: React.FC<DiscussionQuestionProps> = ({
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-gray-600">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 text-gray-600">
             <EyeOutlined />
             <span className="text-sm font-medium">{views} lượt xem</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-1 text-gray-600">
             <MessageOutlined />
             <span className="text-sm font-medium">{replies} câu trả lời</span>
           </div>

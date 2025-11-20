@@ -27,26 +27,26 @@ const VoteRemaining: React.FC<VoteRemainingProps> = ({
   };
 
   return (
-    <div className={`card-elevated p-4 border ${getStatusColor()}`}>
-      <div className="flex items-start gap-3">
-        <StarOutlined className="text-xl mt-0.5" />
+    <div className={`card-elevated p-3 border ${getStatusColor()}`}>
+      <div className="flex items-start gap-2">
+        <StarOutlined className="text-lg mt-0.5" />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold">Lượt đánh giá còn lại</h3>
-            <span className="text-2xl font-bold">
+            <span className="text-lg font-bold">
               {remainingVotes}/{maxVotes}
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${getProgressColor()}`}
               style={{ width: `${percentage}%` }}
             ></div>
           </div>
 
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-1">
             <InfoCircleOutlined className="text-sm mt-0.5 opacity-70" />
             <p className="text-sm opacity-80">
               {remainingVotes > 0

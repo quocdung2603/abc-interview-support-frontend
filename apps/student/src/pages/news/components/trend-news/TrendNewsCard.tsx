@@ -32,8 +32,8 @@ export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
       aria-label={`Đọc tin tức: ${news.title}`}
     >
       {/* Card Header */}
-      <div className="p-6 pb-4">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-4 pb-3">
+        <div className="flex items-center justify-between mb-2">
           <span className="badge-accent">Xu hướng</span>
           <time className="text-body-small text-neutral-500">
             {formatDate(news.createdAt)}
@@ -41,7 +41,7 @@ export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
         </div>
 
         {/* Title */}
-        <h3 className="news-card-title text-neutral-800 line-clamp-2 mb-3 transition-colors duration-200 hover:text-accent">
+        <h3 className="news-card-title text-neutral-800 line-clamp-2 mb-2 transition-colors duration-200 hover:text-accent">
           {news.title}
         </h3>
 
@@ -52,10 +52,10 @@ export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
       </div>
 
       {/* Card Footer */}
-      <div className="px-6 pb-6">
-        <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 flex items-center justify-center bg-gradient-accent rounded-full text-white">
+            <div className="w-6 h-6 flex items-center justify-center bg-gradient-accent rounded-full text-white">
               <span className="text-caption font-semibold">
                 {news.userId.charAt(0).toUpperCase()}
               </span>

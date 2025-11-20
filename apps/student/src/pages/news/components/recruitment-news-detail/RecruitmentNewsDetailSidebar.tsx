@@ -17,9 +17,9 @@ export const RecruitmentNewsDetailSidebar: React.FC<
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Company Card */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold">
             TV
@@ -39,7 +39,7 @@ export const RecruitmentNewsDetailSidebar: React.FC<
       </div>
 
       {/* Quick Apply */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-4">
         <h3 className="font-semibold text-neutral-900 mb-4">Ứng tuyển nhanh</h3>
         <div className="space-y-4">
           <button className="w-full btn-primary">Gửi CV có sẵn</button>
@@ -51,7 +51,7 @@ export const RecruitmentNewsDetailSidebar: React.FC<
       </div>
 
       {/* Job Stats */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-4">
         <h3 className="font-semibold text-neutral-900 mb-4">Thông tin thêm</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center">

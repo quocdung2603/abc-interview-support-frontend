@@ -44,7 +44,7 @@ export const RecruitmentNewsDetailHeader: React.FC<
 
   return (
     <div className="bg-gradient-primary text-white">
-      <div className="container-center py-16">
+      <div className="container-center py-10">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-white-70">
@@ -62,7 +62,7 @@ export const RecruitmentNewsDetailHeader: React.FC<
         </nav>
 
         {/* Job Info */}
-        <div className="flex flex-wrap items-start justify-between gap-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-4">
               {getUrgencyBadge() && (
@@ -76,9 +76,9 @@ export const RecruitmentNewsDetailHeader: React.FC<
               </span>
             </div>
 
-            <h1 className="text-heading-1 mb-4">{news.title}</h1>
+            <h1 className="text-heading-1 mb-3">{news.title}</h1>
 
-            <div className="flex flex-wrap items-center gap-6 text-white-90">
+            <div className="flex flex-wrap items-center gap-4 text-white-90">
               <div className="flex items-center gap-2">
                 <svg
                   className="w-5 h-5"
@@ -125,7 +125,7 @@ export const RecruitmentNewsDetailHeader: React.FC<
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <button className="btn-secondary">
               <svg
                 className="w-5 h-5 mr-2"

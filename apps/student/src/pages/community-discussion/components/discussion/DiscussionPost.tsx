@@ -54,10 +54,10 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
   };
 
   return (
-    <div className="card-elevated p-6 animate-fade-in-up">
+    <div className="card-elevated p-4 animate-fade-in-up">
       {/* Admin Badge */}
       {post.isAdminQuestion && (
-        <div className="mb-3">
+        <div className="mb-2">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
             <CrownOutlined />
             Câu hỏi từ Admin
@@ -66,8 +66,8 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
       )}
 
       {/* Post Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
           <div className="relative">
             <img
               src={post.authorAvatar}
@@ -92,7 +92,7 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
             <p className="text-sm text-gray-500">{post.createdAt}</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <span className="badge-secondary text-xs">{post.field}</span>
           <span className={`${getLevelBadgeClass(post.level)} text-xs`}>
             {post.level}
@@ -111,14 +111,14 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
           }
         }}
       >
-        <h2 className="text-xl font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors line-clamp-2">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3 hover:text-blue-600 transition-colors line-clamp-2">
           {post.title}
         </h2>
-        <p className="text-gray-600 mb-4 line-clamp-3">{post.content}</p>
+        <p className="text-gray-600 mb-3 line-clamp-3">{post.content}</p>
       </button>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-1 mb-3">
         {post.tags.map((tag) => (
           <span key={tag} className="badge-primary text-xs">
             #{tag}
@@ -127,8 +127,8 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
       </div>
 
       {/* Post Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => onLike(post.id)}
             className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${

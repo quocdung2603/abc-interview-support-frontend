@@ -39,8 +39,8 @@ const PostsList: React.FC<PostsListProps> = ({
 }) => {
   if (loading && posts.length === 0) {
     return (
-      <div className="card-elevated p-12 text-center">
-        <div className="text-gray-400 mb-4">
+      <div className="card-elevated p-8 text-center">
+        <div className="text-gray-400 mb-3">
           <svg
             className="w-16 h-16 mx-auto animate-spin"
             fill="none"
@@ -62,8 +62,8 @@ const PostsList: React.FC<PostsListProps> = ({
 
   if (posts.length === 0) {
     return (
-      <div className="card-elevated p-12 text-center">
-        <div className="text-gray-400 mb-4">
+      <div className="card-elevated p-8 text-center">
+        <div className="text-gray-400 mb-3">
           <svg
             className="w-16 h-16 mx-auto"
             fill="none"
@@ -78,7 +78,7 @@ const PostsList: React.FC<PostsListProps> = ({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
           Chưa có câu hỏi nào
         </h3>
         <p className="text-gray-600">
@@ -89,7 +89,7 @@ const PostsList: React.FC<PostsListProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {posts.map((post, index) => (
         <DiscussionPostComponent
           key={post.id}

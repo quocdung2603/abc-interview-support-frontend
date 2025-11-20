@@ -63,9 +63,9 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
 
   if (timeRemaining.isExpired) {
     return (
-      <div className="card-elevated p-4 bg-red-50 border border-red-200">
-        <div className="flex items-center gap-3">
-          <ClockCircleOutlined className="text-red-600 text-xl" />
+      <div className="card-elevated p-3 bg-red-50 border border-red-200">
+        <div className="flex items-center gap-2">
+          <ClockCircleOutlined className="text-red-600 text-lg" />
           <div>
             <h3 className="font-semibold text-red-800">
               Cuộc thảo luận đã kết thúc
@@ -80,36 +80,36 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
   }
 
   return (
-    <div className="card-elevated p-4 bg-blue-50 border border-blue-200">
+    <div className="card-elevated p-3 bg-blue-50 border border-blue-200">
       <div className="flex items-center gap-3">
-        <ClockCircleOutlined className="text-blue-600 text-xl" />
+        <ClockCircleOutlined className="text-blue-600 text-lg" />
         <div className="flex-1">
-          <h3 className="font-semibold text-blue-800 mb-2">
+          <h3 className="font-semibold text-blue-800 mb-1">
             Thời gian còn lại
           </h3>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             {timeRemaining.days > 0 && (
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-700">
-                  {timeRemaining.days}
+                <div className="text-lg font-bold text-blue-700">
+                  {timeRemaining.seconds}
                 </div>
-                <div className="text-xs text-blue-600">Ngày</div>
+                <div className="text-xs text-blue-600">Giây</div>
               </div>
             )}
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700">
+              <div className="text-lg font-bold text-blue-700">
                 {timeRemaining.hours}
               </div>
               <div className="text-xs text-blue-600">Giờ</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700">
+              <div className="text-lg font-bold text-blue-700">
                 {timeRemaining.minutes}
               </div>
               <div className="text-xs text-blue-600">Phút</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700">
+              <div className="text-lg font-bold text-blue-700">
                 {timeRemaining.seconds}
               </div>
               <div className="text-xs text-blue-600">Giây</div>

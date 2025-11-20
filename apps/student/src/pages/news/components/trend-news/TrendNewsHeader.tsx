@@ -11,21 +11,21 @@ export const TrendNewsHeader = ({ newsCount }: TrendNewsHeaderProps) => {
       <div className="relative container-center">
         <div className="text-center max-w-4xl mx-auto">
           {/* Main Title */}
-          <h1 className="text-display text-white mb-6 animate-fade-in-up">
+          <h1 className="text-display text-white mb-4 animate-fade-in-up">
             Tin Tức Xu Hướng
           </h1>
 
           {/* Subtitle */}
-          <p className="text-heading-3 text-white-90 mb-6 leading-relaxed animate-fade-in-up">
+          <p className="text-heading-3 text-white-90 mb-4 leading-relaxed animate-fade-in-up">
             Cập nhật những xu hướng mới nhất trong thế giới công nghệ và tuyển
             dụng
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-8 animate-fade-in-up">
+          <div className="flex flex-wrap justify-center gap-6 animate-fade-in-up">
             <div className="stats-card-accent">
               <div className="text-center">
-                <div className="text-heading-2 text-white font-bold mb-2">
+                <div className="text-heading-3 text-white font-bold mb-1">
                   {newsCount}
                 </div>
                 <div className="text-caption text-white-80 font-medium uppercase tracking-wide">
@@ -36,7 +36,7 @@ export const TrendNewsHeader = ({ newsCount }: TrendNewsHeaderProps) => {
 
             <div className="stats-card-accent">
               <div className="text-center">
-                <div className="text-heading-2 text-white font-bold mb-2">
+                <div className="text-heading-3 text-white font-bold mb-1">
                   24/7
                 </div>
                 <div className="text-caption text-white-80 font-medium uppercase tracking-wide">
@@ -47,7 +47,7 @@ export const TrendNewsHeader = ({ newsCount }: TrendNewsHeaderProps) => {
 
             <div className="stats-card-accent">
               <div className="text-center">
-                <div className="text-heading-2 text-white font-bold mb-2">
+                <div className="text-heading-3 text-white font-bold mb-1">
                   100%
                 </div>
                 <div className="text-caption text-white-80 font-medium uppercase tracking-wide">
@@ -58,7 +58,7 @@ export const TrendNewsHeader = ({ newsCount }: TrendNewsHeaderProps) => {
           </div>
 
           {/* Features */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up">
             <div className="flex items-center justify-center md:justify-start space-x-3">
               <div className="icon-container-light">
                 <svg

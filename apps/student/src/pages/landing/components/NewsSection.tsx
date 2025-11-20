@@ -37,20 +37,20 @@ const newsData: NewsItem[] = [
 
 const NewsSection: React.FC = () => {
   return (
-    <div className="section-alternate section-padding animate-fade-in">
+    <div className="section-alternate py-12 md:py-16 animate-fade-in">
       <div className="container-center">
         <div className="max-w-7xl mx-auto text-center">
           {/* Professional heading */}
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
             Tin tức <span className="text-gradient-primary">thú vị</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Thông tin chia sẻ, hướng dẫn các bạn sinh viên ở Quiz để bạn rèn
             luyện thực tế
           </p>
 
           {/* News grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {newsData.map((item, index) => (
               <div
                 key={item.title}
@@ -60,13 +60,13 @@ const NewsSection: React.FC = () => {
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-56 object-cover"
+                  className="w-full h-40 object-cover"
                 />
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                <div className="p-4">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                     {item.description}
                   </p>
                   <div className="flex justify-between items-center">
@@ -81,7 +81,7 @@ const NewsSection: React.FC = () => {
           </div>
 
           {/* Call to action */}
-          <div className="mt-12">
+          <div className="mt-8">
             <button className="btn-secondary">Xem thêm tin tức</button>
           </div>
         </div>

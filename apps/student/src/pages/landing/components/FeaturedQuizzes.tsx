@@ -49,29 +49,29 @@ const quizData: QuizItem[] = [
 
 const FeaturedQuizzes: React.FC = () => {
   return (
-    <div className="bg-white section-padding animate-fade-in">
+    <div className="bg-white py-12 md:py-16 animate-fade-in">
       <div className="container-center text-center">
         {/* Professional heading */}
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
           Đề thi <span className="text-gradient-primary">nổi bật</span>
         </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
+        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-8">
           Những đề thi nổi bật nhận được nhiều sự quan tâm từ cộng đồng học tập
         </p>
 
         {/* Quiz cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {quizData.map((item, index) => (
             <div
               key={`quiz-${index}-${item.title.slice(0, 10)}`}
-              className="card-interactive p-6 flex flex-col items-center gap-4 animate-fade-in-up group"
+              className="card-interactive p-4 flex flex-col items-center gap-3 animate-fade-in-up group"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Question count badge */}
               <span className="badge-primary">{item.questions}</span>
 
               {/* Icon */}
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
                 <img
                   src={item.icon}
                   alt={item.title}
@@ -80,7 +80,7 @@ const FeaturedQuizzes: React.FC = () => {
               </div>
 
               {/* Title */}
-              <h3 className="text-lg font-semibold text-gray-900 text-center line-clamp-2 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 text-center line-clamp-2 group-hover:text-blue-600 transition-colors">
                 {item.title}
               </h3>
 
@@ -105,8 +105,8 @@ const FeaturedQuizzes: React.FC = () => {
         </div>
 
         {/* View more button */}
-        <div className="mt-12">
-          <button className="btn-accent px-8 py-3 text-lg">
+        <div className="mt-8">
+          <button className="btn-accent px-6 py-3 text-base">
             Xem thêm đề thi
           </button>
         </div>

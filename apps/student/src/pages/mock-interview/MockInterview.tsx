@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ExamCreationForm from './components/mock-interview/ExamCreationForm';
 import ExamList from './components/mock-interview/ExamList';
 import { useNavigate } from 'react-router-dom';
+import { examService } from '@abc-interview-support-frontend/services';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 interface ExamFormData {
   field: string;
@@ -13,8 +15,9 @@ interface ExamFormData {
 }
 
 interface Exam {
-  examId: string;
-  userId?: string;
+  id: number;
+  examId?: string;
+  userId?: string | number;
   examType: 'Virtual' | 'Recruiter';
   title: string;
   position?: string;
@@ -24,7 +27,7 @@ interface Exam {
   duration: number;
   startTime?: Date;
   endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed';
+  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
   language: string;
   createdAt: Date;
   createdBy: string;
@@ -38,68 +41,42 @@ const MockInterview = () => {
   );
 
   const navigate = useNavigate();
+  const { user } = useAuth();
+ // console.log('Authenticated user:', JSON.stringify(user, null, 2));
 
-  // Mock data cho available exams
-  const mockAvailableExams: Exam[] = [
-    {
-      examId: 'exam-1',
-      examType: 'Virtual',
-      title: 'Frontend Developer Assessment',
-      position: 'Frontend Developer',
-      topics: JSON.stringify(['React', 'JavaScript']),
-      questionTypes: JSON.stringify(['SingleChoice', 'MultipleChoice']),
-      questionCount: 15,
-      duration: 45,
-      status: 'Active',
-      language: 'vi',
-      createdAt: new Date(),
-      createdBy: 'system',
-    },
-    {
-      examId: 'exam-2',
-      examType: 'Virtual',
-      title: 'Backend Node.js Test',
-      position: 'Backend Developer',
-      topics: JSON.stringify(['Node.js', 'Database']),
-      questionTypes: JSON.stringify(['OpenEnded', 'FillInTheBlank']),
-      questionCount: 12,
-      duration: 60,
-      status: 'Active',
-      language: 'vi',
-      createdAt: new Date(),
-      createdBy: 'system',
-    },
-    {
-      examId: 'exam-3',
-      examType: 'Virtual',
-      title: 'Full Stack Developer Challenge',
-      position: 'Full Stack Developer',
-      topics: JSON.stringify(['React', 'Node.js', 'Database']),
-      questionTypes: JSON.stringify([
-        'SingleChoice',
-        'MultipleChoice',
-        'OpenEnded',
-      ]),
-      questionCount: 20,
-      duration: 90,
-      status: 'Active',
-      language: 'vi',
-      createdAt: new Date(),
-      createdBy: 'system',
-    },
-  ];
+  const getUserExams = async () => {
+    try {
+      const res = await examService.getAllExams();
+      let exams = res.content || [];
+      exams = exams.filter((exam: Exam) => exam.userId === Number(user?.userId));
+      setCreatedExams(exams);
+    } catch (error) {
+      console.error('Error fetching user exams:', error);
+      setCreatedExams([]);
+    }
+  }
+
+  const getAllExams = async () => {
+    try {
+      const res = await examService.getAllExams();
+      let exams = res.content || [];
+      exams = exams.filter((exam: Exam) => exam.userId !== Number(user?.userId));
+      setAvailableExams(exams);
+    } catch (error) {
+      setAvailableExams([]);
+      console.error('Error fetching available exams:', error);
+    }
+  }
 
   // Filter available exams based on criteria
-  useEffect(() => {
-    let filtered = mockAvailableExams;
-
+  const filteredAvailableExams = useMemo(() => {
     if (
       searchCriteria.field ||
       searchCriteria.topic ||
       searchCriteria.level ||
       searchCriteria.questionTypes?.length
     ) {
-      filtered = mockAvailableExams.filter((exam) => {
+      return availableExams.filter((exam) => {
         // Simple filtering logic - in real app, this would be more sophisticated
         if (searchCriteria.field && searchCriteria.topic) {
           try {
@@ -130,68 +107,44 @@ const MockInterview = () => {
         return true;
       });
     }
+    return availableExams;
+  }, [availableExams, searchCriteria]);
 
-    setAvailableExams(filtered);
-  }, [searchCriteria]);
+  useEffect(() => {
+    getAllExams();
+    getUserExams();
+  }, []);
 
-  const handleCreateExam = (examData: ExamFormData) => {
-    const fieldNames: Record<string, string> = {
-      frontend: 'Frontend',
-      backend: 'Backend',
-      ba: 'Business Analysis',
-      devops: 'DevOps',
-      qa: 'Quality Assurance',
-    };
+  const handleCreateExam = async (examData: ExamFormData) => {
+    try {
+      // Transform data to match API format
+      const apiData = {
+        examType: "RECRUITER",
+        title: examData.title || '',
+        position: examData.position || '',
+        topics: [Number.parseInt(examData.topic)], // Convert to array of numbers
+        questionTypes: examData.questionTypes.map(type => Number.parseInt(type)), // Convert to array of numbers
+        questionCount: examData.questionCount,
+        duration: examData.duration,
+        description: examData.description,
+        userId: user?.userId // Add userId from auth
+      };
+      await examService.createExam(apiData);
+     // alert(`✅ Đã tạo bài kiểm tra thành công!\n\nTiêu đề: ${examData.title}\nVị trí: ${examData.position}\nSố câu hỏi: ${examData.questionCount}\nThời gian: ${examData.duration} phút`);
 
-    const topicNames: Record<string, string> = {
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue.js',
-      javascript: 'JavaScript',
-      typescript: 'TypeScript',
-      nodejs: 'Node.js',
-      java: 'Java',
-      python: 'Python',
-      csharp: 'C#',
-      database: 'Database',
-      requirements: 'Requirements Analysis',
-      modeling: 'Process Modeling',
-      documentation: 'Documentation',
-      docker: 'Docker',
-      kubernetes: 'Kubernetes',
-      'ci-cd': 'CI/CD',
-      'manual-testing': 'Manual Testing',
-      automation: 'Test Automation',
-      performance: 'Performance Testing',
-    };
-
-    const newExam: Exam = {
-      examId: `exam-created-${Date.now()}`,
-      examType: 'Virtual',
-      title: `${fieldNames[examData.field]} - ${topicNames[examData.topic]} (${
-        examData.level
-      })`,
-      position: `${fieldNames[examData.field]} ${examData.level}`,
-      topics: JSON.stringify([topicNames[examData.topic]]),
-      questionTypes: JSON.stringify(examData.questionTypes),
-      questionCount: examData.questionCount,
-      duration: examData.duration,
-      status: 'Active',
-      language: 'vi',
-      createdAt: new Date(),
-      createdBy: 'current-user',
-    };
-
-    setCreatedExams((prev) => [newExam, ...prev]);
-
-    // Show success message
-    alert('Bài kiểm tra đã được tạo thành công!');
+      // Refresh the exam lists
+      getAllExams();
+      getUserExams();
+    } catch (error) {
+      console.error('Error creating exam:', error);
+      // alert('❌ Có lỗi xảy ra khi tạo bài kiểm tra. Vui lòng thử lại.');
+    }
   };
 
   const handleStartExam = (examId: string) => {
     navigate(`/mock-interview-detail/${examId}`);
     // In real app, this would navigate to exam taking page
-    alert(`Bắt đầu làm bài kiểm tra: ${examId}`);
+    alert(`Bắt đầu làm bài kiểm tra có ID: ${examId}`);
     console.log('Starting exam:', examId);
   };
 
@@ -206,14 +159,14 @@ const MockInterview = () => {
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
-      <div className="container-center section-padding">
-        <div className="max-w-6xl mx-auto">
+      <div className="container-center py-8 px-4">
+        <div className="max-w-5xl mx-auto">
           {/* Page Header */}
-          <div className="text-center mb-8 animate-fade-in-up">
-            <h1 className="text-display text-gradient-primary mb-4">
-              🎯 Phỏng Vấn Giả Lập
+          <div className="text-center mb-6 animate-fade-in-up">
+            <h1 className="text-3xl font-bold text-gradient-primary mb-3">
+              Phỏng Vấn Giả Lập
             </h1>
-            <p className="text-body-large text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-base text-neutral-600 max-w-xl mx-auto">
               Tạo và thực hiện các bài kiểm tra phỏng vấn để chuẩn bị tốt nhất
               cho cuộc phỏng vấn thực tế của bạn
             </p>
@@ -243,19 +196,19 @@ const MockInterview = () => {
           <div className="animate-fade-in-up">
             <ExamList
               title="📚 Các Bài Kiểm Tra Có Sẵn"
-              exams={availableExams}
+              exams={filteredAvailableExams}
               emptyMessage="Không tìm thấy bài kiểm tra phù hợp với tiêu chí đã chọn."
               onStartExam={handleStartExam}
             />
           </div>
 
           {/* Floating Stats */}
-          {(createdExams.length > 0 || availableExams.length > 0) && (
+          {(createdExams.length > 0 || filteredAvailableExams.length > 0) && (
             <div
-              className="fixed bottom-8 right-8 w-12 h-12 bg-accent text-white border-0 rounded-full shadow-lg cursor-pointer flex items-center justify-center text-xl transition-all duration-300 hover:bg-accent-dark hover:scale-110 hover:shadow-xl z-50"
+              className="fixed bottom-6 right-6 w-10 h-10 bg-accent text-white border-0 rounded-full shadow-lg cursor-pointer flex items-center justify-center text-lg transition-all duration-300 hover:bg-accent-dark hover:scale-110 hover:shadow-xl z-50"
               title="Tổng số bài kiểm tra"
             >
-              {createdExams.length + availableExams.length}
+              {createdExams.length + filteredAvailableExams.length}
             </div>
           )}
         </div>

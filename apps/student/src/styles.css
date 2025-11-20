@@ -4,23 +4,23 @@
 /* ===== Professional Design System ===== */
 :root {
   /* Typography Scale */
-  --text-heading-1: 2.5rem;
-  --text-heading-1--line-height: 3rem;
+  --text-heading-1: 2rem;
+  --text-heading-1--line-height: 2.5rem;
   --text-heading-1--font-weight: 700;
 
-  --text-heading-2: 2rem;
-  --text-heading-2--line-height: 2.5rem;
+  --text-heading-2: 1.5rem;
+  --text-heading-2--line-height: 2rem;
   --text-heading-2--font-weight: 700;
 
-  --text-heading-3: 1.5rem;
-  --text-heading-3--line-height: 2rem;
+  --text-heading-3: 1.25rem;
+  --text-heading-3--line-height: 1.75rem;
   --text-heading-3--font-weight: 600;
 
-  --text-body: 1rem;
+  --text-body: 0.875rem;
   --text-body--line-height: 1.5rem;
   --text-body--font-weight: 400;
 
-  --text-caption: 0.875rem;
+  --text-caption: 0.75rem;
   --text-caption--line-height: 1.25rem;
   --text-caption--font-weight: 400;
 
@@ -415,7 +415,7 @@
 }
 
 .text-body-large {
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1.75rem;
   font-weight: var(--text-body--font-weight);
 }
@@ -433,22 +433,22 @@
 }
 
 .text-display {
-  font-size: 3rem;
-  line-height: 3.5rem;
+  font-size: 1.75rem; /* Reduced from 2.25rem */
+  line-height: 2.25rem; /* Reduced from 2.75rem */
   font-weight: 700;
 }
 
 @media (min-width: 768px) {
   .text-display {
-    font-size: 3.75rem;
-    line-height: 4.25rem;
+    font-size: 2.25rem; /* Reduced from 3rem */
+    line-height: 2.75rem; /* Reduced from 3.25rem */
   }
 }
 
 @media (min-width: 1024px) {
   .text-display {
-    font-size: 4.5rem;
-    line-height: 5rem;
+    font-size: 2.75rem; /* Reduced from 3.5rem */
+    line-height: 3.25rem; /* Reduced from 3.75rem */
   }
 }
 
@@ -798,7 +798,7 @@
     var(--color-primary-dark) 100%
   );
   position: relative;
-  min-height: 100vh;
+  min-height: 70vh; /* Reduced from 100vh to 70vh for more compact banner */
   display: flex;
   align-items: center;
 }
@@ -827,25 +827,31 @@
 
 .hero-images {
   position: relative;
-  height: 500px;
+  height: 350px; /* Reduced from 500px for more compact layout */
 }
 
 @media (max-width: 1023px) {
   .hero-images {
-    height: 400px;
+    height: 280px; /* Reduced from 400px for mobile */
   }
 }
 
 /* ===== News System Base Classes ===== */
 .news-header {
   position: relative;
-  padding: 4rem 1.5rem;
+  padding: 3rem 1.25rem; /* Reduced from 4rem 1.5rem */
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
     var(--color-primary-dark) 100%
   );
   color: var(--color-white);
+}
+
+.news-card-title {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
 }
 
 .filter-remove-btn {
@@ -887,13 +893,13 @@
 }
 
 .prose-custom h1 {
-  font-size: 2rem;
+  font-size: 1.75rem;
 }
 .prose-custom h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 .prose-custom h3 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
 .prose-custom blockquote {

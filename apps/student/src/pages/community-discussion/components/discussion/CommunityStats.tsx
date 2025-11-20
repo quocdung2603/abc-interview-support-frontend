@@ -17,12 +17,12 @@ const CommunityStats: React.FC<CommunityStatsProps> = ({
   questionsToday,
 }) => {
   return (
-    <div className="card-elevated p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <div className="card-elevated p-4">
+      <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
         <QuestionCircleOutlined className="text-blue-600" />
         Thống kê câu hỏi
       </h3>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Tổng câu hỏi</span>
           <span className="font-semibold text-gray-900">
@@ -48,7 +48,7 @@ const CommunityStats: React.FC<CommunityStatsProps> = ({
       </div>
 
       {/* Additional info */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="mt-3 pt-3 border-t border-gray-200">
         <p className="text-xs text-gray-500 leading-relaxed">
           💡 Mỗi người dùng có 3 lượt đánh giá cho mỗi câu hỏi
         </p>

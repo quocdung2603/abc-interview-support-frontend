@@ -65,11 +65,11 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
   };
 
   return (
-    <div className="bg-white py-16">
+    <div className="bg-white py-10">
       <div className="container-center">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-heading-2 text-neutral-800 mb-4 flex items-center justify-center">
               <svg
                 className="w-6 h-6 mr-3 text-accent"
@@ -92,7 +92,7 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
           </div>
 
           {/* Related News Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {relatedNews.map((newsItem, index) => (
               <button
                 key={newsItem.newsId}
@@ -123,7 +123,7 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
                 </div>
 
                 {/* Card Content */}
-                <div className="p-6">
+                <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="badge-accent">Xu hướng</span>
                     <time className="text-caption text-neutral-500">
@@ -177,7 +177,7 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
           </div>
 
           {/* View More Section */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-8">
             <div className="mb-6">
               <div className="inline-flex items-center space-x-2 text-neutral-600">
                 <div className="h-px bg-neutral-300 w-16"></div>

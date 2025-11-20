@@ -65,8 +65,8 @@ export const RecruitmentNewsCard = ({
       aria-label={`Xem tin tuyển dụng: ${news.title}`}
     >
       {/* Card Header */}
-      <div className="p-6 pb-4">
-        <div className="flex items-start justify-between mb-3">
+      <div className="p-4 pb-3">
+        <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
             {getUrgencyBadge(recruitmentData.urgency || 'low')}
             <span className="badge-primary">Tuyển dụng</span>
@@ -77,16 +77,16 @@ export const RecruitmentNewsCard = ({
         </div>
 
         {/* Job Title */}
-        <h3 className="text-body-large font-semibold text-neutral-800 line-clamp-2 mb-3 transition-colors duration-200 hover:text-accent">
+        <h3 className="text-body-large font-semibold text-neutral-800 line-clamp-2 mb-2 transition-colors duration-200 hover:text-accent">
           {news.title}
         </h3>
 
         {/* Company Info */}
-        <div className="flex items-center space-x-4 mb-3">
+        <div className="flex items-center space-x-3 mb-2">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-gradient-primary rounded-lg flex items-center justify-center">
               <svg
-                className="w-4 h-4 text-white"
+                className="w-3 h-3 text-white"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -104,10 +104,10 @@ export const RecruitmentNewsCard = ({
         </div>
 
         {/* Job Details */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="flex items-center space-x-2">
             <svg
-              className="w-4 h-4 text-neutral-500"
+              className="w-3 h-3 text-neutral-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -132,7 +132,7 @@ export const RecruitmentNewsCard = ({
 
           <div className="flex items-center space-x-2">
             <svg
-              className="w-4 h-4 text-neutral-500"
+              className="w-3 h-3 text-neutral-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -157,10 +157,10 @@ export const RecruitmentNewsCard = ({
       </div>
 
       {/* Card Footer */}
-      <div className="px-6 pb-6">
-        <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-gradient-accent rounded-full flex items-center justify-center">
+            <div className="w-5 h-5 bg-gradient-accent rounded-full flex items-center justify-center">
               <span className="text-caption text-white font-semibold">HR</span>
             </div>
             <span className="text-caption text-neutral-600">
@@ -168,10 +168,10 @@ export const RecruitmentNewsCard = ({
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-1 text-neutral-500">
               <svg
-                className="w-4 h-4"
+                className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

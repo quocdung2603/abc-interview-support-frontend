@@ -56,12 +56,12 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
   const isDisabled = disabled || isSubmitting || !content.trim();
 
   return (
-    <div className="card-elevated max-w-4xl min-w-3xl p-6">
+    <div className="card-elevated max-w-4xl min-w-3xl p-4">
       <div className=" w-full flex justify-between items-center">
         <h3
           className={`text-lg font-semibold  ${getCounterSendColor(
             counterSend
-          )} mb-4`}
+          )} mb-3`}
         >
           Còn {1 - counterSend}/1 lượt trả lời
         </h3>
@@ -71,7 +71,7 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-3">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -84,7 +84,7 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
             }`}
             maxLength={2000}
           />
-          <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-1">
             <div className="text-sm text-gray-500">
               {content.length}/2000 ký tự
               {!disabled && (

@@ -40,7 +40,7 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
       <div className="relative container-center">
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="mb-8 animate-fade-in-up">
+          <nav className="mb-6 animate-fade-in-up">
             <div className="flex items-center space-x-2 text-white-80">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -76,12 +76,12 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
           </div>
 
           {/* Article Title */}
-          <h1 className="text-display text-white mb-8 leading-tight animate-fade-in-up">
+          <h1 className="text-display text-white mb-6 leading-tight animate-fade-in-up">
             {news.title}
           </h1>
 
           {/* Article Meta */}
-          <div className="flex flex-wrap items-center gap-6 mb-8 animate-fade-in-up">
+          <div className="flex flex-wrap items-center gap-4 mb-6 animate-fade-in-up">
             {/* Author */}
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-accent-avatar rounded-full flex items-center justify-center text-white font-semibold">
@@ -133,7 +133,7 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
           </div>
 
           {/* Social Actions */}
-          <div className="flex items-center gap-4 animate-fade-in-up">
+          <div className="flex items-center gap-3 animate-fade-in-up">
             <button className="flex items-center space-x-2 bg-white-10 backdrop-filter backdrop-blur-10 border border-white-20 rounded-lg px-4 py-2 text-white hover:bg-white-20 transition-all">
               <svg
                 className="w-5 h-5"

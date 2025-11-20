@@ -1,7 +1,8 @@
 import ExamCard from './ExamCard';
 
 interface Exam {
-  examId: string;
+  id: number;
+  examId?: string;
   userId?: string;
   examType: 'Virtual' | 'Recruiter';
   title: string;
@@ -12,7 +13,7 @@ interface Exam {
   duration: number;
   startTime?: Date;
   endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed';
+  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
   language: string;
   createdAt: Date;
   createdBy: string;
@@ -34,10 +35,10 @@ const ExamList: React.FC<ExamListProps> = ({
   showCreatedBadge = false,
 }) => {
   return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-heading-2 text-primary">{title}</h2>
-        <span className="badge-secondary">{exams.length}</span>
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-lg text-primary font-semibold">{title}</h2>
+        <span className="badge-secondary text-sm">{exams.length}</span>
       </div>
 
       {exams.length === 0 ? (
@@ -73,10 +74,10 @@ const ExamList: React.FC<ExamListProps> = ({
             scrollbarColor: 'var(--color-accent) var(--color-neutral-200)',
           }}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {exams.map((exam, index) => (
               <div
-                key={exam.examId}
+                key={`${exam.id}-${index}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <ExamCard

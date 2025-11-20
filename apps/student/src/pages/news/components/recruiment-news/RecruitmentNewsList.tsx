@@ -26,7 +26,7 @@ export const RecruitmentNewsList = ({
   if (loading) {
     return (
       <div className="animate-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {skeletonItems.map((skeletonId) => (
             <div key={skeletonId} className="card-elevated animate-pulse">
               <div className="p-6">
@@ -123,19 +123,19 @@ export const RecruitmentNewsList = ({
 
       {/* Load More Button - Placeholder for future pagination */}
       {recruitmentNewsOnly.length > 0 && (
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <button className="btn-outline">Xem thêm cơ hội việc làm</button>
         </div>
       )}
 
       {/* Quick Stats */}
       {recruitmentNewsOnly.length > 0 && (
-        <div className="mt-12 p-6 bg-gradient-neutral rounded-xl">
+        <div className="mt-8 p-4 bg-gradient-neutral rounded-xl">
           <div className="text-center">
             <h4 className="text-heading-3 text-neutral-800 mb-4">
               Thống kê tuyển dụng
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="stats-card">
                 <div className="text-center">
                   <div className="text-heading-2 text-primary font-bold mb-2">

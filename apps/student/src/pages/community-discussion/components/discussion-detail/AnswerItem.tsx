@@ -73,10 +73,10 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
   }, [expanded]);
 
   return (
-    <div ref={rootRef} className="card-interactive p-6 mb-4">
-      <div className="flex gap-4">
+    <div ref={rootRef} className="card-interactive p-4 mb-3">
+      <div className="flex gap-3">
         {/* Voting section */}
-        <div className="flex flex-col items-center gap-2 min-w-[48px] border-r border-r-gray-300">
+        <div className="flex flex-col items-center gap-1 min-w-[48px] border-r border-r-gray-300">
           <span className="font-bold text-md text-green-600">
             {answer.upvotes}
           </span>
@@ -113,14 +113,14 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
         {/* Answer content */}
         <div className="flex-1">
           {/* Author info */}
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-2">
             <img
               src={answer.authorAvatar}
               alt={answer.author}
               className="w-9 h-9 rounded-full object-cover"
             />
             <div className="flex flex-col items-center text-sm text-gray-500">
-              <span className="flex items-center gap-1 font-medium text-gray-700">
+              <span className="flex items-center gap-2 font-medium text-gray-700">
                 <UserOutlined />
                 {answer.author}
               </span>
@@ -153,7 +153,7 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
               <button
                 type="button"
                 onClick={() => setExpanded((v) => !v)}
-                className="mt-3 inline-flex items-center gap-2 text-primary font-medium hover:underline"
+                className="mt-2 inline-flex items-center gap-2 text-primary font-medium hover:underline"
               >
                 {expanded ? 'Thu gọn' : 'Xem tất cả'}
               </button>

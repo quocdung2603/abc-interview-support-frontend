@@ -80,7 +80,7 @@ const examResult = {
   completedAt: new Date().toISOString(),
 };
 localStorage.setItem(`examResult_${examId}`, JSON.stringify(examResult));
-navigate(`/student/mock-interview-result/${examId}`);
+navigate(`/mock-interview-result/${examId}`);
 ```
 
 ## Data Flow

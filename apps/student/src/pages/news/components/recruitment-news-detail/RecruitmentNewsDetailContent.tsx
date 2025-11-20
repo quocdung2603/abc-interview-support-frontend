@@ -10,7 +10,7 @@ export const RecruitmentNewsDetailContent: React.FC<
 > = ({ news }) => {
   return (
     <div className="lg:col-span-2">
-      <div className="bg-white rounded-xl shadow-sm p-8">
+      <div className="bg-white rounded-xl shadow-sm p-6">
         <div
           className="prose prose-custom max-w-none"
           dangerouslySetInnerHTML={{ __html: news.content }}

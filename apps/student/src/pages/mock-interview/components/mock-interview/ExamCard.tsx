@@ -1,5 +1,8 @@
+import {useState} from 'react';
+
 interface Exam {
-  examId: string;
+  id: number;
+  examId?: string;
   userId?: string;
   examType: 'Virtual' | 'Recruiter';
   title: string;
@@ -10,7 +13,7 @@ interface Exam {
   duration: number;
   startTime?: Date;
   endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed';
+  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
   language: string;
   createdAt: Date;
   createdBy: string;
@@ -27,10 +30,21 @@ const ExamCard: React.FC<ExamCardProps> = ({
   onStartExam,
   isCreated = false,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleStartExam = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmStart = () => {
     if (onStartExam) {
-      onStartExam(exam.examId);
+      onStartExam(exam.id.toString());
     }
+    setIsModalOpen(false);
+  };
+
+  const handleCancelModal = () => {
+    setIsModalOpen(false);
   };
 
   const formatDuration = (minutes: number) => {
@@ -43,59 +57,9 @@ const ExamCard: React.FC<ExamCardProps> = ({
     return `${hours}h${minutesPart}`;
   };
 
-  const getQuestionTypeNames = (questionTypes: string) => {
-    try {
-      const types = JSON.parse(questionTypes) as string[];
-      const typeMap: Record<string, string> = {
-        SingleChoice: 'Một lựa chọn',
-        MultipleChoice: 'Nhiều lựa chọn',
-        FillInTheBlank: 'Điền khuyết',
-        OpenEnded: 'Tự luận',
-      };
-      return types.map((type) => typeMap[type] || type).join(', ');
-    } catch {
-      return questionTypes;
-    }
-  };
-
-  const getTopicNames = (topics: string) => {
-    try {
-      const topicArray = JSON.parse(topics) as string[];
-      return topicArray.join(', ');
-    } catch {
-      return topics;
-    }
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return 'badge-success';
-      case 'Completed':
-        return 'badge-secondary';
-      case 'Inactive':
-        return 'badge-warning';
-      default:
-        return 'badge-neutral';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return 'Đang hoạt động';
-      case 'Completed':
-        return 'Đã hoàn thành';
-      case 'Inactive':
-        return 'Không hoạt động';
-      default:
-        return status;
-    }
-  };
-
   return (
     <div
-      className={`card-interactive p-4 relative animate-fade-in-up ${
+      className={`card-interactive p-2.5 relative animate-fade-in-up ${
         isCreated ? 'border-2 border-accent ' : ''
       }`}
       style={{
@@ -108,71 +72,37 @@ const ExamCard: React.FC<ExamCardProps> = ({
       }}
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-primary mb-1">
+          <h3 className="text-sm font-semibold text-primary mb-1">
             {exam.title}
           </h3>
           {exam.position && (
-            <p className="text-xs text-neutral-600 mb-1">💼 {exam.position}</p>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeClass(
-              exam.status
-            )}`}
-          >
-            {getStatusText(exam.status)}
-          </span>
-          {isCreated && (
-            <span className="text-xs px-2 py-1 rounded-full badge-accent">
-              ✨ Mới tạo
-            </span>
+            <p className="text-xs text-neutral-600 mb-1">{exam.position}</p>
           )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="space-y-2 mb-4">
-        {/* Topics */}
-        <div className="flex items-start gap-2">
-          <span className="text-xs font-semibold text-neutral-700 min-w-[60px] flex items-center">
-            🎯 Chủ đề:
-          </span>
-          <span className="text-xs text-neutral-600 flex-1">
-            {getTopicNames(exam.topics)}
-          </span>
-        </div>
-
-        {/* Question Types */}
-        <div className="flex items-start gap-2">
-          <span className="text-xs font-semibold text-neutral-700 min-w-[60px] flex items-center">
-            📝 Câu hỏi:
-          </span>
-          <span className="text-xs text-neutral-600 flex-1">
-            {getQuestionTypeNames(exam.questionTypes)}
-          </span>
-        </div>
-
+      <div className="space-y-1 mb-2">
         {/* Stats Grid - More compact */}
-        <div className="grid grid-cols-3 gap-2 pt-2">
-          <div className="text-center p-2 bg-neutral-50 rounded-md border">
-            <div className="text-sm font-bold text-primary">
+        <div className="grid grid-cols-3 gap-1 pt-1">
+          <div className="text-center p-1 bg-neutral-50 rounded border">
+            <div className="text-xs font-bold text-primary">
               {exam.questionCount}
             </div>
             <div className="text-xs text-neutral-500">Câu hỏi</div>
           </div>
 
-          <div className="text-center p-2 bg-neutral-50 rounded-md border">
-            <div className="text-sm font-bold text-accent">
+          <div className="text-center p-1 bg-neutral-50 rounded border">
+            <div className="text-xs font-bold text-accent">
               {formatDuration(exam.duration)}
             </div>
             <div className="text-xs text-neutral-500">Thời gian</div>
           </div>
 
-          <div className="text-center p-2 bg-neutral-50 rounded-md border">
-            <div className="text-sm">
+          <div className="text-center p-1 bg-neutral-50 rounded border">
+            <div className="text-xs">
               {exam.language === 'vi' ? '🇻🇳' : '🇺🇸'}
             </div>
             <div className="text-xs text-neutral-500">Ngôn ngữ</div>
@@ -181,17 +111,15 @@ const ExamCard: React.FC<ExamCardProps> = ({
 
         {/* Dates - More compact */}
         {(exam.startTime || exam.endTime) && (
-          <div className="pt-2 mt-2 border-t border-neutral-200">
+          <div className="pt-1.5 mt-1.5 border-t border-neutral-200">
             {exam.startTime && (
               <div className="text-xs text-neutral-600 mb-1 flex items-center gap-1">
-                <span>🕒</span>
                 <span className="font-semibold">Bắt đầu:</span>
                 <span>{new Date(exam.startTime).toLocaleString('vi-VN')}</span>
               </div>
             )}
             {exam.endTime && (
               <div className="text-xs text-neutral-600 flex items-center gap-1">
-                <span>⏰</span>
                 <span className="font-semibold">Kết thúc:</span>
                 <span>{new Date(exam.endTime).toLocaleString('vi-VN')}</span>
               </div>
@@ -201,15 +129,15 @@ const ExamCard: React.FC<ExamCardProps> = ({
       </div>
 
       {/* Action Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-1">
         {(() => {
-          if (exam.status === 'Active') {
+          if (exam.status === 'Active' || exam.status === 'DRAFT') {
             return (
               <button
                 onClick={handleStartExam}
-                className="btn-primary flex items-center gap-1 px-4 py-2 text-sm"
+                className="btn-primary flex items-center gap-1 px-3 py-1 text-xs"
               >
-                <span>🚀</span> Bắt Đầu
+                Bắt Đầu
               </button>
             );
           }
@@ -217,24 +145,108 @@ const ExamCard: React.FC<ExamCardProps> = ({
           if (exam.status === 'Completed') {
             return (
               <button
-                className="btn-secondary flex items-center gap-1 px-4 py-2 text-sm"
+                className="btn-secondary flex items-center gap-1 px-3 py-1 text-xs"
                 disabled
               >
-                <span>✅</span> Hoàn Thành
+                Hoàn Thành
               </button>
             );
           }
 
           return (
             <button
-              className="btn-outline flex items-center gap-1 px-4 py-2 text-sm"
+              className="btn-outline flex items-center gap-1 px-3 py-1 text-xs"
               disabled
             >
-              <span>⏸️</span> Không Khả Dụng
+              Không Khả Dụng
             </button>
           );
         })()}
       </div>
+
+      {/* Confirmation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <h3 className="text-lg font-bold text-primary mb-4">
+              Xác Nhận Bắt Đầu Bài Kiểm Tra
+            </h3>
+
+            {/* Exam Details */}
+            <div className="space-y-3 mb-6">
+              <div className="p-4 bg-neutral-50 rounded-lg">
+                <h4 className="font-semibold text-sm text-neutral-700 mb-3">
+                  Thông tin bài kiểm tra:
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Tiêu đề:</span>
+                    <span className="font-medium text-neutral-800">{exam.title}</span>
+                  </div>
+                  {exam.position && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Vị trí:</span>
+                      <span className="font-medium text-neutral-800">{exam.position}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Số câu hỏi:</span>
+                    <span className="font-medium text-neutral-800">{exam.questionCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Thời gian:</span>
+                    <span className="font-medium text-neutral-800">{formatDuration(exam.duration)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Trạng thái:</span>
+                    <span className={`font-medium ${exam.status === 'DRAFT' ? 'text-orange-600' : 'text-green-600'}`}>
+                      {exam.status === 'DRAFT' ? 'Bản nháp' : exam.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-600">Ngôn ngữ:</span>
+                    <span className="font-medium text-neutral-800">
+                      {exam.language === 'Vietnamese' ? '🇻🇳 Tiếng Việt' : '🇺🇸 English'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-sm text-neutral-600 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <div className="flex items-start gap-2">
+                  <div className="text-yellow-600 text-lg">⚠</div>
+                  <div>
+                    <p className="font-medium text-yellow-800 mb-1">Lưu ý quan trọng:</p>
+                    <ul className="text-yellow-700 space-y-1">
+                      <li>• Bài kiểm tra sẽ bắt đầu ngay khi bạn xác nhận</li>
+                      <li>• Thời gian sẽ được tính từ lúc bắt đầu</li>
+                      <li>• Không thể tạm dừng hoặc quay lại câu hỏi trước</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={handleCancelModal}
+                className="px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-200 rounded-md hover:bg-neutral-300 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmStart}
+                className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
+              >
+                Xác Nhận Bắt Đầu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

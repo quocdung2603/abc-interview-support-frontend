@@ -60,21 +60,21 @@ const AnswerList: React.FC<AnswerListProps> = ({
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {[1, 2, 3].map((index) => (
-          <div key={index} className="card-interactive p-6 animate-pulse">
-            <div className="flex gap-4">
+          <div key={index} className="card-interactive p-4 animate-pulse">
+            <div className="flex gap-3">
               <div className="flex flex-col items-center gap-2 min-w-[48px]">
                 <div className="w-8 h-8 bg-gray-200 rounded"></div>
                 <div className="w-6 h-6 bg-gray-200 rounded"></div>
                 <div className="w-8 h-8 bg-gray-200 rounded"></div>
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                   <div className="w-32 h-4 bg-gray-200 rounded"></div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="w-full h-4 bg-gray-200 rounded"></div>
                   <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
                   <div className="w-1/2 h-4 bg-gray-200 rounded"></div>
@@ -89,9 +89,9 @@ const AnswerList: React.FC<AnswerListProps> = ({
 
   if (answers.length === 0) {
     return (
-      <div className="card-elevated p-8 text-center">
-        <div className="text-gray-400 text-4xl mb-4">💬</div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+      <div className="card-elevated p-6 text-center">
+        <div className="text-gray-400 text-2xl mb-3">💬</div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-1">
           Chưa có câu trả lời nào
         </h3>
         <p className="text-gray-500">
@@ -104,15 +104,15 @@ const AnswerList: React.FC<AnswerListProps> = ({
   return (
     <div>
       {/* Answers Header */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">
           {answers.length} Câu trả lời
         </h2>
         <div className="w-12 h-1 bg-blue-600 rounded"></div>
       </div>
 
       {/* Answers List */}
-      <div className="space-y-4 mb-8">
+      <div className="space-y-3 mb-6">
         {answers.map((answer) => (
           <AnswerItem key={answer.id} answer={answer} onVote={onVote} />
         ))}
@@ -120,7 +120,7 @@ const AnswerList: React.FC<AnswerListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 py-6">
+        <div className="flex items-center justify-center gap-1 py-4">
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 1}
@@ -132,7 +132,7 @@ const AnswerList: React.FC<AnswerListProps> = ({
             Trước
           </button>
 
-          <div className="flex items-center gap-1 mx-4">
+          <div className="flex items-center gap-1 mx-3">
             {getVisiblePages().map((page) => (
               <button
                 key={page}

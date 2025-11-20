@@ -10,10 +10,6 @@ export interface ExamControlsProps {
   onTopicChange: (v: string) => void;
   topicOptions: string[];
 
-  level: string;
-  onLevelChange: (v: string) => void;
-  levelOptions: string[];
-
   // Pagination
   page: number; // 1-based
   pageSize: number;
@@ -60,9 +56,6 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
   topic,
   onTopicChange,
   topicOptions,
-  level,
-  onLevelChange,
-  levelOptions,
   page,
   pageSize,
   total,
@@ -93,8 +86,8 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
           onChange={(e) => onFieldChange(e.target.value)}
         >
           <option value="">Field (tất cả)</option>
-          {fieldOptions.map((opt) => (
-            <option key={opt} value={opt}>
+          {fieldOptions.map((opt, index) => (
+            <option key={`${opt}-${index}`} value={opt}>
               {opt}
             </option>
           ))}
@@ -106,21 +99,8 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
           onChange={(e) => onTopicChange(e.target.value)}
         >
           <option value="">Topic (tất cả)</option>
-          {topicOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-
-        <select
-          style={selectStyle}
-          value={level}
-          onChange={(e) => onLevelChange(e.target.value)}
-        >
-          <option value="">Level (tất cả)</option>
-          {levelOptions.map((opt) => (
-            <option key={opt} value={opt}>
+          {topicOptions.map((opt, index) => (
+            <option key={`${opt}-${index}`} value={opt}>
               {opt}
             </option>
           ))}

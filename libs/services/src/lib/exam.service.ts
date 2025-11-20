@@ -19,6 +19,16 @@ export class ExamService {
     const response = await this.apiClient.get('/exams');
     return response.data;
   }
+
+  async createExam(examData: any) {
+    const newExamData = {
+      ...examData,
+      language: 'Vietnamese',
+    }
+    console.log('Creating exam with data:', newExamData);
+    const response = await this.apiClient.post('/exams', newExamData);
+    return response.data;
+  }
 }
 
 /**

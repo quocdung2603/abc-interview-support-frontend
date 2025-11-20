@@ -29,7 +29,7 @@ export const TrendNewsFilter = ({
   };
 
   return (
-    <div className="card-elevated p-6 mb-8 animate-fade-in">
+    <div className="card-elevated p-4 mb-6 animate-fade-in">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-heading-3 text-neutral-800">
           Bộ lọc tin tức xu hướng
@@ -37,7 +37,7 @@ export const TrendNewsFilter = ({
         <span className="badge-neutral">📈 Chỉ tin tức xu hướng</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Search Input */}
         <div>
           <label
@@ -118,7 +118,7 @@ export const TrendNewsFilter = ({
 
       {/* Active Filters Display */}
       {(searchTerm || authorFilter) && (
-        <div className="mt-4 pt-4 border-t border-neutral-200">
+        <div className="mt-3 pt-3 border-t border-neutral-200">
           <div className="flex flex-wrap gap-2">
             <span className="text-caption text-neutral-600">Đang lọc:</span>
             {searchTerm && (

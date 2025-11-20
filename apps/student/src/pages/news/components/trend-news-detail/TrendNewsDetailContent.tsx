@@ -27,16 +27,16 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
     <div className="bg-white">
       <div className="container-center section-padding">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Content */}
             <article className="lg:col-span-3">
-              <div className="card-elevated p-8">
+              <div className="card-elevated p-6">
                 {/* Article Content */}
                 <div className="prose-custom">
                   {paragraphs.map((paragraph, index) => (
                     <p
                       key={`paragraph-${paragraph.slice(0, 20)}-${index}`}
-                      className="text-body-large text-neutral-700 leading-relaxed mb-6 animate-fade-in-up"
+                      className="text-body-large text-neutral-700 leading-relaxed mb-4 animate-fade-in-up"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       {paragraph}
@@ -45,7 +45,7 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                 </div>
 
                 {/* Content Highlights */}
-                <div className="mt-12 p-6 bg-accent-10 rounded-xl border-l-4 border-accent animate-fade-in-up">
+                <div className="mt-8 p-4 bg-accent-10 rounded-xl border-l-4 border-accent animate-fade-in-up">
                   <h3 className="text-heading-3 text-accent mb-4 flex items-center">
                     <svg
                       className="w-6 h-6 mr-3"
@@ -73,7 +73,7 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                   <h4 className="text-body font-semibold text-neutral-800 mb-4">
                     Chủ đề liên quan:
                   </h4>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     <span className="badge-accent">Xu hướng</span>
                     <span className="badge-secondary">Công nghệ</span>
                     <span className="badge-secondary">Tuyển dụng</span>
@@ -83,7 +83,7 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-wrap gap-4">
+                <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-wrap gap-3">
                   <button className="btn-primary flex items-center">
                     <svg
                       className="w-5 h-5 mr-2"
@@ -140,9 +140,9 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
 
             {/* Sidebar */}
             <aside className="lg:col-span-1">
-              <div className="sticky top-8 space-y-6">
+              <div className="sticky top-8 space-y-4">
                 {/* Table of Contents */}
-                <div className="card-elevated p-6">
+                <div className="card-elevated p-4">
                   <h3 className="text-heading-3 text-neutral-800 mb-4 flex items-center">
                     <svg
                       className="w-5 h-5 mr-2"
@@ -176,7 +176,7 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                 </div>
 
                 {/* Author Info */}
-                <div className="card-elevated p-6">
+                <div className="card-elevated p-4">
                   <h3 className="text-heading-3 text-neutral-800 mb-4">
                     Về tác giả
                   </h3>
@@ -197,7 +197,7 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                 </div>
 
                 {/* Related Actions */}
-                <div className="card-elevated p-6">
+                <div className="card-elevated p-4">
                   <h3 className="text-heading-3 text-neutral-800 mb-4">
                     Hành động
                   </h3>

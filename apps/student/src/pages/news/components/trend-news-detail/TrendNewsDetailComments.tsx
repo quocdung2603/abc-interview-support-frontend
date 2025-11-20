@@ -103,12 +103,12 @@ export const TrendNewsDetailComments: React.FC<
   };
 
   return (
-    <div className="bg-neutral-50 py-16">
+    <div className="bg-neutral-50 py-10">
       <div className="container-center">
         <div className="max-w-4xl mx-auto">
-          <div className="card-elevated p-8">
+          <div className="card-elevated p-6">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
               <h2 className="text-heading-2 text-neutral-800 mb-2 flex items-center">
                 <svg
                   className="w-6 h-6 mr-3 text-accent"
@@ -201,7 +201,7 @@ export const TrendNewsDetailComments: React.FC<
             </form>
 
             {/* Comments List */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {comments.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-neutral-100 rounded-full">
@@ -294,7 +294,7 @@ export const TrendNewsDetailComments: React.FC<
 
             {/* Load More Comments */}
             {comments.length > 0 && (
-              <div className="text-center mt-8 pt-8 border-t border-neutral-200">
+              <div className="text-center mt-6 pt-8 border-t border-neutral-200">
                 <button className="btn-outline">Xem thêm bình luận</button>
               </div>
             )}

@@ -28,7 +28,7 @@ export const RecruitmentNewsFilter: React.FC<RecruitmentNewsFilterProps> = ({
   onSortChange,
 }) => {
   return (
-    <div className="card-elevated p-6 mb-8 animate-fade-in">
+    <div className="card-elevated p-4 mb-6 animate-fade-in">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-heading-3 text-neutral-800">
           Bộ lọc tin tức tuyển dụng
@@ -36,7 +36,7 @@ export const RecruitmentNewsFilter: React.FC<RecruitmentNewsFilterProps> = ({
         <span className="badge-primary">💼 Cơ hội việc làm</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* Search Input */}
         <div className="lg:col-span-3">
           <label
@@ -142,7 +142,7 @@ export const RecruitmentNewsFilter: React.FC<RecruitmentNewsFilterProps> = ({
       </div>
 
       {/* Sort and Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200">
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-neutral-200">
         <div className="flex items-center space-x-3">
           <label className="text-caption font-medium text-neutral-700">
             Sắp xếp:
