@@ -29,6 +29,20 @@ export class ExamService {
     const response = await this.apiClient.post('/exams', newExamData);
     return response.data;
   }
+
+  async updateExam(examId: string, examData: any) {
+     const newExamData = {
+      ...examData,
+      language: 'Vietnamese',
+    }
+    const response = await this.apiClient.put(`/exams/${examId}`, newExamData);
+    return response.data;
+  }
+
+  async deleteExam (examId: string) {
+    const response = await this.apiClient.delete(`/exams/${examId}`);
+    return response.data;
+  }
 }
 
 /**

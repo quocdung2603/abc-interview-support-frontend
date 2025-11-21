@@ -3,13 +3,11 @@ import React, { useEffect, useMemo } from 'react';
 import { JobPost } from './types';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-interface CreateFormFields extends JobPost {}
-
 interface JobFormDrawerProps {
-  initForm?: CreateFormFields; // undefined => tạo mới; có giá trị => sửa
+  initForm?: JobPost; // undefined => tạo mới; có giá trị => sửa
   visible: boolean;
   onClose: () => void;
-  onSave: (data: CreateFormFields, mode: 'create' | 'update') => void;
+  onSave: (data: JobPost, mode: 'create' | 'update') => void;
 }
 
 const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
@@ -18,7 +16,7 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
   onClose,
   onSave,
 }) => {
-  const defaultFormValue: CreateFormFields = {
+  const defaultFormValue: JobPost = {
     id: '', // để khớp type JobPost khi update
     title: '',
     position: '',
@@ -39,7 +37,7 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
     reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateFormFields>({
+  } = useForm<JobPost>({
     defaultValues: defaultFormValue,
   });
 
@@ -50,7 +48,7 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
     else reset(defaultFormValue);
   }, [visible, initForm, reset]);
 
-  const onSubmit: SubmitHandler<CreateFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<JobPost> = async (data) => {
     try {
       if (isEdit) {
         onSave({ ...initForm!, ...data }, 'update');

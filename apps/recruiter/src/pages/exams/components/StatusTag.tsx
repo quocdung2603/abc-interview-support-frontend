@@ -8,10 +8,10 @@ interface StatusTagProps {
 const StatusTag: React.FC<StatusTagProps> = ({ status }) => {
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'draft':
+      case 'DRAFT':
         return { color: 'default', text: 'Bản nháp' };
-      case 'published':
-        return { color: 'blue', text: 'Đã công bố' };
+      case 'ACTIVE':
+        return { color: 'blue', text: 'Hoạt động' };
       case 'closed':
         return { color: 'green', text: 'Đã kết thúc' };
       default:

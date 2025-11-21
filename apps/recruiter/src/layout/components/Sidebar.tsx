@@ -34,12 +34,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       onClick: () => navigate(`/${RouterLink.Dashboard}`),
     },
     {
-      key: RouterLink.Verification,
-      icon: <SafetyCertificateOutlined />,
-      label: 'Xác thực DN',
-      onClick: () => navigate(`/${RouterLink.Verification}`),
-    },
-    {
       key: 'jobs-group',
       icon: <ShopOutlined />,
       label: 'Quản lý tin tức',

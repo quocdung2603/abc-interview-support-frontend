@@ -1,11 +1,12 @@
 import { SSOClient } from '@abc-interview-support-frontend/sso-utils';
+import { User } from '@abc-interview-support-frontend/types';
 import { useEffect } from 'react';
 
 export function useSSO(
   onAuthReceived: (
     accessToken: string,
     refreshToken: string,
-    user: any
+    user: User
   ) => void,
   onError?: (error: string) => void
 ) {

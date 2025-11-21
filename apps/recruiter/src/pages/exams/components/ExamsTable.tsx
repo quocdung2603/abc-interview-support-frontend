@@ -2,13 +2,13 @@ import React from 'react';
 import { Table, Button, Tag, Space, Tooltip, Popconfirm, message } from 'antd';
 import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import StatusTag from './StatusTag';
-import { Examss } from './types';
+import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamsTableProps {
-  examList: Examss[];
-  onEdit: (exam: Examss) => void;
-  onPreview: (exam: Examss) => void;
-  onDelete: (examId: string) => void;
+  examList: Exam[];
+  onEdit: (exam: Exam) => void;
+  onPreview: (exam: Exam) => void;
+  onDelete: (examId: number) => void;
 }
 
 const ExamsTable: React.FC<ExamsTableProps> = ({
@@ -41,11 +41,11 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
     },
     {
       title: 'Thí sinh',
-      dataIndex: 'candidates',
-      key: 'candidates',
-      render: (candidates: number) => (
+      dataIndex: 'questionCount',
+      key: 'questionCount',
+      render: (questionCount: number) => (
         <div style={{ textAlign: 'center', fontWeight: 'bold' }}>
-          {candidates}
+          {questionCount}
         </div>
       ),
     },
@@ -53,14 +53,26 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
       title: 'Chủ đề',
       dataIndex: 'topics',
       key: 'topics',
-      render: (topics: string[]) => (
-        <div>
-          {topics.slice(0, 2).map((topic) => (
-            <Tag key={topic}>{topic}</Tag>
-          ))}
-          {topics.length > 2 && <Tag>+{topics.length - 2}</Tag>}
-        </div>
-      ),
+      render: (topics: number[]) => {
+        const topicNames = topics.map(id => {
+          const topicMap: Record<number, string> = {
+            1: 'JavaScript',
+            2: 'React',
+            3: 'Node.js',
+            4: 'Database',
+            5: 'Algorithms',
+          };
+          return topicMap[id] || `Topic ${id}`;
+        });
+        return (
+          <div>
+            {topicNames.slice(0, 2).map((topic) => (
+              <Tag key={topic}>{topic}</Tag>
+            ))}
+            {topicNames.length > 2 && <Tag>+{topicNames.length - 2}</Tag>}
+          </div>
+        );
+      },
     },
     {
       title: 'Ngày tạo',

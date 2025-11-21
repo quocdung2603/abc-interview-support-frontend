@@ -3,13 +3,11 @@ import React, { useEffect, useMemo } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { TrendNews } from './types';
 
-interface CreateFormFields extends TrendNews {}
-
 interface TrendNewsFormDrawerProps {
-  initForm?: CreateFormFields; // undefined => tạo mới; có giá trị => sửa
+  initForm?: TrendNews; // undefined => tạo mới; có giá trị => sửa
   visible: boolean;
   onClose: () => void;
-  onSave: (data: CreateFormFields, mode: 'create' | 'update') => void;
+  onSave: (data: TrendNews, mode: 'create' | 'update') => void;
 }
 
 const TrendNewsFormDrawer: React.FC<TrendNewsFormDrawerProps> = ({
@@ -18,7 +16,7 @@ const TrendNewsFormDrawer: React.FC<TrendNewsFormDrawerProps> = ({
   onClose,
   onSave,
 }) => {
-  const defaultFormValue: CreateFormFields = {
+  const defaultFormValue: TrendNews = {
     id: '', // để khớp type TrendNewsPost khi update
     title: '',
     content: '',
@@ -33,7 +31,7 @@ const TrendNewsFormDrawer: React.FC<TrendNewsFormDrawerProps> = ({
     reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateFormFields>({
+  } = useForm<TrendNews>({
     defaultValues: defaultFormValue,
   });
 
@@ -44,7 +42,7 @@ const TrendNewsFormDrawer: React.FC<TrendNewsFormDrawerProps> = ({
     else reset(defaultFormValue);
   }, [visible, initForm, reset]);
 
-  const onSubmit: SubmitHandler<CreateFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<TrendNews> = async (data) => {
     try {
       if (isEdit) {
         onSave({ ...initForm!, ...data }, 'update');

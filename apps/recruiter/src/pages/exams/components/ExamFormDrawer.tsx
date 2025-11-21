@@ -1,23 +1,25 @@
 import React, { useMemo, useEffect } from 'react';
 import {
-  Form,
-  Input,
-  Select,
-  Upload,
-  Card,
-  Button,
-  Statistic,
   Drawer,
+  Button,
   notification,
   Steps,
+  Form,
 } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import { Examss } from './types';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import dayjs from 'dayjs';
-import { Option } from 'antd/es/mentions';
+import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { BasicInfoStep, ExamConfigStep, ConfirmationStep } from './exam-form-component';
 
-interface CreateFormFields extends Examss {}
+// Extended interface to include UI-specific fields
+interface CreateFormFields extends Exam {
+  totalQuestions: number;
+  candidates: number;
+  startTime: string;
+  endTime: string;
+  examPeriod?: [string, string];
+  questionSource?: 'upload' | 'existing';
+  questionBank?: any; // File upload for CSV
+}
 
 interface ExamFormDrawerProps {
   currentStep: number;
@@ -28,6 +30,10 @@ interface ExamFormDrawerProps {
   onNextStep: () => void;
   onPrevStep: () => void;
   onFinish: () => void;
+  fields: Field[];
+  topics: Topic[];
+  levels: Level[];
+  questionTypes: QuestionType[];
 }
 
 const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
@@ -39,29 +45,34 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
   onNextStep,
   onPrevStep,
   onFinish,
+  fields,
+  topics,
+  levels,
+  questionTypes,
 }) => {
   const isEdit = useMemo(() => Boolean(initForm?.id), [initForm]);
 
-  const defaultFormValue: CreateFormFields = {
-    id: '',
+  const defaultFormValue: CreateFormFields = useMemo(() => ({
+    id: 0,
+    userId: 0,
+    examType: 'RECRUITER',
     title: '',
     position: '',
-    status: 'published',
-    totalQuestions: 1,
-    duration: 1,
-    candidates: 1,
-    description: '',
     topics: [],
+    questionTypes: [],
+    questionCount: 1,
+    duration: 1,
+    status: 'DRAFT',
+    language: 'vi',
     createdAt: '',
+    createdBy: 0,
+    totalQuestions: 1,
+    candidates: 1,
     startTime: '',
     endTime: '',
     examPeriod: undefined,
-    difficulty: {
-      easy: true,
-      medium: true,
-      hard: false,
-    },
-  };
+    questionSource: 'upload',
+  }), []);
 
   const {
     control,
@@ -74,8 +85,6 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     defaultValues: defaultFormValue,
   });
 
-  const watchedValues = watch();
-
   // Reset form khi initForm thay đổi (cho edit mode)
   useEffect(() => {
     if (!visible) return;
@@ -84,21 +93,19 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     } else {
       reset(defaultFormValue);
     }
-  }, [visible, initForm, reset]);
+  }, [visible, initForm, reset, defaultFormValue]);
 
   const validateCurrentStep = async (step: number): Promise<boolean> => {
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'topics', 'duration'];
+        fields = ['title', 'position', 'topics', 'duration', 'totalQuestions'];
         break;
       case 1:
-        fields = ['totalQuestions'];
-        break;
+        // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
+        return true;
       case 2:
-        fields = ['examPeriod'];
-        break;
-      case 3:
+        // Step 2 (Xác nhận) không yêu cầu validation bắt buộc
         return true;
     }
     const isValid = await trigger(fields);
@@ -107,8 +114,8 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
 
   const onSubmit: SubmitHandler<CreateFormFields> = async (data) => {
     try {
-      if (isEdit) {
-        onSave({ ...initForm!, ...data }, 'update');
+      if (isEdit && initForm) {
+        onSave(data, 'update');
       } else {
         onSave(data, 'create');
       }
@@ -125,304 +132,26 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     {
       title: 'Thông tin cơ bản',
       content: (
-        <div className="step-content">
-          <p className="text-[16px] text-[grey]">Tên kì thi</p>
-          <Controller
-            name="title"
-            control={control}
-            rules={{ required: 'Vui lòng nhập tiêu đề' }}
-            render={({ field }) => (
-              <Input type="text" placeholder="Nhập tiêu đề..." {...field} />
-            )}
-          />
-          {errors.title && (
-            <span className="text-red-500">{errors.title.message}</span>
-          )}
-
-          <Form.Item
-            label="Vị trí tuyển dụng"
-            name="position"
-            rules={[{ required: true, message: 'Vui lòng chọn vị trí' }]}
-          >
-            <Controller
-              name="position"
-              control={control}
-              rules={{ required: 'Vui lòng chọn vị trí' }}
-              render={({ field }) => (
-                <Select placeholder="Chọn vị trí" {...field}>
-                  <Option value="frontend">Frontend Developer</Option>
-                  <Option value="backend">Backend Developer</Option>
-                  <Option value="fullstack">Fullstack Developer</Option>
-                  <Option value="mobile">Mobile Developer</Option>
-                  <Option value="devops">DevOps Engineer</Option>
-                </Select>
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item label="Mô tả" name="description">
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <textarea
-                  rows={3}
-                  placeholder="Mô tả về kỳ thi này..."
-                  {...field}
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Chủ đề kiến thức"
-            name="topics"
-            rules={[
-              { required: true, message: 'Vui lòng chọn ít nhất 1 chủ đề' },
-            ]}
-          >
-            <Controller
-              name="topics"
-              control={control}
-              rules={{ required: 'Vui lòng chọn ít nhất 1 chủ đề' }}
-              render={({ field }) => (
-                <Select mode="multiple" placeholder="Chọn chủ đề" {...field}>
-                  <Option value="javascript">JavaScript</Option>
-                  <Option value="react">React</Option>
-                  <Option value="nodejs">Node.js</Option>
-                  <Option value="database">Database</Option>
-                  <Option value="algorithms">Algorithms</Option>
-                </Select>
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Thời gian thi (phút)"
-            name="duration"
-            rules={[{ required: true, message: 'Vui lòng nhập thời gian' }]}
-          >
-            <Controller
-              name="duration"
-              control={control}
-              rules={{ required: 'Vui lòng nhập thời gian' }}
-              render={({ field }) => (
-                <Input type="number" placeholder="90" {...field} />
-              )}
-            />
-          </Form.Item>
-        </div>
+        <BasicInfoStep control={control} errors={errors} />
       ),
     },
     {
       title: 'Cấu hình đề thi',
       content: (
-        <div className="step-content">
-          <div className="question-bank-section">
-            <h3>Ngân hàng câu hỏi</h3>
-            <Upload>
-              <Button icon={<UploadOutlined />}>
-                Tải lên file câu hỏi (Excel/CSV)
-              </Button>
-            </Upload>
-            <p className="upload-note">
-              Hỗ trợ file Excel (.xlsx) hoặc CSV.{' '}
-              <a href="#template" style={{ color: 'var(--color-primary)' }}>
-                Tải template
-              </a>
-            </p>
-          </div>
-
-          <div className="exam-config-section">
-            <div className="config-cards">
-              <Card title="Cấu hình đề thi">
-                <div>
-                  <Form.Item label="Số câu hỏi" name="totalQuestions">
-                    <Controller
-                      name="totalQuestions"
-                      control={control}
-                      rules={{ required: 'Vui lòng nhập số câu hỏi' }}
-                      render={({ field }) => (
-                        <Input type="number" defaultValue="25" {...field} />
-                      )}
-                    />
-                  </Form.Item>
-
-                  <Form.Item label="Độ khó" name="difficulty">
-                    <Controller
-                      name="difficulty"
-                      control={control}
-                      render={({ field }) => (
-                        <div>
-                          <label htmlFor="easy-checkbox">
-                            <input
-                              id="easy-checkbox"
-                              type="checkbox"
-                              style={{ marginRight: '8px' }}
-                              checked={field.value?.easy ?? true}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  easy: e.target.checked,
-                                })
-                              }
-                            />
-                            Dễ (40%)
-                          </label>
-                          <br />
-                          <label htmlFor="medium-checkbox">
-                            <input
-                              id="medium-checkbox"
-                              type="checkbox"
-                              style={{ marginRight: '8px' }}
-                              checked={field.value?.medium ?? true}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  medium: e.target.checked,
-                                })
-                              }
-                            />
-                            Trung bình (50%)
-                          </label>
-                          <br />
-                          <label htmlFor="hard-checkbox">
-                            <input
-                              id="hard-checkbox"
-                              type="checkbox"
-                              style={{ marginRight: '8px' }}
-                              checked={field.value?.hard ?? false}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  hard: e.target.checked,
-                                })
-                              }
-                            />
-                            Khó (10%)
-                          </label>
-                        </div>
-                      )}
-                    />
-                  </Form.Item>
-
-                  <div>
-                    <h4>Quy tắc chấm điểm:</h4>
-                    <div>Đúng: +1 điểm</div>
-                    <div>Sai: -0.25 điểm</div>
-                    <div>Bỏ trống: 0 điểm</div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Thời gian thi',
-      content: (
-        <div className="step-content">
-          <Form.Item
-            label="Cửa sổ thời gian thi"
-            name="examPeriod"
-            rules={[{ required: true, message: 'Vui lòng chọn thời gian' }]}
-          >
-            {/* <Controller
-              name="examPeriod"
-              control={control}
-              rules={{ required: 'Vui lòng chọn thời gian thi' }}
-              render={({ field }) => (
-                <RangePicker
-                  showTime
-                  format="DD/MM/YYYY HH:mm"
-                  placeholder={['Bắt đầu', 'Kết thúc']}
-                  style={{ width: '100%' }}
-                  value={
-                    field.value
-                      ? [dayjs(field.value[0]), dayjs(field.value[1])]
-                      : undefined
-                  }
-                  onChange={(dates) => {
-                    if (dates?.[0] && dates?.[1]) {
-                      field.onChange([
-                        dates[0].format('YYYY-MM-DDTHH:mm:ss'),
-                        dates[1].format('YYYY-MM-DDTHH:mm:ss'),
-                      ]);
-                    } else {
-                      field.onChange(undefined);
-                    }
-                  }}
-                />
-              )}
-            /> */}
-          </Form.Item>
-
-          <div className="time-summary">
-            <Statistic
-              title="Số câu hỏi"
-              value={watchedValues.totalQuestions || 0}
-            />
-            <Statistic
-              title="Thời gian thi"
-              value={`${watchedValues.duration || 0} phút`}
-            />
-            <Statistic
-              title="Điểm tối đa"
-              value={watchedValues.totalQuestions || 0}
-            />
-          </div>
-        </div>
+        <ExamConfigStep
+          control={control}
+          errors={errors}
+          fields={fields}
+          topics={topics}
+          levels={levels}
+          questionTypes={questionTypes}
+        />
       ),
     },
     {
       title: 'Xác nhận',
       content: (
-        <div className="step-content">
-          <div className="exam-preview">
-            <h3>Thông tin kỳ thi</h3>
-            <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
-              <div>
-                <strong>Tên:</strong> {watchedValues.title || 'Chưa nhập'}
-              </div>
-              <div>
-                <strong>Vị trí:</strong> {watchedValues.position || 'Chưa chọn'}
-              </div>
-              <div>
-                <strong>Chủ đề:</strong>{' '}
-                {watchedValues.topics?.join(', ') || 'Chưa chọn'}
-              </div>
-              <div>
-                <strong>Thời gian:</strong>{' '}
-                {watchedValues.duration
-                  ? `${watchedValues.duration} phút`
-                  : 'Chưa nhập'}
-              </div>
-              <div>
-                <strong>Số câu:</strong>{' '}
-                {watchedValues.totalQuestions || 'Chưa nhập'}
-              </div>
-              <div>
-                <strong>Độ khó:</strong>{' '}
-                {watchedValues.difficulty
-                  ? [
-                      watchedValues.difficulty.easy && 'Dễ',
-                      watchedValues.difficulty.medium && 'Trung bình',
-                      watchedValues.difficulty.hard && 'Khó',
-                    ]
-                      .filter(Boolean)
-                      .join(', ') || 'Chưa chọn'
-                  : 'Chưa chọn'}
-              </div>
-              <div>
-                <strong>Cửa sổ thi:</strong>{' '}
-                {watchedValues.examPeriod
-                  ? `Từ ${watchedValues.examPeriod[0]} đến ${watchedValues.examPeriod[1]}`
-                  : 'Chưa chọn'}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ConfirmationStep watch={watch} />
       ),
     },
   ];
@@ -434,6 +163,9 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
       open={visible}
       onClose={onClose}
       destroyOnHidden={false}
+      mask={false}
+      zIndex={1002}
+      push={false}
       footer={
         <div
           style={{
@@ -465,7 +197,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
                 Tiếp theo
               </Button>
             ) : (
-              <Button type="primary" htmlType="submit" form="examForm">
+              <Button type="primary" onClick={handleSubmit(onSubmit)}>
                 {isEdit ? 'Cập nhật' : 'Tạo kỳ thi'}
               </Button>
             )}
@@ -481,9 +213,9 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
         </Steps>
       </div>
 
-      <form id="examForm" onSubmit={handleSubmit(onSubmit)}>
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <div style={{ marginTop: 24 }}>{steps[currentStep].content}</div>
-      </form>
+      </Form>
     </Drawer>
   );
 };
