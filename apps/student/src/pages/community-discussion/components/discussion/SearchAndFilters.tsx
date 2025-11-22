@@ -3,13 +3,13 @@ import { SearchOutlined } from '@ant-design/icons';
 
 interface Field {
   fieldId: string;
-  fieldName: string;
+  name: string;
   description?: string;
 }
 
 interface Level {
   levelId: string;
-  levelName: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
+  name: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
   description?: string;
 }
 
@@ -35,10 +35,10 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   levels,
 }) => {
   const allFields = [
-    { fieldId: 'all', fieldName: 'Tất cả lĩnh vực' },
+    { fieldId: 'all', name: 'Tất cả lĩnh vực' },
     ...fields,
   ];
-  const allLevels = [{ levelId: 'all', levelName: 'Tất cả cấp độ' }, ...levels];
+  const allLevels = [{ levelId: 'all', name: 'Tất cả cấp độ' }, ...levels];
 
   return (
     <div className="card-elevated p-4">
@@ -74,7 +74,7 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         >
           {allFields.map((field) => (
             <option key={field.fieldId} value={field.fieldId}>
-              {field.fieldName}
+              {field.name}
             </option>
           ))}
         </select>
@@ -96,7 +96,7 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         >
           {allLevels.map((level) => (
             <option key={level.levelId} value={level.levelId}>
-              {level.levelName}
+              {level.name}
             </option>
           ))}
         </select>

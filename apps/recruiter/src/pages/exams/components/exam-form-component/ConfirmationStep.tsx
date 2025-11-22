@@ -12,6 +12,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
+  selectedQuestions: number[]; // Add selected questions
 }
 
 interface ConfirmationStepProps {

@@ -67,14 +67,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="badge-primary text-xs">{field.fieldName}</span>
-              <span className="badge-secondary text-xs">{topic.topicName}</span>
+              <span className="badge-primary text-xs">{field.name}</span>
+              <span className="badge-secondary text-xs">{topic.name}</span>
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(
-                  level.levelName
+                  level.name
                 )}`}
               >
-                {level.levelName}
+                {level.name}
               </span>
               <span className="text-neutral-400 text-xs">
                 {formatDate(question.createdAt)}
@@ -124,8 +124,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           <button
             onClick={() => setShowPreview(!showPreview)}
             className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${showPreview
-                ? 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                : 'bg-primary text-white hover:bg-primary-dark'
+              ? 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+              : 'bg-primary text-white hover:bg-primary-dark'
               }`}
           >
             {showPreview ? (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import {
   Question,
   Field,
@@ -12,7 +12,6 @@ import {
 interface TableProps {
   dataList: Question[];
   onPreview: (data: Question) => void;
-  onEdit: (data: Question) => void;
   fields: Field[];
   topics: Topic[];
   levels: Level[];
@@ -22,7 +21,6 @@ interface TableProps {
 const QuestionApprovalTable: React.FC<TableProps> = ({
   dataList,
   onPreview,
-  onEdit,
   fields,
   topics,
   levels,
@@ -30,17 +28,17 @@ const QuestionApprovalTable: React.FC<TableProps> = ({
 }) => {
   const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
-    return field?.fieldName || 'N/A';
+    return field?.name || 'N/A';
   };
 
   const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
-    return topic?.topicName || 'N/A';
+    return topic?.name || 'N/A';
   };
 
   const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
-    return level?.levelName || 'N/A';
+    return level?.name || 'N/A';
   };
 
   const getStatusText = (status: string) => {
@@ -74,7 +72,7 @@ const QuestionApprovalTable: React.FC<TableProps> = ({
       title: 'Nội dung câu hỏi',
       dataIndex: 'questionContent',
       key: 'questionContent',
-      render: (content: string) => (
+      render: (content: string, record: any) => (
         <div style={{ maxWidth: '150px' }}>
           <div
             style={{
@@ -83,16 +81,10 @@ const QuestionApprovalTable: React.FC<TableProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            {content}
+            #{record.id}: {content}
           </div>
         </div>
       ),
-    },
-    {
-      title: 'Người tạo',
-      dataIndex: 'userId',
-      key: 'userId',
-      render: (userId: number) => <Tag color="geekblue">User #{userId}</Tag>,
     },
     {
       title: 'Lĩnh vực',
@@ -159,20 +151,12 @@ const QuestionApprovalTable: React.FC<TableProps> = ({
       key: 'action',
       render: (record: Question) => (
         <Space size="small">
-          <Tooltip title="Xem chi tiết">
+          <Tooltip title="Kiểm duyệt">
             <Button
               type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              size="small"
-              onClick={() => onEdit(record)}
             />
           </Tooltip>
         </Space>

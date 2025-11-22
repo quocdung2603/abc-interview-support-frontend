@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Button, message, Radio, Table, Tag, Tooltip } from 'antd';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
 import { FileTextOutlined, DatabaseOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -15,6 +15,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
+  selectedQuestions: number[]; // Add selected questions
 }
 
 interface ExamConfigStepProps {
@@ -25,6 +26,7 @@ interface ExamConfigStepProps {
   levels: Level[];
   questionTypes: QuestionType[];
   onQuestionsSelected?: (questions: Question[]) => void;
+  setValue?: (name: keyof CreateFormFields, value: any) => void;
 }
 
 const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
@@ -35,11 +37,17 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   levels,
   questionTypes,
   onQuestionsSelected,
+  setValue,
 }) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [questionSource, setQuestionSource] = useState<'upload' | 'existing'>('upload');
   const [questionListDrawerVisible, setQuestionListDrawerVisible] = useState(false);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+
+  // Sync selectedQuestions with form value
+  useEffect(() => {
+    // This would need the form watch, but for now, we'll handle it differently
+  }, []);
 
   const handleFileChange = (info: UploadChangeParam) => {
     let fileList = [...info.fileList];
@@ -78,6 +86,11 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
     const newSelectedQuestions = [...selectedQuestions, selectedQuestion];
     setSelectedQuestions(newSelectedQuestions);
 
+    // Update form value
+    if (setValue) {
+      setValue('selectedQuestions', newSelectedQuestions.map(q => q.id));
+    }
+
     if (onQuestionsSelected) {
       onQuestionsSelected(newSelectedQuestions);
     }
@@ -86,6 +99,11 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   const handleRemoveQuestion = (questionId: number) => {
     const newSelectedQuestions = selectedQuestions.filter(q => q.id !== questionId);
     setSelectedQuestions(newSelectedQuestions);
+
+    // Update form value
+    if (setValue) {
+      setValue('selectedQuestions', newSelectedQuestions.map(q => q.id));
+    }
 
     if (onQuestionsSelected) {
       onQuestionsSelected(newSelectedQuestions);

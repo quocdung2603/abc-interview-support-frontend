@@ -19,6 +19,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
+  selectedQuestions: number[]; // Add selected questions
 }
 
 interface ExamFormDrawerProps {
@@ -72,6 +73,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     endTime: '',
     examPeriod: undefined,
     questionSource: 'upload',
+    selectedQuestions: [], // Initialize empty array
   }), []);
 
   const {
@@ -80,6 +82,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     watch,
     reset,
     trigger,
+    setValue,
     formState: { errors },
   } = useForm<CreateFormFields>({
     defaultValues: defaultFormValue,
@@ -99,7 +102,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'topics', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'topics', 'questionTypes', 'duration', 'totalQuestions'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
@@ -132,7 +135,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     {
       title: 'Thông tin cơ bản',
       content: (
-        <BasicInfoStep control={control} errors={errors} />
+        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} />
       ),
     },
     {
@@ -145,6 +148,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
           topics={topics}
           levels={levels}
           questionTypes={questionTypes}
+          setValue={setValue}
         />
       ),
     },

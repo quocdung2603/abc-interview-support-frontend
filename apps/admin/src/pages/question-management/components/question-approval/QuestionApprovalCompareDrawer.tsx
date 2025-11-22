@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   Drawer,
-  List,
-  Card,
-  Typography,
-  Tag,
+  Table,
   Button,
-  Space,
-  Progress,
-  Divider,
-  Empty,
+  Tag,
+  message,
 } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 import {
@@ -18,10 +13,9 @@ import {
   Topic,
   Level,
   QuestionType,
-  QuestionVariant,
 } from '@abc-interview-support-frontend/types';
-
-const { Title, Text } = Typography;
+import { questionService } from '@abc-interview-support-frontend/services';
+import QuestionComparisonModal from './QuestionComparisonModal';
 
 interface CompareDrawerProps {
   visible: boolean;
@@ -42,348 +36,166 @@ const QuestionApprovalCompareDrawer: React.FC<CompareDrawerProps> = ({
   levels,
   questionTypes,
 }) => {
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
-    null
-  );
   const [similarQuestions, setSimilarQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCompareQuestion, setSelectedCompareQuestion] = useState<Question | null>(null);
 
-  // Mock data cho các câu hỏi tương tự
   useEffect(() => {
-    if (currentQuestion && visible) {
-      // Giả lập tìm kiếm câu hỏi tương tự
-      const mockSimilarQuestions: Question[] = [
-        {
-          id: 1001,
-          userId: 1,
-          topicId: currentQuestion.topicId,
-          fieldId: currentQuestion.fieldId,
-          levelId: currentQuestion.levelId,
-          questionTypeId: 1,
-          status: 'APPROVED',
-          questionContent:
-            'React Hook useEffect được sử dụng để làm gì? (Phiên bản khác)',
-          questionVariant: '1,2',
-          similarityScore: 85,
-          usefulVote: 25,
-          unusefulVote: 3,
-          createdAt: '2024-01-15T00:00:00.000Z',
-          approvedAt: '2024-01-16T00:00:00.000Z',
-          approvedBy: 1,
-          fieldName: 'Frontend Development',
-          topicName: 'React.js',
-          levelName: 'Junior',
-          questionTypeName: 'SingleChoice',
-          questionAnswer: 'Mock answer',
-        },
-        {
-          id: 1002,
-          userId: 2,
-          topicId: currentQuestion.topicId,
-          fieldId: currentQuestion.fieldId,
-          levelId: currentQuestion.levelId,
-          questionTypeId: 1,
-          status: 'APPROVED',
-          questionContent:
-            'Cách sử dụng useEffect trong React functional component',
-          questionVariant: '1,3,4',
-          similarityScore: 72,
-          usefulVote: 18,
-          unusefulVote: 2,
-          createdAt: '2024-02-20T00:00:00.000Z',
-          approvedAt: '2024-02-21T00:00:00.000Z',
-          approvedBy: 1,
-          fieldName: 'Frontend Development',
-          topicName: 'React.js',
-          levelName: 'Junior',
-          questionTypeName: 'SingleChoice',
-          questionAnswer: 'Mock answer',
-        },
-        {
-          id: 1003,
-          userId: 3,
-          topicId: currentQuestion.topicId,
-          fieldId: currentQuestion.fieldId,
-          levelId: currentQuestion.levelId,
-          questionTypeId: 1,
-          status: 'APPROVED',
-          questionContent: 'useEffect hook trong React - cách hoạt động',
-          questionVariant: '1,2,5',
-          similarityScore: 68,
-          usefulVote: 12,
-          unusefulVote: 1,
-          createdAt: '2024-03-10T00:00:00.000Z',
-          approvedAt: '2024-03-11T00:00:00.000Z',
-          approvedBy: 1,
-          fieldName: 'Frontend Development',
-          topicName: 'React.js',
-          levelName: 'Junior',
-          questionTypeName: 'SingleChoice',
-          questionAnswer: 'Mock answer',
-        },
-      ];
+    const fetchSimilarQuestions = async () => {
+      if (currentQuestion && visible) {
+        setLoading(true);
+        try {
+          const res = await questionService.getAllQuestions();
+          const allQuestions = (res.content as Question[]) || [];
+          const filteredQuestions = allQuestions.filter(q =>
+            q.status === 'APPROVED' &&
+            q.fieldId === currentQuestion.fieldId &&
+            q.topicId === currentQuestion.topicId &&
+            q.levelId === currentQuestion.levelId &&
+            q.questionTypeId === currentQuestion.questionTypeId &&
+            q.id !== currentQuestion.id
+          );
+          setSimilarQuestions(filteredQuestions);
+        } catch (error) {
+          console.error('Error fetching similar questions:', error);
+          message.error('Không thể tải danh sách câu hỏi tương tự');
+          setSimilarQuestions([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
 
-      setSimilarQuestions(mockSimilarQuestions);
-    }
+    fetchSimilarQuestions();
   }, [currentQuestion, visible]);
 
   const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
-    return field?.fieldName || 'N/A';
+    return field?.name || 'N/A';
   };
 
   const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
-    return topic?.topicName || 'N/A';
+    return topic?.name || 'N/A';
   };
 
   const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
-    return level?.levelName || 'N/A';
+    return level?.name || 'N/A';
   };
 
-  const getSimilarityColor = (score: number) => {
-    if (score >= 80) return '#ff4d4f'; // High similarity - red
-    if (score >= 60) return '#faad14'; // Medium similarity - orange
-    return '#52c41a'; // Low similarity - green
+  const handleCompare = (question: Question) => {
+    setSelectedCompareQuestion(question);
+    setModalVisible(true);
   };
 
-  const getSimilarityText = (score: number) => {
-    if (score >= 80) return 'Rất cao';
-    if (score >= 60) return 'Cao';
-    if (score >= 40) return 'Trung bình';
-    return 'Thấp';
-  };
-
-  // Mock function to get question variants
-  const getQuestionVariants = (question: Question): QuestionVariant[] => {
-    if (!question.questionVariant) return [];
-
-    const variantIds = question.questionVariant.split(',');
-    return variantIds.map((id) => ({
-      questionVariantId: id.trim(),
-      questionTypeId: '5', // Reference type
-      questionContent: `Nội dung tham khảo cho variant ${id.trim()}`,
-      questionAnswer: `Đáp án tham khảo cho variant ${id.trim()}`,
-    }));
-  };
-
-  const renderQuestionDetail = (question: Question) => (
-    <div style={{ padding: '16px' }}>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <div>
-          <Title level={4} style={{ marginBottom: '16px' }}>
-            {question.questionTitle}
-          </Title>
-
-          <div style={{ display: 'grid', gap: '8px', marginBottom: '16px' }}>
-            <Space wrap>
-              <Tag color="blue">{getFieldName(question.fieldId)}</Tag>
-              <Tag color="green">{getTopicName(question.topicId)}</Tag>
-              <Tag color="orange">{getLevelName(question.levelId)}</Tag>
-              <Tag color="purple">{question.status}</Tag>
-            </Space>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <Text strong>Độ tương đồng: </Text>
-            <span
-              style={{
-                color: getSimilarityColor(question.similarityScore || 0),
-              }}
-            >
-              {question.similarityScore?.toFixed(1)}% (
-              {getSimilarityText(question.similarityScore || 0)})
-            </span>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <Text strong>Người tạo: </Text>
-            <Text>User #{question.userId}</Text>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <Text strong>Ngày tạo: </Text>
-            <Text>
-              {new Date(question.createdAt).toLocaleDateString('vi-VN')}
-            </Text>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <Text strong>Lượt vote: </Text>
-            <Text style={{ color: '#52c41a' }}>+{question.usefulVote}</Text>
-            <Text style={{ color: '#ff4d4f', marginLeft: '8px' }}>
-              -{question.unusefulVote}
-            </Text>
+  const columns = [
+    {
+      title: 'Nội dung câu hỏi',
+      dataIndex: 'questionContent',
+      key: 'questionContent',
+      render: (content: string) => (
+        <div style={{ maxWidth: '200px' }}>
+          <div
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {content}
           </div>
         </div>
-
-        <Divider />
-
-        <div>
-          <Title level={5}>Các biến thể câu hỏi</Title>
-          <div style={{ marginTop: '16px' }}>
-            {getQuestionVariants(question).map((variant) => (
-              <Card
-                key={variant.questionVariantId}
-                size="small"
-                style={{ marginBottom: '8px' }}
-                title={`Biến thể ${variant.questionVariantId}`}
-              >
-                <div style={{ marginBottom: '8px' }}>
-                  <Text strong>Nội dung: </Text>
-                  <Text>{variant.questionContent}</Text>
-                </div>
-                <div>
-                  <Text strong>Đáp án: </Text>
-                  <Text>{variant.questionAnswer}</Text>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </Space>
-    </div>
-  );
+      ),
+    },
+    {
+      title: 'Lĩnh vực',
+      dataIndex: 'fieldId',
+      key: 'fieldId',
+      render: (fieldId: number) => (
+        <Tag color="blue" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getFieldName(fieldId)}</Tag>
+      ),
+    },
+    {
+      title: 'Chủ đề',
+      dataIndex: 'topicId',
+      key: 'topicId',
+      render: (topicId: number) => (
+        <Tag color="green" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getTopicName(topicId)}</Tag>
+      ),
+    },
+    {
+      title: 'Mức độ',
+      dataIndex: 'levelId',
+      key: 'levelId',
+      render: (levelId: number) => (
+        <Tag color="orange" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getLevelName(levelId)}</Tag>
+      ),
+    },
+    {
+      title: 'Loại câu hỏi',
+      dataIndex: 'questionTypeId',
+      key: 'questionTypeId',
+      render: (questionTypeId: number) => (
+        <Tag color="purple">{questionTypes.find(t => t.id === questionTypeId)?.name || 'N/A'}</Tag>
+      ),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (record: Question) => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => handleCompare(record)}
+        >
+          So sánh
+        </Button>
+      ),
+    },
+  ];
 
   return (
-    <Drawer
-      title="So sánh với câu hỏi đã có"
-      width={850}
-      open={visible}
-      onClose={onClose}
-      footer={null}
-      placement="left"
-      mask={false}
-      zIndex={1001}
-    >
-      <div style={{ display: 'flex', height: '100%' }}>
-        {/* Danh sách câu hỏi tương tự */}
-        <div
-          style={{
-            flex: 1,
-            borderRight: '1px solid #f0f0f0',
-            paddingRight: '16px',
+    <>
+      <Drawer
+        title="Câu hỏi tương tự trong ngân hàng"
+        width={900}
+        open={visible}
+        onClose={onClose}
+        footer={null}
+        placement='left'
+        zIndex={1001}
+        mask={false}
+      >
+        <Table
+          columns={columns}
+          dataSource={similarQuestions}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            total: similarQuestions.length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} của ${total} câu hỏi`,
           }}
-        >
-          <Title level={5} style={{ marginBottom: '16px' }}>
-            Câu hỏi tương tự ({similarQuestions.length})
-          </Title>
+        />
+      </Drawer>
 
-          {similarQuestions.length === 0 ? (
-            <Empty description="Không tìm thấy câu hỏi tương tự" />
-          ) : (
-            <List
-              dataSource={similarQuestions}
-              renderItem={(question) => (
-                <List.Item
-                  style={{
-                    padding: '12px',
-                    border:
-                      selectedQuestion?.questionId === question.questionId
-                        ? '2px solid #1890ff'
-                        : '1px solid #f0f0f0',
-                    borderRadius: '8px',
-                    marginBottom: '8px',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setSelectedQuestion(question)}
-                >
-                  <div style={{ width: '100%' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <Text strong style={{ flex: 1, marginRight: '16px' }}>
-                        {question.questionTitle}
-                      </Text>
-                      <Button
-                        type="text"
-                        icon={<EyeOutlined />}
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedQuestion(question);
-                        }}
-                      />
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      <Tag color="blue">{getFieldName(question.fieldId)}</Tag>
-                      <Tag color="green">{getTopicName(question.topicId)}</Tag>
-                      <Tag color="orange">{getLevelName(question.levelId)}</Tag>
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                          Độ tương đồng:
-                        </Text>
-                        <Progress
-                          percent={question.similarityScore}
-                          size="small"
-                          strokeColor={getSimilarityColor(
-                            question.similarityScore || 0
-                          )}
-                          showInfo={false}
-                        />
-                        <Text
-                          style={{
-                            fontSize: '12px',
-                            color: getSimilarityColor(
-                              question.similarityScore || 0
-                            ),
-                          }}
-                        >
-                          {question.similarityScore?.toFixed(1)}% -{' '}
-                          {getSimilarityText(question.similarityScore || 0)}
-                        </Text>
-                      </div>
-
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '12px', color: '#52c41a' }}>
-                          +{question.usefulVote}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#ff4d4f' }}>
-                          -{question.unusefulVote}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </List.Item>
-              )}
-            />
-          )}
-        </div>
-
-        {/* Chi tiết câu hỏi được chọn */}
-        <div style={{ flex: 1, paddingLeft: '16px' }}>
-          {selectedQuestion ? (
-            renderQuestionDetail(selectedQuestion)
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <Empty description="Chọn một câu hỏi để xem chi tiết" />
-            </div>
-          )}
-        </div>
-      </div>
-    </Drawer>
+      <QuestionComparisonModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        currentQuestion={currentQuestion}
+        compareQuestion={selectedCompareQuestion}
+        fields={fields}
+        topics={topics}
+        levels={levels}
+        questionTypes={questionTypes}
+      />
+    </>
   );
 };
 

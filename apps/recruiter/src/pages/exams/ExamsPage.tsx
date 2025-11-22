@@ -23,6 +23,7 @@ interface CreateFormFields extends Exam {
     medium: boolean;
     hard: boolean;
   };
+  selectedQuestions: number[]; // Add selected questions
 }
 
 const ExamsPage: React.FC = () => {
@@ -86,6 +87,7 @@ const ExamsPage: React.FC = () => {
         medium: true,
         hard: false,
       },
+      selectedQuestions: [], // Initialize empty for edit mode
     };
     setEditingExam(formData); // <- sửa => đổ dữ liệu
     setCurrentStep(0); // Reset về bước đầu tiên khi edit
@@ -108,7 +110,7 @@ const ExamsPage: React.FC = () => {
     }
   };
 
-  const handleSaveJob = async (payload: Exam, mode: 'create' | 'update') => {
+  const handleSaveJob = async (payload: CreateFormFields, mode: 'create' | 'update') => {
     try {
       if (mode === 'create') {
         // Mock user data - in real app, get from auth context
@@ -131,6 +133,24 @@ const ExamsPage: React.FC = () => {
         // Call API to create exam
         const response = await examService.createExam(apiData);
         console.log('Exam created successfully:', response);
+
+        // Get the created exam ID
+        const examId = response.id;
+
+        // Add selected questions to the exam
+        if (payload.selectedQuestions && payload.selectedQuestions.length > 0) {
+          for (let i = 0; i < payload.selectedQuestions.length; i++) {
+            const questionId = payload.selectedQuestions[i];
+            const orderNumber = i + 1;
+            try {
+              await examService.addQuestionToExam(examId.toString(), questionId, orderNumber);
+              console.log(`Added question ${questionId} to exam ${examId} with order ${orderNumber}`);
+            } catch (addError) {
+              console.error(`Error adding question ${questionId} to exam:`, addError);
+              // Continue with other questions or handle error
+            }
+          }
+        }
 
         // Add the created exam to the list
         const createdExam: Exam = {
@@ -262,6 +282,7 @@ const ExamsPage: React.FC = () => {
         visible={previewVisible}
         onClose={() => setPreviewVisible(false)}
         exam={selectedExam}
+        questionTypes={questionTypes}
       />
 
       <ExamFormDrawer

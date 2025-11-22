@@ -2,26 +2,27 @@
 
 export interface Field {
   id: number;
-  fieldName: string;
+  name: string;
   description?: string;
 }
 
 export interface Topic {
   id: number;
   fieldId: number;
-  topicName: string;
+  fieldName: string;
+  name: string;
   description?: string;
 }
 
 export interface Level {
   id: number;
-  levelName: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
+  name: string;
   description?: string;
 }
 
 export interface QuestionType {
   id: number;
-  questionTypeName: string;
+  name: string;
   description?: string;
 }
 

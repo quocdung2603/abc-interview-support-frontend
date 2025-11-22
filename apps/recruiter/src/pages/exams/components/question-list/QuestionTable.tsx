@@ -43,19 +43,19 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
   const getFieldName = (fieldId: number) => {
     if (!Array.isArray(fields)) return 'N/A';
     const field = fields.find((f) => f.id === fieldId);
-    return field?.fieldName || 'N/A';
+    return field?.name || 'N/A';
   };
 
   const getTopicName = (topicId: number) => {
     if (!Array.isArray(topics)) return 'N/A';
     const topic = topics.find((t) => t.id === topicId);
-    return topic?.topicName || 'N/A';
+    return topic?.name || 'N/A';
   };
 
   const getLevelName = (levelId: number) => {
     if (!Array.isArray(levels)) return 'N/A';
     const level = levels.find((l) => l.id === levelId);
-    return level?.levelName || 'N/A';
+    return level?.name || 'N/A';
   };
 
   const getStatusColor = (status: string) => {

@@ -99,12 +99,7 @@ const InterviewRevision: React.FC = () => {
     try {
       const res = await questionService.getAllFields();
       console.log('Fields:', res.content);
-      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        fieldName: item.name || item.description || 'Unknown Field',
-        description: item.description || item.name || 'Unknown Field',
-      }));
-      setFieldData(mappedFields);
+      setFieldData(res.content || []);
     } catch (error) {
       console.error('Error fetching fields:', error);
       setFieldData([]);
@@ -115,13 +110,7 @@ const InterviewRevision: React.FC = () => {
     try {
       const res = await questionService.getAllTopics();
       console.log('Topics:', res.content);
-      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
-        id: item.id,
-        fieldId: item.fieldId,
-        topicName: item.name || item.description || 'Unknown Topic',
-        description: item.description || item.name || 'Unknown Topic',
-      }));
-      setTopicData(mappedTopics);
+      setTopicData(res.content || []);
     } catch (error) {
       console.error('Error fetching topics:', error);
       setTopicData([]);
@@ -133,12 +122,7 @@ const InterviewRevision: React.FC = () => {
     try {
       const res = await questionService.getAllLevels();
       console.log('Levels:', res.content);
-      const mappedLevels = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
-        description: item.description || item.name || 'Unknown Level',
-      }));
-      setLevelData(mappedLevels);
+      setLevelData(res.content || []);
     } catch (error) {
       console.error('Error fetching levels:', error);
       setLevelData([]);

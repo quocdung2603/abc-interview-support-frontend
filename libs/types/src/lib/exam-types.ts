@@ -51,3 +51,26 @@ export interface ExamRegistration {
   registrationStatus: 'Pending' | 'Approved' | 'Rejected';
   registeredAt: Date;
 }
+
+export interface CreateExamData {
+  examType: string;
+  title: string;
+  position: string;
+  topics: number[];
+  questionTypes: number[];
+  questionCount: number;
+  duration: number;
+  userId: number;
+}
+
+export interface UpdateExamData {
+  userId: number;
+  examType: string;
+  title: string;
+  position: string;
+  topics: number[];
+  questionTypes: number[];
+  questionCount: number;
+  duration: number;
+  language: string;
+}

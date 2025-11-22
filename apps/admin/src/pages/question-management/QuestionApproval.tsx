@@ -25,6 +25,7 @@ const QuestionApproval = () => {
   const [topicFilter, setTopicFilter] = useState<string>('all');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<string>('all');
   const [selectedRowKeys] = useState<React.Key[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
     null
@@ -40,41 +41,22 @@ const QuestionApproval = () => {
       const matchesTopic = topicFilter === 'all' || item?.topicId === Number(topicFilter);
       const matchesLevel = levelFilter === 'all' || item?.levelId === Number(levelFilter);
       const matchesStatus = statusFilter === 'all' || item?.status === statusFilter;
+      const matchesQuestionType = questionTypeFilter === 'all' || item?.questionTypeId === Number(questionTypeFilter);
 
-      return matchesSearch && matchesField && matchesTopic && matchesLevel && matchesStatus;
+      return matchesSearch && matchesField && matchesTopic && matchesLevel && matchesStatus && matchesQuestionType;
     });
-  }, [dataList, searchText, fieldFilter, topicFilter, levelFilter, statusFilter]);
+  }, [dataList, searchText, fieldFilter, topicFilter, levelFilter, statusFilter, questionTypeFilter]);
 
-  const handlePreview = (question: Question) => {
+  const handleReview = (question: Question) => {
     setSelectedQuestion(question);
     setFormDrawerVisible(true);
-  };
-
-  const handleEdit = (question: Question) => {
-    setSelectedQuestion(question);
-    setFormDrawerVisible(true);
-  };
-
-  const handleApprove = (questionId: number) => {
-    // TODO: Implement approve logic
-    console.log('Approve question:', questionId);
-  };
-
-  const handleReject = (questionId: number, rejectReason: string) => {
-    // TODO: Implement reject logic
-    console.log('Reject question:', questionId, 'Reason:', rejectReason);
   };
 
   const getAllFields = async () => {
     try {
       const res = await questionService.getAllFields();
       console.log('Fields:', res.content);
-      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        fieldName: item.name || item.description || 'Unknown Field',
-        description: item.description || item.name || 'Unknown Field',
-      }));
-      setFieldData(mappedFields);
+      setFieldData(res.content || []);
     } catch (error) {
       console.error('Error fetching fields:', error);
       setFieldData([]);
@@ -85,13 +67,7 @@ const QuestionApproval = () => {
     try {
       const res = await questionService.getAllTopics();
       console.log('Topics:', res.content);
-      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
-        id: item.id,
-        fieldId: item.fieldId,
-        topicName: item.name || item.description || 'Unknown Topic',
-        description: item.description || item.name || 'Unknown Topic',
-      }));
-      setTopicData(mappedTopics);
+      setTopicData(res.content || []);
     } catch (error) {
       console.error('Error fetching topics:', error);
       setTopicData([]);
@@ -103,12 +79,7 @@ const QuestionApproval = () => {
     try {
       const res = await questionService.getAllLevels();
       console.log('Levels:', res.content);
-      const mappedLevels = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
-        description: item.description || item.name || 'Unknown Level',
-      }));
-      setLevelData(mappedLevels);
+      setLevelData(res.content || []);
     } catch (error) {
       console.error('Error fetching levels:', error);
       setLevelData([]);
@@ -119,12 +90,7 @@ const QuestionApproval = () => {
     try {
       const res = await questionService.getAllQuestionTypes();
       console.log('Question Types:', res.content);
-      const mappedTypes = (res.content || []).map((item: { id: string, description: string }) => ({
-        id: Number(item.id),
-        questionTypeName: item.description,
-        description: item.description,
-      }));
-      setQuestionTypeData(mappedTypes);
+      setQuestionTypeData(res.content || []);
     } catch (error) {
       console.error('Error fetching question types:', error);
       setQuestionTypeData([]);
@@ -171,12 +137,14 @@ const QuestionApproval = () => {
           fields={fieldData}
           topics={topicData}
           levels={levelData}
+          questionTypeFilter={questionTypeFilter}
+          onQuestionTypeFilterChange={setQuestionTypeFilter}
+          questionTypes={questionTypeData}
         />
 
         <QuestionApprovalTable
           dataList={filteredData}
-          onPreview={handlePreview}
-          onEdit={handleEdit}
+          onPreview={handleReview}
           fields={fieldData}
           topics={topicData}
           levels={levelData}
@@ -192,8 +160,6 @@ const QuestionApproval = () => {
         topics={topicData}
         levels={levelData}
         questionTypes={questionTypeData}
-        onApprove={handleApprove}
-        onReject={handleReject}
       />
     </div>
   );

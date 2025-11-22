@@ -1,10 +1,9 @@
 import React from 'react';
-import { Input, Select, DatePicker } from 'antd';
-import { Field, Topic, Level } from '@abc-interview-support-frontend/types';
+import { Input, Select } from 'antd';
+import { Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 
 const { Search } = Input;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 interface ToolbarProps {
   searchText: string;
@@ -21,6 +20,9 @@ interface ToolbarProps {
   fields: Field[];
   topics: Topic[];
   levels: Level[];
+  questionTypeFilter: string;
+  onQuestionTypeFilterChange: (value: string) => void;
+  questionTypes: QuestionType[];
 }
 
 const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
@@ -38,6 +40,9 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
   fields,
   topics,
   levels,
+  questionTypeFilter,
+  onQuestionTypeFilterChange,
+  questionTypes,
 }) => {
   const filteredTopics = topics.filter(
     (topic) => fieldFilter === 'all' || topic.fieldId === Number(fieldFilter)
@@ -47,7 +52,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr auto auto auto auto',
+        gridTemplateColumns: '1fr auto auto auto auto auto',
         gap: 'var(--spacing-md)',
         marginBottom: 'var(--spacing-lg)',
         alignItems: 'end',
@@ -75,7 +80,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {fields.map((field) => (
             <Option key={field.id} value={field.id}>
-              {field.fieldName}
+              {field.name}
             </Option>
           ))}
         </Select>
@@ -96,7 +101,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {filteredTopics.map((topic) => (
             <Option key={topic.id} value={topic.id}>
-              {topic.topicName}
+              {topic.name}
             </Option>
           ))}
         </Select>
@@ -116,7 +121,7 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {levels.map((level) => (
             <Option key={level.id} value={level.id}>
-              {level.levelName}
+              {level.name}
             </Option>
           ))}
         </Select>
@@ -137,6 +142,26 @@ const QuestionApprovalToolbar: React.FC<ToolbarProps> = ({
           <Option value="PENDING">Chờ duyệt</Option>
           <Option value="APPROVED">Đã duyệt</Option>
           <Option value="REJECTED">Đã từ chối</Option>
+        </Select>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
+          Loại câu hỏi
+        </span>
+        <Select
+          placeholder="Loại câu hỏi"
+          value={questionTypeFilter}
+          onChange={onQuestionTypeFilterChange}
+          style={{ width: 150 }}
+          allowClear
+        >
+          <Option value="all">Tất cả</Option>
+          {questionTypes.map((type) => (
+            <Option key={type.id} value={type.id}>
+              {type.name}
+            </Option>
+          ))}
         </Select>
       </div>
     </div>

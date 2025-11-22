@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
-import {questionService} from '@abc-interview-support-frontend/services';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 interface ExamFormData {
   field: string;
@@ -140,37 +140,16 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
         ]);
 
         // Process fields
-        const mappedFields = (fieldsRes.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-          id: item.id,
-          fieldName: item.name || item.description || 'Unknown Field',
-          description: item.description || item.name || 'Unknown Field',
-        }));
-        setFieldData(mappedFields);
+        setFieldData(fieldsRes.content || []);
 
         // Process topics
-        const mappedTopics = (topicsRes.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
-          id: item.id,
-          fieldId: item.fieldId,
-          topicName: item.name || item.description || 'Unknown Topic',
-          description: item.description || item.name || 'Unknown Topic',
-        }));
-        setTopicData(mappedTopics);
+        setTopicData(topicsRes.content || []);
 
         // Process levels
-        const mappedLevels = (levelsRes.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-          id: item.id,
-          levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
-          description: item.description || item.name || 'Unknown Level',
-        }));
-        setLevelData(mappedLevels);
+        setLevelData(levelsRes.content || []);
 
         // Process question types
-        const mappedTypes = (typesRes.content || []).map((item: { id: string, description: string }) => ({
-          id: Number(item.id),
-          questionTypeName: item.description,
-          description: item.description,
-        }));
-        setQuestionTypeData(mappedTypes);
+        setQuestionTypeData(typesRes.content || []);
       } catch (error) {
         console.error('Error loading form data:', error);
         setFieldData([]);
@@ -223,7 +202,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
               <option value="">Chọn lĩnh vực</option>
               {fieldData.map((field) => (
                 <option key={field.id} value={field.id}>
-                  {field.description}
+                  {field.name}
                 </option>
               ))}
             </select>
@@ -251,7 +230,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   .filter((topic) => topic.fieldId === Number(formData.field))
                   .map((topic) => (
                     <option key={topic.id} value={topic.id.toString()}>
-                      {topic.description}
+                      {topic.name}
                     </option>
                   ))}
             </select>
@@ -275,7 +254,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
               <option value="">Chọn cấp độ</option>
               {levelData.map((level) => (
                 <option key={level.id} value={level.id}>
-                  {level.description}
+                  {level.name}
                 </option>
               ))}
             </select>
@@ -339,11 +318,10 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
             {questionTypeData.map((type) => (
               <label
                 key={type.id}
-                className={`flex items-center p-2 border rounded-md cursor-pointer transition-all text-xs ${
-                  formData.questionTypes.includes(type.id.toString())
+                className={`flex items-center p-2 border rounded-md cursor-pointer transition-all text-xs ${formData.questionTypes.includes(type.id.toString())
                     ? 'border-accent bg-accent-10'
                     : 'border-neutral-200 hover:border-accent-light hover:bg-accent/5'
-                }`}
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -354,7 +332,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   checked={formData.questionTypes.includes(type.id.toString())}
                   onChange={() => handleQuestionTypeChange(type.id.toString())}
                 />
-                <span className="text-xs font-medium truncate">{type.questionTypeName}</span>
+                <span className="text-xs font-medium truncate">{type.name}</span>
               </label>
             ))}
           </div>
@@ -372,11 +350,10 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
           <button
             type="submit"
             disabled={!isFormValid}
-            className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 ${
-              !isFormValid
+            className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 ${!isFormValid
                 ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
                 : 'bg-accent text-white hover:bg-accent-dark hover:scale-105'
-            }`}
+              }`}
           >
             Tạo Bài Phỏng Vấn
           </button>
@@ -400,19 +377,19 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                 <div>
                   <span className="font-medium text-neutral-600">Lĩnh vực:</span>
                   <p className="text-neutral-800">
-                    {fieldData.find(f => f.id.toString() === modalData.field)?.description || modalData.field}
+                    {fieldData.find(f => f.id.toString() === modalData.field)?.name || modalData.field}
                   </p>
                 </div>
                 <div>
                   <span className="font-medium text-neutral-600">Chủ đề:</span>
                   <p className="text-neutral-800">
-                    {topicData.find(t => t.id.toString() === modalData.topic)?.description || modalData.topic}
+                    {topicData.find(t => t.id.toString() === modalData.topic)?.name || modalData.topic}
                   </p>
                 </div>
                 <div>
                   <span className="font-medium text-neutral-600">Cấp độ:</span>
                   <p className="text-neutral-800">
-                    {levelData.find(l => l.id.toString() === modalData.level)?.description || modalData.level}
+                    {levelData.find(l => l.id.toString() === modalData.level)?.name || modalData.level}
                   </p>
                 </div>
                 <div>
@@ -427,7 +404,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   <span className="font-medium text-neutral-600">Loại câu hỏi:</span>
                   <p className="text-neutral-800">
                     {modalData.questionTypes.map(typeId =>
-                      questionTypeData.find(q => q.id.toString() === typeId)?.questionTypeName
+                      questionTypeData.find(q => q.id.toString() === typeId)?.name
                     ).filter(Boolean).join(', ')}
                   </p>
                 </div>
@@ -446,7 +423,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
                   placeholder="Ví dụ: Java Backend Developer Test"
                   value={modalData.title || ''}
-                  onChange={(e) => setModalData({...modalData, title: e.target.value})}
+                  onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
                   required
                 />
               </div>
@@ -461,7 +438,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
                   placeholder="Ví dụ: Backend Developer"
                   value={modalData.position || ''}
-                  onChange={(e) => setModalData({...modalData, position: e.target.value})}
+                  onChange={(e) => setModalData({ ...modalData, position: e.target.value })}
                   required
                 />
               </div>
@@ -476,7 +453,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                   rows={3}
                   placeholder="Mô tả chi tiết về bài kiểm tra..."
                   value={modalData.description || ''}
-                  onChange={(e) => setModalData({...modalData, description: e.target.value})}
+                  onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
                 />
               </div>
             </div>
@@ -494,11 +471,10 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                 type="button"
                 onClick={() => handleConfirmCreate(modalData)}
                 disabled={!modalData.title || !modalData.position}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  !modalData.title || !modalData.position
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!modalData.title || !modalData.position
                     ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
                     : 'bg-accent text-white hover:bg-accent-dark'
-                }`}
+                  }`}
               >
                 Xác Nhận Tạo
               </button>

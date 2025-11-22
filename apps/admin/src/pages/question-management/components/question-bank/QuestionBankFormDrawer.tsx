@@ -8,21 +8,19 @@ import {
   Space,
   message,
   Card,
-  Radio,
-  Checkbox,
   Tabs,
   Typography,
-  Dropdown,
+  Descriptions,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import {
   Question,
   Field,
   Topic,
   Level,
   QuestionType,
-  QuestionVariant,
 } from '@abc-interview-support-frontend/types';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+import { questionService } from '@abc-interview-support-frontend/services';
 import type { TabsProps } from 'antd';
 
 const { Option } = Select;
@@ -37,6 +35,7 @@ interface FormDrawerProps {
   topics: Topic[];
   levels: Level[];
   questionTypes: QuestionType[];
+  onSuccess?: () => void;
 }
 
 const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
@@ -47,387 +46,170 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
   topics,
   levels,
   questionTypes,
+  onSuccess,
 }) => {
   const [form] = Form.useForm();
+  const { user } = useAuth();
   const [selectedField, setSelectedField] = useState<number | undefined>(
     data?.fieldId
   );
-  const [newVariants, setNewVariants] = useState<QuestionVariant[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Form data states for confirmation tab
+  const [formData, setFormData] = useState({
+    fieldId: data?.fieldId,
+    topicId: data?.topicId,
+    levelId: data?.levelId,
+    questionTypeId: data?.questionTypeId,
+    language: 'Vietnamese',
+    content: data?.questionContent || '',
+    answer: data?.questionAnswer || '',
+  });
 
   // Reset/initialize form when data changes
   useEffect(() => {
     if (visible) {
       if (data) {
         // Editing existing question
-        form.setFieldsValue({
+        const initialData = {
           fieldId: data.fieldId,
           topicId: data.topicId,
           levelId: data.levelId,
-          questionTitle: data.questionContent,
-          questionVariant: '', // API doesn't have this
-        });
+          questionTypeId: data.questionTypeId,
+          language: 'Vietnamese',
+          content: data.questionContent,
+          answer: data.questionAnswer,
+        };
+        form.setFieldsValue(initialData);
+        setFormData(initialData);
         setSelectedField(data.fieldId);
       } else {
         // Creating new question
+        const initialData = {
+          fieldId: undefined,
+          topicId: undefined,
+          levelId: undefined,
+          questionTypeId: undefined,
+          language: 'Vietnamese',
+          content: '',
+          answer: '',
+        };
         form.resetFields();
-        setSelectedField('');
+        form.setFieldsValue({ language: 'Vietnamese' });
+        setFormData(initialData);
+        setSelectedField(undefined);
       }
       // Reset new variants when opening drawer
-      setNewVariants([]);
     }
   }, [data, visible, form]);
-
-  // Add new variant for a question type
-  const addNewVariant = (questionTypeId: number) => {
-    const questionType = questionTypes.find(
-      (qt) => qt.id === questionTypeId
-    );
-    if (!questionType) return;
-
-    // Check if this question type already has a variant (existing or new)
-    const existingVariants = data ? getQuestionVariants(data) : [];
-    const hasExistingVariant = existingVariants.some(
-      (v) => v.questionTypeId === questionTypeId
-    );
-    const hasNewVariant = newVariants.some(
-      (v) => v.questionTypeId === questionTypeId
-    );
-
-    if (hasExistingVariant || hasNewVariant) {
-      message.warning(
-        `Đã có biến thể cho loại câu hỏi ${questionType.questionTypeName}`
-      );
-      return;
-    }
-
-    // Generate new variant ID
-    const allVariantIds = [
-      ...(data?.questionVariant?.split(',') || []),
-      ...newVariants.map((v) => v.questionVariantId),
-    ];
-    const maxId =
-      allVariantIds.length > 0
-        ? Math.max(...allVariantIds.map((id) => Number.parseInt(id)))
-        : 0;
-    const newVariantId = String(maxId + 1);
-
-    // Create mock content based on question type
-    const mockContents = [
-      'React Hook useEffect được sử dụng để thực hiện side effects trong functional components.',
-      'Trong JavaScript, phương thức push() được sử dụng để thêm phần tử vào cuối mảng.',
-      'RESTful API là kiến trúc API dựa trên các nguyên tắc REST.',
-      'Trong CSS, thuộc tính margin được sử dụng để tạo khoảng cách giữa các phần tử.',
-      'Git command "git commit -m \'message\'" được sử dụng để tạo một commit mới.',
-    ];
-
-    const mockAnswers = [
-      'Thực hiện side effects trong functional components',
-      'push()',
-      'Kiến trúc API dựa trên REST principles',
-      'margin',
-      'git commit -m "message"',
-    ];
-
-    const mockChoices = [
-      'Thực hiện side effects trong functional components|Render JSX elements|Tạo state trong class components|Xử lý events',
-      'push()|pop()|shift()|unshift()',
-      'Kiến trúc API dựa trên REST principles|Kiến trúc API dựa trên SOAP|Kiến trúc API dựa trên GraphQL|Kiến trúc API dựa trên RPC',
-      'margin|padding|border|width',
-      'git commit -m "message"|git add .|git push origin main|git pull origin main',
-    ];
-
-    const newVariant: QuestionVariant = {
-      questionVariantId: newVariantId,
-      questionTypeId: String(questionTypeId),
-      questionContent:
-        mockContents[Number.parseInt(String(questionTypeId)) - 1] || mockContents[0],
-      questionChoose:
-        mockChoices[Number.parseInt(String(questionTypeId)) - 1] || mockChoices[0],
-      questionAnswer:
-        mockAnswers[Number.parseInt(String(questionTypeId)) - 1] || mockAnswers[0],
-    };
-
-    setNewVariants((prev) => [...prev, newVariant]);
-    message.success(
-      `Đã thêm biến thể mới cho ${questionType.questionTypeName}`
-    );
-  };
 
   const filteredTopics = topics.filter(
     (topic) => !selectedField || topic.fieldId === selectedField
   );
 
-  // Generate QuestionVariant data from existing question
-  const getQuestionVariants = (question: Question): QuestionVariant[] => {
-    if (!question.questionVariant) return [];
-
-    const variantIds = question.questionVariant.split(',');
-    return variantIds.map((id, index) => {
-      const mockContents = [
-        'React Hook useEffect được sử dụng để thực hiện side effects trong functional components.',
-        'Trong JavaScript, phương thức push() được sử dụng để thêm phần tử vào cuối mảng.',
-        'RESTful API là kiến trúc API dựa trên các nguyên tắc REST.',
-        'Trong CSS, thuộc tính margin được sử dụng để tạo khoảng cách giữa các phần tử.',
-        'Git command "git commit -m \'message\'" được sử dụng để tạo một commit mới.',
-      ];
-
-      const mockAnswers = [
-        'Thực hiện side effects trong functional components',
-        'push()',
-        'Kiến trúc API dựa trên REST principles',
-        'margin',
-        'git commit -m "message"',
-      ];
-
-      const mockChoices = [
-        'Thực hiện side effects trong functional components|Render JSX elements|Tạo state trong class components|Xử lý events',
-        'push()|pop()|shift()|unshift()',
-        'Kiến trúc API dựa trên REST principles|Kiến trúc API dựa trên SOAP|Kiến trúc API dựa trên GraphQL|Kiến trúc API dựa trên RPC',
-        'margin|padding|border|width',
-        'git commit -m "message"|git add .|git push origin main|git pull origin main',
-      ];
-
-      return {
-        questionVariantId: id.trim(),
-        questionTypeId: String((Number.parseInt(id.trim()) % 5) + 1), // Cycle through question types
-        questionContent: mockContents[index % mockContents.length],
-        questionChoose: mockChoices[index % mockChoices.length],
-        questionAnswer: mockAnswers[index % mockAnswers.length],
-      };
-    });
-  };
-
-  // Mock answers for different question types
-  const mockSingleChoiceAnswers = [
-    'Thực hiện side effects trong functional components',
-    'Tạo state trong class components',
-    'Render JSX elements',
-    'Xử lý events',
-  ];
-
-  const mockMultipleChoiceAnswers = [
-    'Thực hiện side effects trong functional components',
-    'Tạo state trong functional components',
-    'Render JSX elements',
-    'Xử lý events',
-  ];
-
   const handleFieldChange = (value: number) => {
     setSelectedField(value);
     form.setFieldsValue({ topicId: undefined }); // Reset topic when field changes
+    setFormData(prev => ({ ...prev, fieldId: value, topicId: undefined }));
+  };
+
+  const handleTopicChange = (value: number) => {
+    setFormData(prev => ({ ...prev, topicId: value }));
+  };
+
+  const handleLevelChange = (value: number) => {
+    setFormData(prev => ({ ...prev, levelId: value }));
+  };
+
+  const handleQuestionTypeChange = (value: number) => {
+    setFormData(prev => ({ ...prev, questionTypeId: value }));
+  };
+
+  const handleLanguageChange = (value: string) => {
+    setFormData(prev => ({ ...prev, language: value }));
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, content: e.target.value }));
+  };
+
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, answer: e.target.value }));
   };
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
-      console.log('Form values:', values);
-      message.success(
-        data ? 'Cập nhật câu hỏi thành công!' : 'Tạo câu hỏi thành công!'
-      );
+      setLoading(true);
+
+      // Check if user is authenticated
+      if (!user?.userId) {
+        message.error('Không thể xác định người dùng. Vui lòng đăng nhập lại.');
+        return;
+      }
+
+      // Validate form using form.validateFields() but use formData for submission
+      await form.validateFields();
+
+      // Prepare the complete question data including userId
+      const questionData = {
+        userId: Number.parseInt(user.userId),
+        topicId: formData.topicId,
+        fieldId: formData.fieldId,
+        levelId: formData.levelId,
+        questionTypeId: formData.questionTypeId,
+        content: formData.content,
+        answer: formData.answer,
+        language: formData.language,
+      };
+
+      console.log('Form values:', formData);
+      console.log('Complete question data:', questionData);
+
+      let response;
+      if (data) {
+        // Update existing question
+        response = await questionService.updateQuestion(data.id, questionData);
+        console.log('Update question response:', response);
+        message.success('Cập nhật câu hỏi thành công!');
+      } else {
+        // Create new question
+        response = await questionService.createQuestion(questionData);
+        console.log('Create question response:', response);
+        message.success('Tạo câu hỏi thành công!');
+      }
+
+      // Call onSuccess callback to refresh data
+      if (onSuccess) {
+        onSuccess();
+      }
+
       onClose();
-    } catch (error) {
-      console.error('Form validation error:', error);
-      message.error('Vui lòng kiểm tra lại thông tin!');
+    } catch (error: unknown) {
+      console.error('Form submission error:', error);
+
+      // Handle API error
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          message.error(`Lỗi: ${axiosError.response.data.message}`);
+          return;
+        }
+      }
+
+      if (error instanceof Error && error.message) {
+        message.error(`Lỗi: ${error.message}`);
+      } else {
+        message.error('Có lỗi xảy ra khi tạo câu hỏi. Vui lòng thử lại.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
     form.resetFields();
     setSelectedField(undefined);
-    setNewVariants([]);
     onClose();
-  };
-
-  // Render question variant based on type
-  const renderQuestionVariant = (
-    variant: QuestionVariant,
-    questionTitle: string
-  ) => {
-    const questionType = questionTypes.find(
-      (qt) => qt.id === variant.questionTypeId
-    );
-    const typeName = questionType?.questionTypeName || 'Unknown';
-
-    switch (typeName) {
-      case 'SingleChoice':
-        return (
-          <Card
-            title={`Câu hỏi dạng Trắc nghiệm 1 lựa chọn (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong>{questionTitle}</Text>
-            </div>
-            <div
-              style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}
-            >
-              {variant.questionContent}
-            </div>
-            <Radio.Group disabled>
-              <Space direction="vertical">
-                {variant.questionChoose?.split('|').map((choice, index) => (
-                  <Radio key={choice} value={index}>
-                    {choice}
-                  </Radio>
-                ))}
-              </Space>
-            </Radio.Group>
-            <div
-              style={{
-                marginTop: '16px',
-                padding: '8px',
-                backgroundColor: '#f6ffed',
-                border: '1px solid #b7eb8f',
-              }}
-            >
-              <Text strong style={{ color: '#52c41a' }}>
-                Đáp án đúng: {variant.questionAnswer}
-              </Text>
-            </div>
-          </Card>
-        );
-
-      case 'MultipleChoice':
-        return (
-          <Card
-            title={`Câu hỏi dạng Trắc nghiệm nhiều lựa chọn (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong>{questionTitle}</Text>
-            </div>
-            <div
-              style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}
-            >
-              {variant.questionContent}
-            </div>
-            <Checkbox.Group disabled style={{ width: '100%' }}>
-              <Space direction="vertical">
-                {variant.questionChoose?.split('|').map((choice, index) => (
-                  <Checkbox key={choice} value={index}>
-                    {choice}
-                  </Checkbox>
-                ))}
-              </Space>
-            </Checkbox.Group>
-            <div
-              style={{
-                marginTop: '16px',
-                padding: '8px',
-                backgroundColor: '#f6ffed',
-                border: '1px solid #b7eb8f',
-              }}
-            >
-              <Text strong style={{ color: '#52c41a' }}>
-                Đáp án đúng: {variant.questionAnswer}
-              </Text>
-            </div>
-          </Card>
-        );
-
-      case 'FillInTheBlank':
-        return (
-          <Card
-            title={`Câu hỏi dạng Điền khuyết (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong>{questionTitle}</Text>
-            </div>
-            <div
-              style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}
-            >
-              {variant.questionContent}
-            </div>
-            <Input placeholder="Nhập đáp án của bạn..." disabled />
-            <div
-              style={{
-                marginTop: '16px',
-                padding: '8px',
-                backgroundColor: '#f6ffed',
-                border: '1px solid #b7eb8f',
-              }}
-            >
-              <Text strong style={{ color: '#52c41a' }}>
-                Đáp án đúng: {variant.questionAnswer}
-              </Text>
-            </div>
-          </Card>
-        );
-
-      case 'OpenEnded':
-        return (
-          <Card
-            title={`Câu hỏi dạng Tự luận (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong>{questionTitle}</Text>
-            </div>
-            <div
-              style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}
-            >
-              {variant.questionContent}
-            </div>
-            <TextArea
-              rows={4}
-              placeholder="Viết câu trả lời của bạn..."
-              disabled
-            />
-            <div
-              style={{
-                marginTop: '16px',
-                padding: '8px',
-                backgroundColor: '#f6ffed',
-                border: '1px solid #b7eb8f',
-              }}
-            >
-              <Text strong style={{ color: '#52c41a' }}>
-                Đáp án mẫu: {variant.questionAnswer}
-              </Text>
-            </div>
-          </Card>
-        );
-
-      case 'Reference':
-        return (
-          <Card
-            title={`Câu hỏi dạng Tham khảo (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Text strong>{questionTitle}</Text>
-            </div>
-            <div
-              style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}
-            >
-              {variant.questionContent}
-            </div>
-            <div
-              style={{
-                padding: '16px',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '4px',
-              }}
-            >
-              <Text type="secondary">
-                Đây là câu hỏi tham khảo. Vui lòng tìm hiểu thêm về chủ đề này
-                trong tài liệu chính thức.
-              </Text>
-            </div>
-          </Card>
-        );
-
-      default:
-        return (
-          <Card
-            title={`Câu hỏi (Variant ${variant.questionVariantId})`}
-            size="small"
-          >
-            <Text>{variant.questionContent}</Text>
-          </Card>
-        );
-    }
   };
 
   const FormTabMenu: TabsProps['items'] = [
@@ -440,11 +222,11 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             form={form}
             layout="vertical"
             initialValues={{
-              fieldId: data?.fieldId.toString(),
-              topicId: data?.topicId.toString(),
-              levelId: data?.levelId.toString(),
-              questionTitle: data?.questionContent,
-              questionVariant: '',
+              fieldId: data?.fieldId,
+              topicId: data?.topicId,
+              levelId: data?.levelId,
+              questionTypeId: data?.questionTypeId,
+              language: 'Vietnamese',
             }}
           >
             <Form.Item
@@ -455,7 +237,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
               <Select placeholder="Chọn lĩnh vực" onChange={handleFieldChange}>
                 {fields.map((field) => (
                   <Option key={field.id} value={field.id}>
-                    {field.fieldName}
+                    {field.name}
                   </Option>
                 ))}
               </Select>
@@ -466,10 +248,10 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
               name="topicId"
               rules={[{ required: true, message: 'Vui lòng chọn chủ đề' }]}
             >
-              <Select placeholder="Chọn chủ đề" disabled={!selectedField}>
+              <Select placeholder="Chọn chủ đề" disabled={!selectedField} onChange={handleTopicChange}>
                 {filteredTopics.map((topic) => (
                   <Option key={topic.id} value={topic.id}>
-                    {topic.topicName}
+                    {topic.name}
                   </Option>
                 ))}
               </Select>
@@ -480,34 +262,38 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
               name="levelId"
               rules={[{ required: true, message: 'Vui lòng chọn mức độ' }]}
             >
-              <Select placeholder="Chọn mức độ">
+              <Select placeholder="Chọn mức độ" onChange={handleLevelChange}>
                 {levels.map((level) => (
                   <Option key={level.id} value={level.id}>
-                    {level.levelName}
+                    {level.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
 
             <Form.Item
-              label="Tiêu đề câu hỏi"
-              name="questionTitle"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tiêu đề câu hỏi' },
-                { min: 5, message: 'Tiêu đề câu hỏi phải có ít nhất 5 ký tự' },
-              ]}
+              label="Loại câu hỏi"
+              name="questionTypeId"
+              rules={[{ required: true, message: 'Vui lòng chọn loại câu hỏi' }]}
             >
-              <Input placeholder="Nhập tiêu đề câu hỏi..." />
+              <Select placeholder="Chọn loại câu hỏi" onChange={handleQuestionTypeChange}>
+                {questionTypes.map((questionType) => (
+                  <Option key={questionType.id} value={questionType.id}>
+                    {questionType.name}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
 
             <Form.Item
-              label="Question Variants"
-              name="questionVariant"
-              rules={[
-                { required: true, message: 'Vui lòng nhập question variants' },
-              ]}
+              label="Ngôn ngữ"
+              name="language"
+              rules={[{ required: true, message: 'Vui lòng chọn ngôn ngữ' }]}
             >
-              <Input placeholder="Ví dụ: 1,2,3 hoặc 1" />
+              <Select placeholder="Chọn ngôn ngữ" onChange={handleLanguageChange}>
+                <Option value="Vietnamese">Tiếng Việt</Option>
+                <Option value="English">Tiếng Anh</Option>
+              </Select>
             </Form.Item>
           </Form>
         </div>
@@ -515,318 +301,92 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
     },
     {
       key: '2',
-      label: 'Xem trước dạng câu hỏi',
+      label: 'Chi tiết câu hỏi',
       children: (
         <div style={{ padding: '16px 0' }}>
-          {/* Add new variant button */}
-          <div
-            style={{
-              marginBottom: '16px',
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <Dropdown
-              menu={{
-                items: questionTypes.map((qt) => ({
-                  key: qt.id,
-                  label: qt.questionTypeName,
-                  onClick: () => addNewVariant(qt.id),
-                })),
-              }}
-              trigger={['click']}
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label="Nội dung câu hỏi"
+              name="content"
+              rules={[
+                { required: true, message: 'Vui lòng nhập nội dung câu hỏi' },
+                { min: 10, message: 'Nội dung câu hỏi phải có ít nhất 10 ký tự' },
+              ]}
             >
-              <Button type="primary" icon={<PlusOutlined />}>
-                Thêm biến thể mới
-              </Button>
-            </Dropdown>
-          </div>
+              <TextArea
+                rows={4}
+                placeholder="Nhập nội dung câu hỏi..."
+                showCount
+                maxLength={500}
+                onChange={handleContentChange}
+              />
+            </Form.Item>
 
-          {data ? (
-            // Display existing question variants + new variants
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+            <Form.Item
+              label="Đáp án"
+              name="answer"
+              rules={[
+                { required: true, message: 'Vui lòng nhập đáp án' },
+                { min: 1, message: 'Đáp án không được để trống' },
+              ]}
             >
-              <Tabs type="card" size="small">
-                {questionTypes
-                  .map((questionType) => {
-                    const existingVariants = getQuestionVariants(data).filter(
-                      (variant) =>
-                        variant.questionTypeId === questionType.id
-                    );
-                    const newVariantsOfType = newVariants.filter(
-                      (variant) =>
-                        variant.questionTypeId === questionType.id
-                    );
-                    const allVariantsOfType = [
-                      ...existingVariants,
-                      ...newVariantsOfType,
-                    ];
+              <TextArea
+                rows={6}
+                placeholder="Nhập đáp án cho câu hỏi..."
+                showCount
+                maxLength={1000}
+                onChange={handleAnswerChange}
+              />
+            </Form.Item>
+          </Form>
+        </div>
+      ),
+    },
+    {
+      key: '3',
+      label: 'Xác nhận',
+      children: (
+        <div style={{ padding: '16px 0' }}>
+          <Card title="Thông tin câu hỏi" style={{ marginBottom: '16px' }}>
+            <Descriptions column={1} size="small">
+              <Descriptions.Item label="Lĩnh vực">
+                {fields.find(f => f.id === formData.fieldId)?.name || 'Chưa chọn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chủ đề">
+                {filteredTopics.find(t => t.id === formData.topicId)?.name || 'Chưa chọn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mức độ">
+                {levels.find(l => l.id === formData.levelId)?.name || 'Chưa chọn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Loại câu hỏi">
+                {questionTypes.find(qt => qt.id === formData.questionTypeId)?.name || 'Chưa chọn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngôn ngữ">
+                {formData.language === 'Vietnamese' ? 'Tiếng Việt' : 'Tiếng Anh'}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
 
-                    if (allVariantsOfType.length === 0) return null;
-
-                    return (
-                      <Tabs.TabPane
-                        key={questionType.id}
-                        tab={`${questionType.questionTypeName} (${allVariantsOfType.length})`}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '16px',
-                          }}
-                        >
-                          {allVariantsOfType.map((variant) => (
-                            <div key={variant.questionVariantId}>
-                              {renderQuestionVariant(
-                                variant,
-                                data.questionContent
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </Tabs.TabPane>
-                    );
-                  })
-                  .filter(Boolean)}
-              </Tabs>
+          <Card title="Nội dung câu hỏi">
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>Nội dung:</Text>
+              <div style={{ marginTop: '8px', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                {formData.content || 'Chưa nhập nội dung'}
+              </div>
             </div>
-          ) : (
-            // Display mock preview for new question + new variants
-            <Tabs type="card" size="small">
-              {questionTypes.map((questionType) => {
-                const newVariantsOfType = newVariants.filter(
-                  (variant) =>
-                    variant.questionTypeId === String(questionType.id)
-                );
+            <div>
+              <Text strong>Đáp án:</Text>
+              <div style={{ marginTop: '8px', padding: '12px', backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '4px' }}>
+                {formData.answer || 'Chưa nhập đáp án'}
+              </div>
+            </div>
+          </Card>
 
-                if (newVariantsOfType.length === 0) {
-                  // Show mock preview
-                  return (
-                    <Tabs.TabPane
-                      key={questionType.id}
-                      tab={questionType.questionTypeName}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '16px',
-                        }}
-                      >
-                        {(() => {
-                          const questionTitle =
-                            form.getFieldValue('questionTitle') ||
-                            'Tiêu đề câu hỏi sẽ hiển thị ở đây...';
-
-                          switch (questionType.questionTypeName) {
-                            case 'SingleChoice':
-                              return (
-                                <Card
-                                  title="Câu hỏi dạng Trắc nghiệm 1 lựa chọn"
-                                  size="small"
-                                >
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <Radio.Group disabled>
-                                    <Space direction="vertical">
-                                      {mockSingleChoiceAnswers.map((answer) => (
-                                        <Radio key={answer} value={answer}>
-                                          {answer}
-                                        </Radio>
-                                      ))}
-                                    </Space>
-                                  </Radio.Group>
-                                  <div
-                                    style={{
-                                      marginTop: '16px',
-                                      padding: '8px',
-                                      backgroundColor: '#f6ffed',
-                                      border: '1px solid #b7eb8f',
-                                    }}
-                                  >
-                                    <Text strong style={{ color: '#52c41a' }}>
-                                      Đáp án mẫu: {mockSingleChoiceAnswers[0]}
-                                    </Text>
-                                  </div>
-                                </Card>
-                              );
-
-                            case 'MultipleChoice':
-                              return (
-                                <Card
-                                  title="Câu hỏi dạng Trắc nghiệm nhiều lựa chọn"
-                                  size="small"
-                                >
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <Checkbox.Group
-                                    disabled
-                                    style={{ width: '100%' }}
-                                  >
-                                    <Space direction="vertical">
-                                      {mockMultipleChoiceAnswers.map(
-                                        (answer) => (
-                                          <Checkbox key={answer} value={answer}>
-                                            {answer}
-                                          </Checkbox>
-                                        )
-                                      )}
-                                    </Space>
-                                  </Checkbox.Group>
-                                  <div
-                                    style={{
-                                      marginTop: '16px',
-                                      padding: '8px',
-                                      backgroundColor: '#f6ffed',
-                                      border: '1px solid #b7eb8f',
-                                    }}
-                                  >
-                                    <Text strong style={{ color: '#52c41a' }}>
-                                      Đáp án mẫu:{' '}
-                                      {mockMultipleChoiceAnswers
-                                        .slice(0, 2)
-                                        .join(', ')}
-                                    </Text>
-                                  </div>
-                                </Card>
-                              );
-
-                            case 'FillInTheBlank':
-                              return (
-                                <Card
-                                  title="Câu hỏi dạng Điền khuyết"
-                                  size="small"
-                                >
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <Input
-                                    placeholder="Nhập đáp án của bạn..."
-                                    disabled
-                                  />
-                                  <div
-                                    style={{
-                                      marginTop: '16px',
-                                      padding: '8px',
-                                      backgroundColor: '#f6ffed',
-                                      border: '1px solid #b7eb8f',
-                                    }}
-                                  >
-                                    <Text strong style={{ color: '#52c41a' }}>
-                                      Đáp án mẫu: push()
-                                    </Text>
-                                  </div>
-                                </Card>
-                              );
-
-                            case 'OpenEnded':
-                              return (
-                                <Card title="Câu hỏi dạng Tự luận" size="small">
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <TextArea
-                                    rows={4}
-                                    placeholder="Viết câu trả lời của bạn..."
-                                    disabled
-                                  />
-                                  <div
-                                    style={{
-                                      marginTop: '16px',
-                                      padding: '8px',
-                                      backgroundColor: '#f6ffed',
-                                      border: '1px solid #b7eb8f',
-                                    }}
-                                  >
-                                    <Text strong style={{ color: '#52c41a' }}>
-                                      Đáp án mẫu: useEffect được sử dụng để thực
-                                      hiện side effects trong functional
-                                      components như gọi API, cập nhật DOM, hoặc
-                                      thiết lập subscriptions.
-                                    </Text>
-                                  </div>
-                                </Card>
-                              );
-
-                            case 'Reference':
-                              return (
-                                <Card
-                                  title="Câu hỏi dạng Tham khảo"
-                                  size="small"
-                                >
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <div
-                                    style={{
-                                      padding: '16px',
-                                      backgroundColor: '#f5f5f5',
-                                      borderRadius: '4px',
-                                    }}
-                                  >
-                                    <span style={{ color: '#666' }}>
-                                      Đây là câu hỏi tham khảo. Vui lòng tìm
-                                      hiểu thêm về chủ đề này trong tài liệu
-                                      chính thức.
-                                    </span>
-                                  </div>
-                                </Card>
-                              );
-
-                            default:
-                              return (
-                                <Card
-                                  title={`Câu hỏi dạng ${questionType.questionTypeName}`}
-                                  size="small"
-                                >
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <strong>{questionTitle}</strong>
-                                  </div>
-                                  <Text type="secondary">
-                                    Preview cho dạng câu hỏi này chưa được hỗ
-                                    trợ.
-                                  </Text>
-                                </Card>
-                              );
-                          }
-                        })()}
-                      </div>
-                    </Tabs.TabPane>
-                  );
-                } else {
-                  // Show new variants
-                  return (
-                    <Tabs.TabPane
-                      key={questionType.questionTypeId}
-                      tab={`${questionType.questionTypeName} (${newVariantsOfType.length})`}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '16px',
-                        }}
-                      >
-                        {newVariantsOfType.map((variant) => (
-                          <div key={variant.questionVariantId}>
-                            {renderQuestionVariant(
-                              variant,
-                              form.getFieldValue('questionTitle') ||
-                                'Tiêu đề câu hỏi sẽ hiển thị ở đây...'
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </Tabs.TabPane>
-                  );
-                }
-              })}
-            </Tabs>
-          )}
+          <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#fff7e6', border: '1px solid #ffd591', borderRadius: '4px' }}>
+            <Text strong style={{ color: '#d46b08' }}>
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDMTMuMSAyIDI0IDMuOSA4IDMuOVoiIGZpbGw9IiNkNDZiMDgiLz4KPHJlY3QgeD0iMTEiIHk9IjYiIHdpZHRoPSIyIiBoZWlnaHQ9IjEwIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSIxMSIgeT0iMTgiIHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" alt="warning icon" style={{ width: '16px', height: '16px', verticalAlign: 'middle', marginRight: '8px' }} /> Vui lòng kiểm tra lại thông tin trước khi {data ? 'cập nhật' : 'tạo'} câu hỏi. Sau khi {data ? 'cập nhật' : 'tạo'}, bạn có thể chỉnh sửa câu hỏi này.
+            </Text>
+          </div>
         </div>
       ),
     },
@@ -846,9 +406,9 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
             alignItems: 'center',
           }}
         >
-          <Button onClick={handleClose}>Hủy</Button>
+          <Button onClick={handleClose} disabled={loading}>Hủy</Button>
           <Space>
-            <Button type="primary" onClick={handleSubmit}>
+            <Button type="primary" onClick={handleSubmit} loading={loading}>
               {data ? 'Cập nhật' : 'Tạo mới'}
             </Button>
           </Space>

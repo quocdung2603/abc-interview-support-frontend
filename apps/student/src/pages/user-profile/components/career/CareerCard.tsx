@@ -30,14 +30,14 @@ const CareerCard: React.FC<CareerCardProps> = ({
     if (!fieldId) return 'N/A';
     // Convert to string for comparison since backend might return number
     const fieldIdStr = String(fieldId);
-    return fields.find((f) => String(f.id) === fieldIdStr)?.fieldName || 'N/A';
+    return fields.find((f) => String(f.id) === fieldIdStr)?.name || 'N/A';
   };
 
   const getTopicName = (topicId?: string | number) => {
     if (!topicId) return 'Chưa chọn';
     // Convert to string for comparison since backend might return number
     const topicIdStr = String(topicId);
-    return topics.find((t) => String(t.id) === topicIdStr)?.topicName || 'N/A';
+    return topics.find((t) => String(t.id) === topicIdStr)?.name || 'N/A';
   };
 
   return (
@@ -109,7 +109,7 @@ const CareerCard: React.FC<CareerCardProps> = ({
           gap: '0.25rem',
         }}
       >
-        <CalendarOutlined  twoToneColor="#52c41a"/>
+        <CalendarOutlined twoToneColor="#52c41a" />
         <span>
           Tạo ngày: {new Date(career.createdAt).toLocaleDateString('vi-VN')}
         </span>

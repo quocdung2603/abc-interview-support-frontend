@@ -7,13 +7,13 @@ import { useNavigate } from 'react-router-dom';
 
 interface Field {
   fieldId: string;
-  fieldName: string;
+  name: string;
   description?: string;
 }
 
 interface Level {
   levelId: string;
-  levelName: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
+  name: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
   description?: string;
 }
 
@@ -38,42 +38,42 @@ interface DiscussionPost {
 const mockFields: Field[] = [
   {
     fieldId: 'frontend',
-    fieldName: 'Frontend',
+    name: 'Frontend',
     description: 'React, Angular, Vue.js',
   },
   {
     fieldId: 'backend',
-    fieldName: 'Backend',
+    name: 'Backend',
     description: 'Node.js, Java, Python',
   },
   {
     fieldId: 'fullstack',
-    fieldName: 'Fullstack',
+    name: 'Fullstack',
     description: 'Full-stack development',
   },
   {
     fieldId: 'mobile',
-    fieldName: 'Mobile',
+    name: 'Mobile',
     description: 'React Native, Flutter, iOS, Android',
   },
   {
     fieldId: 'devops',
-    fieldName: 'DevOps',
+    name: 'DevOps',
     description: 'CI/CD, Docker, Kubernetes',
   },
   {
     fieldId: 'tester',
-    fieldName: 'Tester',
+    name: 'Tester',
     description: 'Manual & Automation Testing',
   },
   {
     fieldId: 'ba',
-    fieldName: 'Business Analyst',
+    name: 'Business Analyst',
     description: 'Requirements Analysis',
   },
   {
     fieldId: 'bridge',
-    fieldName: 'Bridge Engineer',
+    name: 'Bridge Engineer',
     description: 'Communication & Technical Bridge',
   },
 ];
@@ -81,22 +81,22 @@ const mockFields: Field[] = [
 const mockLevels: Level[] = [
   {
     levelId: 'fresher',
-    levelName: 'Fresher',
+    name: 'Fresher',
     description: '0-1 year experience',
   },
   {
     levelId: 'junior',
-    levelName: 'Junior',
+    name: 'Junior',
     description: '1-3 years experience',
   },
   {
     levelId: 'middle',
-    levelName: 'Middle',
+    name: 'Middle',
     description: '3-5 years experience',
   },
   {
     levelId: 'senior',
-    levelName: 'Senior',
+    name: 'Senior',
     description: '5+ years experience',
   },
 ];
@@ -221,7 +221,7 @@ const CommunityDiscussion: React.FC = () => {
     if (selectedField !== 'all') {
       const fieldName = mockFields.find(
         (f) => f.fieldId === selectedField
-      )?.fieldName;
+      )?.name;
       if (fieldName) {
         filtered = filtered.filter((post) => post.field === fieldName);
       }
@@ -231,7 +231,7 @@ const CommunityDiscussion: React.FC = () => {
     if (selectedLevel !== 'all') {
       const levelName = mockLevels.find(
         (l) => l.levelId === selectedLevel
-      )?.levelName;
+      )?.name;
       if (levelName) {
         filtered = filtered.filter((post) => post.level === levelName);
       }
@@ -245,10 +245,10 @@ const CommunityDiscussion: React.FC = () => {
       prevPosts.map((post) =>
         post.id === postId
           ? {
-              ...post,
-              isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-            }
+            ...post,
+            isLiked: !post.isLiked,
+            likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+          }
           : post
       )
     );
@@ -288,7 +288,7 @@ const CommunityDiscussion: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
             {/* Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1">
-                <div className="sticky top-24 space-y-4">
+              <div className="sticky top-24 space-y-4">
                 {/* Search and Filters */}
                 <SearchAndFilters
                   searchQuery={searchQuery}
@@ -320,14 +320,12 @@ const CommunityDiscussion: React.FC = () => {
                   {filteredPosts.length} bài viết
                   {searchQuery && ` phù hợp với "${searchQuery}"`}
                   {selectedField !== 'all' &&
-                    ` trong lĩnh vực ${
-                      mockFields.find((f) => f.fieldId === selectedField)
-                        ?.fieldName
+                    ` trong lĩnh vực ${mockFields.find((f) => f.fieldId === selectedField)
+                      ?.name
                     }`}
                   {selectedLevel !== 'all' &&
-                    ` cấp độ ${
-                      mockLevels.find((l) => l.levelId === selectedLevel)
-                        ?.levelName
+                    ` cấp độ ${mockLevels.find((l) => l.levelId === selectedLevel)
+                      ?.name
                     }`}
                 </p>
               </div>

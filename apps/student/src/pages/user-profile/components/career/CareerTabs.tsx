@@ -34,12 +34,7 @@ const CareerTabs: React.FC = () => {
     try {
       const res = await questionService.getAllFields();
       console.log('Fields:', res.content);
-      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        fieldName: item.name || item.description || 'Unknown Field',
-        description: item.description || item.name || 'Unknown Field',
-      }));
-      setFieldList(mappedFields);
+      setFieldList(res.content || []);
     } catch (error) {
       console.error('Error fetching fields:', error);
       setFieldList([]);
@@ -50,13 +45,7 @@ const CareerTabs: React.FC = () => {
     try {
       const res = await questionService.getAllTopics();
       console.log('Topics:', res.content);
-      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
-        id: item.id,
-        fieldId: item.fieldId,
-        topicName: item.name || item.description || 'Unknown Topic',
-        description: item.description || item.name || 'Unknown Topic',
-      }));
-      setTopicList(mappedTopics);
+      setTopicList(res.content || []);
     } catch (error) {
       console.error('Error fetching topics:', error);
       setTopicList([]);

@@ -1,44 +1,62 @@
-import React from 'react';
-import { Drawer, Tag, Tabs, Table, Avatar } from 'antd';
-import { EyeOutlined, UserOutlined } from '@ant-design/icons';
-import { Exam } from '@abc-interview-support-frontend/types';
+import React, { useState, useEffect } from 'react';
+import { Drawer, Tag, Tabs, Table, message } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { Exam, QuestionType } from '@abc-interview-support-frontend/types';
+import { examService } from '@abc-interview-support-frontend/services';
+
+// Interface for exam detail with questions
+interface ExamDetail extends Exam {
+  questions: Array<{
+    id: number;
+    field: string;
+    topics: string[];
+    level: string;
+    questionType: string;
+    questionText: string;
+    questionAnswer: string;
+  }>;
+}
 
 interface ExamFormPreviewProps {
   visible: boolean;
   onClose: () => void;
   exam: Exam | null;
+  questionTypes: QuestionType[];
 }
 
 const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
   visible,
   onClose,
   exam,
+  questionTypes,
 }) => {
-  // Mock data cho danh sách câu hỏi
-  const mockQuestions = [
-    {
-      id: 1,
-      title: 'Câu hỏi về JavaScript cơ bản',
-      type: 'Multiple Choice',
-      difficulty: 'Dễ',
-      points: 1,
-    },
-    {
-      id: 2,
-      title: 'Câu hỏi về React Hooks',
-      type: 'Multiple Choice',
-      difficulty: 'Trung bình',
-      points: 1,
-    },
-    {
-      id: 3,
-      title: 'Câu hỏi về Database Design',
-      type: 'Essay',
-      difficulty: 'Khó',
-      points: 2,
-    },
-  ];
+  const [examDetail, setExamDetail] = useState<ExamDetail | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const fetchExamDetail = async () => {
+      if (exam && visible) {
+        setLoading(true);
+        try {
+          const response = await examService.getExamById(exam.id.toString());
+          console.log('API Response:', response);
+          console.log('Questions in response:', response.questions);
+          setExamDetail(response);
+        } catch (error) {
+          console.error('Error fetching exam detail:', error);
+          message.error('Không thể tải chi tiết bài kiểm tra');
+          setExamDetail(null);
+        } finally {
+          setLoading(false);
+        }
+      } else if (!visible) {
+        // Reset exam detail when drawer is closed
+        setExamDetail(null);
+      }
+    };
+
+    fetchExamDetail();
+  }, [exam, visible]);
   // Mock data cho danh sách thí sinh
   const mockCandidates = [
     {
@@ -73,24 +91,42 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     },
     {
       title: 'Câu hỏi',
-      dataIndex: 'title',
-      key: 'title',
+      dataIndex: 'questionText',
+      key: 'questionText',
+      render: (text: string) => (
+        <div style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: 'Lĩnh vực',
+      dataIndex: 'field',
+      key: 'field',
+    },
+    {
+      title: 'Chủ đề',
+      dataIndex: 'topics',
+      key: 'topics',
+      render: (topics: string[]) => (
+        <div>
+          {topics.map((topic) => (
+            <Tag key={topic} color="blue" style={{ marginBottom: '2px' }}>
+              {topic}
+            </Tag>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Mức độ',
+      dataIndex: 'level',
+      key: 'level',
     },
     {
       title: 'Loại',
-      dataIndex: 'type',
-      key: 'type',
-    },
-    {
-      title: 'Độ khó',
-      dataIndex: 'difficulty',
-      key: 'difficulty',
-    },
-    {
-      title: 'Điểm',
-      dataIndex: 'points',
-      key: 'points',
-      width: 80,
+      dataIndex: 'questionType',
+      key: 'questionType',
     },
   ];
 
@@ -136,41 +172,59 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     {
       key: 'info',
       label: 'Thông tin bài kiểm tra',
-      children: exam ? (
+      children: examDetail ? (
         <div className="exam-detail-content">
           <div className="detail-section">
-            <h3>{exam.title}</h3>
+            <h3>{examDetail.title}</h3>
             <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
               <div>
-                <strong>Vị trí:</strong> {exam.position}
+                <strong>Vị trí:</strong> {examDetail.position}
               </div>
               <div>
-                <strong>Thời lượng:</strong> {exam.duration} phút
+                <strong>Thời lượng:</strong> {examDetail.duration} phút
               </div>
               <div>
-                <strong>Số câu hỏi:</strong> {exam.questionCount}
+                <strong>Số câu hỏi:</strong> {examDetail.questionCount}
               </div>
               <div>
                 <strong>Chủ đề:</strong>{' '}
-                {exam.topics.map((topicId: number) => {
-                  const topicMap: Record<number, string> = {
-                    1: 'JavaScript',
-                    2: 'React',
-                    3: 'Node.js',
-                    4: 'Database',
-                    5: 'Algorithms',
-                  };
-                  return <Tag key={topicId}>{topicMap[topicId] || `Topic ${topicId}`}</Tag>;
-                })}
+                {examDetail.questions && examDetail.questions.length > 0 ? (
+                  <div>
+                    {Array.from(new Set(examDetail.questions.flatMap(q => q.topics))).map((topic) => (
+                      <Tag key={topic} color="blue">
+                        {topic}
+                      </Tag>
+                    ))}
+                  </div>
+                ) : (
+                  'Chưa có chủ đề'
+                )}
+              </div>
+              <div>
+                <strong>Loại câu hỏi:</strong>{' '}
+                {examDetail.questions && examDetail.questions.length > 0 ? (
+                  <div>
+                    {Array.from(new Set(examDetail.questions.map(q => q.questionType))).map((type) => {
+                      const questionType = questionTypes.find(qt => qt.id.toString() === type);
+                      return (
+                        <Tag key={type} color="green">
+                          {questionType ? questionType.name : type}
+                        </Tag>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  'Chưa có loại câu hỏi'
+                )}
               </div>
               <div>
                 <strong>Ngày tạo:</strong>{' '}
-                {new Date(exam.createdAt).toLocaleDateString('vi-VN')}
+                {new Date(examDetail.createdAt).toLocaleDateString('vi-VN')}
               </div>
             </div>
           </div>
 
-          {exam.status === 'ACTIVE' && (
+          {examDetail.status === 'ACTIVE' && (
             <div
               className="stats-card"
               style={{ background: 'var(--color-success)', color: 'white', padding: '16px', borderRadius: '8px', marginTop: '16px' }}
@@ -183,8 +237,10 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>156</div>
-                  <div>Thí sinh đã tham gia</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                    {examDetail.questions ? examDetail.questions.length : 0}
+                  </div>
+                  <div>Câu hỏi trong bài thi</div>
                 </div>
                 <EyeOutlined style={{ fontSize: '24px' }} />
               </div>
@@ -202,10 +258,11 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
         <div>
           <Table
             columns={questionColumns}
-            dataSource={mockQuestions}
-            rowKey="id"
+            dataSource={examDetail?.questions || []}
+            rowKey={(record, index) => `${record.id}-${index}`}
             pagination={false}
             size="small"
+            loading={loading}
           />
         </div>
       ),

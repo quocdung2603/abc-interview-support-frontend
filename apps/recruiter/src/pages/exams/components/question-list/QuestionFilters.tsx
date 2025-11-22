@@ -55,7 +55,7 @@ const QuestionFilters: React.FC<QuestionFiltersProps> = ({
             >
               {Array.isArray(fields) && fields.map((field) => (
                 <Option key={field.id} value={field.id}>
-                  {field.description}
+                  {field.name}
                 </Option>
               ))}
             </Select>
@@ -76,7 +76,7 @@ const QuestionFilters: React.FC<QuestionFiltersProps> = ({
             >
               {Array.isArray(topics) && topics.map((topic) => (
                 <Option key={topic.id} value={topic.id}>
-                  {topic.description}
+                  {topic.name}
                 </Option>
               ))}
             </Select>
@@ -97,7 +97,7 @@ const QuestionFilters: React.FC<QuestionFiltersProps> = ({
             >
               {Array.isArray(levels) && levels.map((level) => (
                 <Option key={level.id} value={level.id}>
-                  {level.description}
+                  {level.name}
                 </Option>
               ))}
             </Select>
@@ -118,7 +118,7 @@ const QuestionFilters: React.FC<QuestionFiltersProps> = ({
             >
               {Array.isArray(questionTypes) && questionTypes.map((questionType) => (
                 <Option key={questionType.id} value={questionType.id}>
-                  {questionType.description}
+                  {questionType.name}
                 </Option>
               ))}
             </Select>

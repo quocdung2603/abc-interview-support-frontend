@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Select, DatePicker } from 'antd';
-import { Field, Topic, Level } from '@abc-interview-support-frontend/types';
+import { Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -15,10 +15,13 @@ interface ToolbarProps {
   onTopicFilterChange: (value: string) => void;
   levelFilter: string;
   onLevelFilterChange: (value: string) => void;
+  questionTypeFilter: string;
+  onQuestionTypeFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
   fields: Field[];
   topics: Topic[];
   levels: Level[];
+  questionTypes: QuestionType[];
 }
 
 const QuestionBankToolbar: React.FC<ToolbarProps> = ({
@@ -30,10 +33,13 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
   onTopicFilterChange,
   levelFilter,
   onLevelFilterChange,
+  questionTypeFilter,
+  onQuestionTypeFilterChange,
   selectedRowKeys,
   fields,
   topics,
   levels,
+  questionTypes,
 }) => {
   const filteredTopics = topics.filter(
     (topic) => fieldFilter === 'all' || topic.fieldId === Number(fieldFilter)
@@ -43,7 +49,7 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr auto auto auto auto',
+        gridTemplateColumns: '1fr auto auto auto auto auto',
         gap: 'var(--spacing-md)',
         marginBottom: 'var(--spacing-lg)',
         alignItems: 'end',
@@ -71,7 +77,7 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {fields.map((field) => (
             <Option key={field.id} value={field.id}>
-              {field.description}
+              {field.name}
             </Option>
           ))}
         </Select>
@@ -92,7 +98,7 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {filteredTopics.map((topic) => (
             <Option key={topic.id} value={topic.id}>
-              {topic.description}
+              {topic.name}
             </Option>
           ))}
         </Select>
@@ -112,7 +118,27 @@ const QuestionBankToolbar: React.FC<ToolbarProps> = ({
           <Option value="all">Tất cả</Option>
           {levels.map((level) => (
             <Option key={level.id} value={level.id}>
-              {level.description}
+              {level.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
+          Loại câu hỏi
+        </span>
+        <Select
+          placeholder="Loại câu hỏi"
+          value={questionTypeFilter}
+          onChange={onQuestionTypeFilterChange}
+          style={{ width: 150 }}
+          allowClear
+        >
+          <Option value="all">Tất cả</Option>
+          {questionTypes.map((questionType) => (
+            <Option key={questionType.id} value={questionType.id}>
+              {questionType.name}
             </Option>
           ))}
         </Select>

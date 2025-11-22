@@ -47,6 +47,17 @@ export class UserService {
     return response.data;
   }
 
+  async getUserById(userId: string) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No access token found');
+    }
+    const response = await this.apiClient.get(`/users/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  }
+
   async updateUser(userId: string, userData: User) {
     const token = this.getToken();
     if (!token) {

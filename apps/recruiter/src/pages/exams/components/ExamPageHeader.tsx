@@ -22,7 +22,7 @@ const ExamPageHeader: React.FC<ExamPageHeaderProps> = ({ onCreateExam }) => {
             className="text-heading-2 text-gradient-primary"
             style={{ marginBottom: 'var(--spacing-sm)' }}
           >
-            📃 Quản lý các kỳ tuyển dụng
+            Quản lý các kỳ tuyển dụng
           </div>
           <div className="text-body text-neutral-600">
             Tạo, chỉnh sửa và quản lý các kì thi sơ tuyển của công ty

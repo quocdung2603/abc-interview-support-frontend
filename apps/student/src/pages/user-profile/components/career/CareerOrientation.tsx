@@ -113,7 +113,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
 
   const getTopicName = (topicId: string) => {
     return (
-      availableTopics.find((topic) => String(topic.id) === topicId)?.topicName ||
+      availableTopics.find((topic) => String(topic.id) === topicId)?.name ||
       topicId
     );
   };
@@ -248,7 +248,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                             color: 'var(--color-neutral-800)',
                           }}
                         >
-                          {field.fieldName}
+                          {field.name}
                         </div>
                         <div
                           style={{
@@ -313,7 +313,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                                   color: 'var(--color-neutral-700)',
                                 }}
                               >
-                                {topic.topicName}
+                                {topic.name}
                               </span>
                             </label>
                           ))}
@@ -379,7 +379,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                             }}
                           >
                             <span className="badge-accent">
-                              {field.fieldName}
+                              {field.name}
                             </span>
                           </div>
                           {hasTopicPreferences && (

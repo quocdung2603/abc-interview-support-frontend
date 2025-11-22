@@ -76,18 +76,18 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
           {/* Question Meta */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {field && (
-              <span className="badge-primary text-sm">{field.fieldName}</span>
+              <span className="badge-primary text-sm">{field.name}</span>
             )}
             {topic && (
-              <span className="badge-secondary text-sm">{topic.topicName}</span>
+              <span className="badge-secondary text-sm">{topic.name}</span>
             )}
             {level && (
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(
-                  level.levelName
+                  level.name
                 )}`}
               >
-                {level.levelName}
+                {level.name}
               </span>
             )}
             <span className="text-neutral-400 text-sm">

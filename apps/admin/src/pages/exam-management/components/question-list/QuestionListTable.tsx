@@ -26,18 +26,18 @@ const QuestionListTable: React.FC<QuestionListTableProps> = ({
   onAddQuestion,
 }) => {
   const getFieldName = (fieldId: string) => {
-    const field = fields.find((f) => f.fieldId === fieldId);
-    return field?.fieldName || 'N/A';
+    const field = fields.find((f) => f.id === fieldId);
+    return field?.name || 'N/A';
   };
 
   const getTopicName = (topicId: string) => {
-    const topic = topics.find((t) => t.topicId === topicId);
-    return topic?.topicName || 'N/A';
+    const topic = topics.find((t) => t.id === topicId);
+    return topic?.name || 'N/A';
   };
 
   const getLevelName = (levelId: string) => {
-    const level = levels.find((l) => l.levelId === levelId);
-    return level?.levelName || 'N/A';
+    const level = levels.find((l) => l.id === levelId);
+    return level?.name || 'N/A';
   };
 
   const getStatusText = (status: string) => {

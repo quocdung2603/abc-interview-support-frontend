@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Question,
   Field,
@@ -13,6 +13,7 @@ interface TableProps {
   dataList: Question[];
   onPreview: (data: Question) => void;
   onEdit: (data: Question) => void;
+  onDelete: (questionId: number) => void;
   fields: Field[];
   topics: Topic[];
   levels: Level[];
@@ -23,6 +24,7 @@ const QuestionBankTable: React.FC<TableProps> = ({
   dataList,
   onPreview,
   onEdit,
+  onDelete,
   fields,
   topics,
   levels,
@@ -30,17 +32,22 @@ const QuestionBankTable: React.FC<TableProps> = ({
 }) => {
   const getFieldName = (fieldId: number) => {
     const field = fields.find((f) => f.id === fieldId);
-    return field?.fieldName || 'N/A';
+    return field?.name || 'N/A';
   };
 
   const getTopicName = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId);
-    return topic?.topicName || 'N/A';
+    return topic?.name || 'N/A';
   };
 
   const getLevelName = (levelId: number) => {
     const level = levels.find((l) => l.id === levelId);
-    return level?.levelName || 'N/A';
+    return level?.name || 'N/A';
+  };
+
+  const getQuestionTypeName = (questionTypeId: number) => {
+    const questionType = questionTypes.find((qt) => qt.id === questionTypeId);
+    return questionType?.name || 'N/A';
   };
 
   const getStatusText = (status: string) => {
@@ -113,6 +120,14 @@ const QuestionBankTable: React.FC<TableProps> = ({
       ),
     },
     {
+      title: 'Loại câu hỏi',
+      dataIndex: 'questionTypeId',
+      key: 'questionTypeId',
+      render: (questionTypeId: number) => (
+        <Tag color="yellow" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getQuestionTypeName(questionTypeId)}</Tag>
+      ),
+    },
+    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
@@ -167,6 +182,15 @@ const QuestionBankTable: React.FC<TableProps> = ({
               icon={<EditOutlined />}
               size="small"
               onClick={() => onEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Xóa tin tức">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={() => onDelete(record.id)}
             />
           </Tooltip>
         </Space>

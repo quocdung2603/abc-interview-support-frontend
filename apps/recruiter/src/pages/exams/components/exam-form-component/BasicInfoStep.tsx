@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Select } from 'antd';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, QuestionType, Topic } from '@abc-interview-support-frontend/types';
 
 const { Option } = Select;
 
@@ -14,14 +14,17 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
+  selectedQuestions: number[]; // Add selected questions
 }
 
 interface BasicInfoStepProps {
   control: Control<CreateFormFields>;
   errors: FieldErrors<CreateFormFields>;
+  questionTypes: QuestionType[];
+  topics: Topic[];
 }
 
-const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, questionTypes, topics }) => {
   return (
     <div className="space-y-6">
       <div>
@@ -93,11 +96,45 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors }) => {
                 onChange={(values) => field.onChange(values?.map(Number) || [])}
                 className="rounded-lg"
               >
-                <Option value="1">JavaScript</Option>
-                <Option value="2">React</Option>
-                <Option value="3">Node.js</Option>
-                <Option value="4">Database</Option>
-                <Option value="5">Algorithms</Option>
+                {topics.map((topic) => (
+                  <Option key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </Option>
+                ))}
+              </Select>
+            )}
+          />
+        </Form.Item>
+      </div>
+
+      <div>
+        <Form.Item
+          label="Loại câu hỏi"
+          name="questionTypes"
+          rules={[
+            { required: true, message: 'Vui lòng chọn ít nhất 1 loại câu hỏi' },
+          ]}
+          className="mb-0"
+        >
+          <Controller
+            name="questionTypes"
+            control={control}
+            rules={{ required: 'Vui lòng chọn ít nhất 1 loại câu hỏi' }}
+            render={({ field }) => (
+              <Select
+                mode="multiple"
+                size="large"
+                placeholder="Chọn loại câu hỏi"
+                {...field}
+                value={field.value?.map(String) || []}
+                onChange={(values) => field.onChange(values?.map(Number) || [])}
+                className="rounded-lg"
+              >
+                {questionTypes.map((type) => (
+                  <Option key={type.id} value={type.id}>
+                    {type.name}
+                  </Option>
+                ))}
               </Select>
             )}
           />

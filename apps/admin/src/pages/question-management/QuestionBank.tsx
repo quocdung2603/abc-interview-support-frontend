@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { message, Modal } from 'antd';
 import {
   QuestionBankFormDrawer,
   QuestionBankPageHeader,
@@ -26,6 +27,7 @@ const QuestionBank = () => {
   const [fieldFilter, setFieldFilter] = useState<string>('all');
   const [topicFilter, setTopicFilter] = useState<string>('all');
   const [levelFilter, setLevelFilter] = useState<string>('all');
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<string>('all');
   const [selectedRowKeys] = useState<React.Key[]>([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Question | null>(null);
@@ -42,10 +44,11 @@ const QuestionBank = () => {
       const matchesField = fieldFilter === 'all' || item?.fieldId === Number(fieldFilter);
       const matchesTopic = topicFilter === 'all' || item?.topicId === Number(topicFilter);
       const matchesLevel = levelFilter === 'all' || item?.levelId === Number(levelFilter);
+      const matchesQuestionType = questionTypeFilter === 'all' || item?.questionTypeId === Number(questionTypeFilter);
 
-      return matchesSearch && matchesField && matchesTopic && matchesLevel;
+      return matchesSearch && matchesField && matchesTopic && matchesLevel && matchesQuestionType;
     });
-  }, [dataList, searchText, fieldFilter, topicFilter, levelFilter]);
+  }, [dataList, searchText, fieldFilter, topicFilter, levelFilter, questionTypeFilter]);
 
   const handlePreview = (data: Question) => {
     setPreviewVisible(true);
@@ -67,16 +70,51 @@ const QuestionBank = () => {
     setSelectedFormItem(null);
   };
 
+  const handleFormSuccess = () => {
+    // Refresh the questions list after successful creation/update
+    getAllQuestions();
+  };
+
+  const handleDelete = async (questionId: number) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa câu hỏi',
+      content: 'Bạn có chắc chắn muốn xóa câu hỏi này? Hành động này không thể hoàn tác.',
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await questionService.deleteQuestion(questionId);
+          message.success('Xóa câu hỏi thành công!');
+          // Refresh the questions list after successful deletion
+          getAllQuestions();
+        } catch (error: unknown) {
+          console.error('Delete question error:', error);
+
+          // Handle API error
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { data?: { message?: string } } };
+            if (axiosError.response?.data?.message) {
+              message.error(`Lỗi: ${axiosError.response.data.message}`);
+              return;
+            }
+          }
+
+          if (error instanceof Error && error.message) {
+            message.error(`Lỗi: ${error.message}`);
+          } else {
+            message.error('Có lỗi xảy ra khi xóa câu hỏi. Vui lòng thử lại.');
+          }
+        }
+      },
+    });
+  };
+
   const getAllFields = async () => {
     try {
       const res = await questionService.getAllFields();
       console.log('Fields:', res.content);
-      const mappedFields = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        fieldName: item.name || item.description || 'Unknown Field',
-        description: item.description || item.name || 'Unknown Field',
-      }));
-      setFieldData(mappedFields);
+      setFieldData(res.content || []);
     } catch (error) {
       console.error('Error fetching fields:', error);
       setFieldData([]);
@@ -87,13 +125,7 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllTopics();
       console.log('Topics:', res.content);
-      const mappedTopics = (res.content || []).map((item: { id: number, name?: string, description?: string, fieldId: number }) => ({
-        id: item.id,
-        fieldId: item.fieldId,
-        topicName: item.name || item.description || 'Unknown Topic',
-        description: item.description || item.name || 'Unknown Topic',
-      }));
-      setTopicData(mappedTopics);
+      setTopicData(res.content || []);
     } catch (error) {
       console.error('Error fetching topics:', error);
       setTopicData([]);
@@ -104,12 +136,7 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllLevels();
       console.log('Levels:', res.content);
-      const mappedLevels = (res.content || []).map((item: { id: number, name?: string, description?: string }) => ({
-        id: item.id,
-        levelName: (item.name || item.description || 'Unknown Level') as 'Fresher' | 'Junior' | 'Senior' | 'Middle',
-        description: item.description || item.name || 'Unknown Level',
-      }));
-      setLevelData(mappedLevels);
+      setLevelData(res.content || []);
     } catch (error) {
       console.error('Error fetching levels:', error);
       setLevelData([]);
@@ -120,12 +147,7 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllQuestionTypes();
       console.log('Question Types:', res.content);
-      const mappedTypes = (res.content || []).map((item: { id: string, description: string }) => ({
-        id: Number(item.id),
-        questionTypeName: item.description,
-        description: item.description,
-      }));
-      setQuestionTypeData(mappedTypes);
+      setQuestionTypeData(res.content || []);
     } catch (error) {
       console.error('Error fetching question types:', error);
       setQuestionTypeData([]);
@@ -136,7 +158,10 @@ const QuestionBank = () => {
     try {
       const res = await questionService.getAllQuestions();
       let questions = res.content || [];
-      questions = questions.filter((question: any) => question?.status === 'APPROVED');
+      questions = questions.filter((question: unknown) => {
+        const q = question as { status?: string };
+        return q?.status === 'APPROVED';
+      });
       console.log('All Questions:', questions);
       setDataList(questions);
     } catch (error) {
@@ -167,16 +192,20 @@ const QuestionBank = () => {
           onTopicFilterChange={setTopicFilter}
           levelFilter={levelFilter}
           onLevelFilterChange={setLevelFilter}
+          questionTypeFilter={questionTypeFilter}
+          onQuestionTypeFilterChange={setQuestionTypeFilter}
           selectedRowKeys={selectedRowKeys}
           fields={fieldData}
           topics={topicData}
           levels={levelData}
+          questionTypes={questionTypeData}
         />
 
         <QuestionBankTable
           dataList={filteredData}
           onPreview={handlePreview}
           onEdit={handleEdit}
+          onDelete={handleDelete}
           fields={fieldData}
           topics={topicData}
           levels={levelData}
@@ -202,6 +231,7 @@ const QuestionBank = () => {
         topics={topicData}
         levels={levelData}
         questionTypes={questionTypeData}
+        onSuccess={handleFormSuccess}
       />
     </div>
   );
