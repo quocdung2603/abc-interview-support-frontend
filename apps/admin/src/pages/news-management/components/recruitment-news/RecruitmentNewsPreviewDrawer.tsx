@@ -1,34 +1,61 @@
-import React from 'react';
-import { Drawer, Card, Tag, Typography } from 'antd';
-import { News, Field, Topic } from '@abc-interview-support-frontend/types';
+import React, { useState, useEffect } from 'react';
+import { Drawer, Card, Tag, Typography, Spin, message } from 'antd';
+import { News, Field } from '@abc-interview-support-frontend/types';
+import { newsService } from '@abc-interview-support-frontend/services';
 
 const { Title, Paragraph, Text } = Typography;
 
 interface PreviewDrawerProps {
   visible: boolean;
   onClose: () => void;
-  data: News | null;
+  newsId: number | null;
   fields: Field[];
-  topics: Topic[];
 }
 
 const RecruitmentNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
   visible,
   onClose,
-  data,
+  newsId,
   fields,
-  topics,
 }) => {
-  const getFieldName = (fieldId?: string) => {
-    if (!fieldId) return 'N/A';
-    const field = fields.find((f) => f.fieldId === fieldId);
-    return field?.fieldName || 'N/A';
+  const [newsData, setNewsData] = useState<News | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (visible && newsId) {
+      fetchNewsDetail(newsId);
+    } else {
+      setNewsData(null);
+    }
+  }, [visible, newsId]);
+
+  const fetchNewsDetail = async (id: number) => {
+    try {
+      setLoading(true);
+      const response = await newsService.getNewById(id);
+      setNewsData(response);
+    } catch (error) {
+      console.error('Error fetching news detail:', error);
+      message.error('Không thể tải chi tiết tin tức');
+      setNewsData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
-  const getTopicName = (topicId?: string) => {
-    if (!topicId) return 'N/A';
-    const topic = topics.find((t) => t.topicId === topicId);
-    return topic?.topicName || 'N/A';
+  const getFieldName = (fieldId?: number) => {
+    if (!fieldId) return 'N/A';
+    const field = fields.find((f) => f.id === fieldId);
+    return field?.name || 'N/A';
   };
 
   return (
@@ -38,17 +65,20 @@ const RecruitmentNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
       open={visible}
       onClose={onClose}
     >
-      {data && (
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+          <Spin size="large" />
+        </div>
+      ) : newsData ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Header */}
           <div>
             <Title level={3} style={{ marginBottom: '8px' }}>
-              {data.title}
+              {newsData.title}
             </Title>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <Tag color="blue">{getFieldName(data.fieldId)}</Tag>
-              <Tag color="green">{getTopicName(data.topicId)}</Tag>
-              {data.location && <Tag color="orange">{data.location}</Tag>}
+              <Tag color="blue">{getFieldName(newsData.fieldId)}</Tag>
+              {newsData.location && <Tag color="orange">{newsData.location}</Tag>}
               <Tag color="purple">Tuyển dụng</Tag>
             </div>
           </div>
@@ -62,7 +92,7 @@ const RecruitmentNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                 whiteSpace: 'pre-wrap',
               }}
             >
-              {data.content}
+              {newsData.content}
             </Paragraph>
           </Card>
 
@@ -70,43 +100,56 @@ const RecruitmentNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
           <Card title="Thông tin bổ sung" size="small">
             <div style={{ display: 'grid', gap: '12px' }}>
               <div>
-                <Text strong>ID tin tức:</Text> {data.newsId}
+                <Text strong>ID tin tức:</Text> {newsData.id}
               </div>
               <div>
-                <Text strong>Người tạo:</Text> User #{data.userId}
+                <Text strong>Người tạo:</Text> User {newsData.userId}
               </div>
               <div>
                 <Text strong>Loại tin tức:</Text>{' '}
                 <Tag color="orange">
-                  {data.newsType === 'trend' ? 'Xu hướng' : 'Tuyển dụng'}
+                  {newsData.newsType === 'NEWS' ? 'Xu hướng' : 'Tuyển dụng'}
                 </Tag>
               </div>
-              {data.location && (
+              {newsData.location && (
                 <div>
                   <Text strong>Địa điểm:</Text>{' '}
-                  <Tag color="orange">{data.location}</Tag>
+                  <Tag color="orange">{newsData.location}</Tag>
                 </div>
               )}
               <div>
                 <Text strong>Lĩnh vực:</Text>{' '}
-                <Tag color="blue">{getFieldName(data.fieldId)}</Tag>
-              </div>
-              <div>
-                <Text strong>Chủ đề:</Text>{' '}
-                <Tag color="green">{getTopicName(data.topicId)}</Tag>
+                <Tag color="blue">{getFieldName(newsData.fieldId)}</Tag>
               </div>
               <div>
                 <Text strong>Ngày tạo:</Text>{' '}
-                {new Date(data.createdAt).toLocaleDateString('vi-VN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {formatDate(newsData.createdAt)}
               </div>
+              {newsData.publishedAt && (
+                <div>
+                  <Text strong>Ngày xuất bản:</Text>{' '}
+                  {formatDate(newsData.publishedAt)}
+                </div>
+              )}
+              {newsData.approvedBy && (
+                <div>
+                  <Text strong>Người duyệt:</Text> User {newsData.approvedBy}
+                </div>
+              )}
+              {(newsData.usefulVote !== undefined || newsData.interestVote !== undefined) && (
+                <div>
+                  <Text strong>Đánh giá:</Text>{' '}
+                  {newsData.usefulVote !== undefined && `Hữu ích: ${newsData.usefulVote}`}
+                  {newsData.usefulVote !== undefined && newsData.interestVote !== undefined && ' | '}
+                  {newsData.interestVote !== undefined && `Thú vị: ${newsData.interestVote}`}
+                </div>
+              )}
             </div>
           </Card>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Text>Không có dữ liệu để hiển thị</Text>
         </div>
       )}
     </Drawer>

@@ -2,35 +2,24 @@ import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
 import {
   EyeOutlined,
-  CheckCircleOutlined,
 } from '@ant-design/icons';
-import { News, Field, Topic } from '@abc-interview-support-frontend/types';
+import { News, Field } from '@abc-interview-support-frontend/types';
 
 interface TableProps {
   dataList: News[];
   onPreview: (data: News) => void;
-  onApprove: (data: News) => void;
   fields: Field[];
-  topics: Topic[];
 }
 
 const NewsApprovalTable: React.FC<TableProps> = ({
   dataList,
   onPreview,
-  onApprove,
   fields,
-  topics,
 }) => {
-  const getFieldName = (fieldId?: string) => {
+  const getFieldName = (fieldId?: number) => {
     if (!fieldId) return 'N/A';
-    const field = fields.find((f) => f.fieldId === fieldId);
-    return field?.fieldName || 'N/A';
-  };
-
-  const getTopicName = (topicId?: string) => {
-    if (!topicId) return 'N/A';
-    const topic = topics.find((t) => t.topicId === topicId);
-    return topic?.topicName || 'N/A';
+    const field = fields.find((f) => f.id === fieldId);
+    return field?.name || 'N/A';
   };
 
   const getStatusText = (status: string) => {
@@ -61,9 +50,9 @@ const NewsApprovalTable: React.FC<TableProps> = ({
 
   const getNewsTypeText = (newsType: string) => {
     switch (newsType) {
-      case 'trend':
+      case 'NEWS':
         return 'Xu hướng';
-      case 'recruitment':
+      case 'RECRUITMENT':
         return 'Tuyển dụng';
       default:
         return newsType;
@@ -72,9 +61,9 @@ const NewsApprovalTable: React.FC<TableProps> = ({
 
   const getNewsTypeColor = (newsType: string) => {
     switch (newsType) {
-      case 'trend':
+      case 'NEWS':
         return '#1890ff';
-      case 'recruitment':
+      case 'RECRUITMENT':
         return '#722ed1';
       default:
         return '#d9d9d9';
@@ -86,7 +75,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       title: 'Tiêu đề',
       dataIndex: 'title',
       key: 'title',
-      render: (title: string) => (
+      render: (title: string, record: News) => (
         <div style={{ fontWeight: 'bold', maxWidth: '300px' }}>
           <div
             style={{
@@ -95,7 +84,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            {title}
+            #{record.id}: {title}
           </div>
         </div>
       ),
@@ -114,16 +103,8 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       title: 'Lĩnh vực',
       dataIndex: 'fieldId',
       key: 'fieldId',
-      render: (fieldId: string) => (
+      render: (fieldId: number) => (
         <Tag color="blue">{getFieldName(fieldId)}</Tag>
-      ),
-    },
-    {
-      title: 'Chủ đề',
-      dataIndex: 'topicId',
-      key: 'topicId',
-      render: (topicId: string) => (
-        <Tag color="green">{getTopicName(topicId)}</Tag>
       ),
     },
     {
@@ -138,7 +119,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       title: 'Người đăng',
       dataIndex: 'userId',
       key: 'userId',
-      render: (userId: string) => <span>User #{userId}</span>,
+      render: (userId: number) => <span>User {userId}</span>,
     },
     {
       title: 'Trạng thái',
@@ -174,17 +155,6 @@ const NewsApprovalTable: React.FC<TableProps> = ({
               onClick={() => onPreview(record)}
             />
           </Tooltip>
-          {record.status === 'Pending' && (
-            <Tooltip title="Duyệt tin tức">
-              <Button
-                type="text"
-                style={{ color: '#52c41a' }}
-                icon={<CheckCircleOutlined />}
-                size="small"
-                onClick={() => onApprove(record)}
-              />
-            </Tooltip>
-          )}
         </Space>
       ),
     },
@@ -194,7 +164,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
     <Table
       columns={columns}
       dataSource={dataList}
-      rowKey="newsId"
+      rowKey="id"
       pagination={{
         total: dataList.length,
         pageSize: 10,

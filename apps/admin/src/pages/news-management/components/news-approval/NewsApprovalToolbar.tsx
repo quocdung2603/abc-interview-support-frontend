@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Select, DatePicker } from 'antd';
-import { Field, Topic } from '@abc-interview-support-frontend/types';
+import { Field } from '@abc-interview-support-frontend/types';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -11,8 +11,6 @@ interface ToolbarProps {
   onSearchChange: (value: string) => void;
   fieldFilter: string;
   onFieldFilterChange: (value: string) => void;
-  topicFilter: string;
-  onTopicFilterChange: (value: string) => void;
   locationFilter: string;
   onLocationFilterChange: (value: string) => void;
   statusFilter: string;
@@ -21,7 +19,6 @@ interface ToolbarProps {
   onNewsTypeFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
   fields: Field[];
-  topics: Topic[];
 }
 
 const NewsApprovalToolbar: React.FC<ToolbarProps> = ({
@@ -29,8 +26,6 @@ const NewsApprovalToolbar: React.FC<ToolbarProps> = ({
   onSearchChange,
   fieldFilter,
   onFieldFilterChange,
-  topicFilter,
-  onTopicFilterChange,
   locationFilter,
   onLocationFilterChange,
   statusFilter,
@@ -39,17 +34,13 @@ const NewsApprovalToolbar: React.FC<ToolbarProps> = ({
   onNewsTypeFilterChange,
   selectedRowKeys,
   fields,
-  topics,
 }) => {
-  const filteredTopics = topics.filter(
-    (topic) => fieldFilter === 'all' || topic.fieldId === fieldFilter
-  );
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr auto auto auto auto auto auto auto',
+        gridTemplateColumns: '1fr auto auto auto auto auto auto',
         gap: 'var(--spacing-md)',
         marginBottom: 'var(--spacing-lg)',
         alignItems: 'end',
@@ -75,8 +66,8 @@ const NewsApprovalToolbar: React.FC<ToolbarProps> = ({
           allowClear
         >
           <Option value="all">Tất cả</Option>
-          <Option value="trend">Xu hướng</Option>
-          <Option value="recruitment">Tuyển dụng</Option>
+          <Option value="NEWS">Xu hướng</Option>
+          <Option value="RECRUITMENT">Tuyển dụng</Option>
         </Select>
       </div>
 
@@ -93,29 +84,8 @@ const NewsApprovalToolbar: React.FC<ToolbarProps> = ({
         >
           <Option value="all">Tất cả</Option>
           {fields.map((field) => (
-            <Option key={field.fieldId} value={field.fieldId}>
-              {field.fieldName}
-            </Option>
-          ))}
-        </Select>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
-          Chủ đề
-        </span>
-        <Select
-          placeholder="Chủ đề"
-          value={topicFilter}
-          onChange={onTopicFilterChange}
-          style={{ width: 120 }}
-          allowClear
-          disabled={fieldFilter === 'all'}
-        >
-          <Option value="all">Tất cả</Option>
-          {filteredTopics.map((topic) => (
-            <Option key={topic.topicId} value={topic.topicId}>
-              {topic.topicName}
+            <Option key={field.id} value={field.id}>
+              {field.name}
             </Option>
           ))}
         </Select>

@@ -11,13 +11,10 @@ interface ToolbarProps {
   onSearchChange: (value: string) => void;
   fieldFilter: string;
   onFieldFilterChange: (value: string) => void;
-  topicFilter: string;
-  onTopicFilterChange: (value: string) => void;
   locationFilter: string;
   onLocationFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
   fields: Field[];
-  topics: Topic[];
 }
 
 const RecruitmentNewsToolbar: React.FC<ToolbarProps> = ({
@@ -25,18 +22,11 @@ const RecruitmentNewsToolbar: React.FC<ToolbarProps> = ({
   onSearchChange,
   fieldFilter,
   onFieldFilterChange,
-  topicFilter,
-  onTopicFilterChange,
   locationFilter,
   onLocationFilterChange,
   selectedRowKeys,
   fields,
-  topics,
 }) => {
-  const filteredTopics = topics.filter(
-    (topic) => fieldFilter === 'all' || topic.fieldId === fieldFilter
-  );
-
   return (
     <div
       style={{
@@ -64,28 +54,11 @@ const RecruitmentNewsToolbar: React.FC<ToolbarProps> = ({
       >
         <Option value="all">Tất cả</Option>
         {fields.map((field) => (
-          <Option key={field.fieldId} value={field.fieldId}>
-            {field.fieldName}
+          <Option key={field.id} value={field.id.toString()}>
+            {field.name}
           </Option>
         ))}
       </Select>
-
-      <Select
-        placeholder="Chủ đề"
-        value={topicFilter}
-        onChange={onTopicFilterChange}
-        style={{ width: 150 }}
-        allowClear
-        disabled={fieldFilter === 'all'}
-      >
-        <Option value="all">Tất cả</Option>
-        {filteredTopics.map((topic) => (
-          <Option key={topic.topicId} value={topic.topicId}>
-            {topic.topicName}
-          </Option>
-        ))}
-      </Select>
-
       <RangePicker
         placeholder={['Ngày bắt đầu', 'Ngày kết thúc']}
         style={{ width: 250 }}

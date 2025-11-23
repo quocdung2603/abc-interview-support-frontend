@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Select, DatePicker } from 'antd';
-import { Field, Topic } from '@abc-interview-support-frontend/types';
+import { Field } from '@abc-interview-support-frontend/types';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -11,11 +11,8 @@ interface ToolbarProps {
   onSearchChange: (value: string) => void;
   fieldFilter: string;
   onFieldFilterChange: (value: string) => void;
-  topicFilter: string;
-  onTopicFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
   fields: Field[];
-  topics: Topic[];
 }
 
 const TrendNewsToolbar: React.FC<ToolbarProps> = ({
@@ -23,21 +20,15 @@ const TrendNewsToolbar: React.FC<ToolbarProps> = ({
   onSearchChange,
   fieldFilter,
   onFieldFilterChange,
-  topicFilter,
-  onTopicFilterChange,
   selectedRowKeys,
   fields,
-  topics,
 }) => {
-  const filteredTopics = topics.filter(
-    (topic) => fieldFilter === 'all' || topic.fieldId === fieldFilter
-  );
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr auto auto auto',
+        gridTemplateColumns: '1fr auto auto',
         gap: 'var(--spacing-md)',
         marginBottom: 'var(--spacing-lg)',
         alignItems: 'center',
@@ -60,24 +51,8 @@ const TrendNewsToolbar: React.FC<ToolbarProps> = ({
       >
         <Option value="all">Tất cả</Option>
         {fields.map((field) => (
-          <Option key={field.fieldId} value={field.fieldId}>
-            {field.fieldName}
-          </Option>
-        ))}
-      </Select>
-
-      <Select
-        placeholder="Chủ đề"
-        value={topicFilter}
-        onChange={onTopicFilterChange}
-        style={{ width: 150 }}
-        allowClear
-        disabled={fieldFilter === 'all'}
-      >
-        <Option value="all">Tất cả</Option>
-        {filteredTopics.map((topic) => (
-          <Option key={topic.topicId} value={topic.topicId}>
-            {topic.topicName}
+          <Option key={field.id} value={field.id.toString()}>
+            {field.name}
           </Option>
         ))}
       </Select>

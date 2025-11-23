@@ -6,9 +6,8 @@ import { News, Field, Topic } from '@abc-interview-support-frontend/types';
 interface TableProps {
   dataList: News[];
   onPreview: (data: News) => void;
-  onDelete: (newsId: string) => void;
+  onDelete: (newsId: number) => void;
   fields: Field[];
-  topics: Topic[];
 }
 
 const RecruitmentNewsTable: React.FC<TableProps> = ({
@@ -16,18 +15,11 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
   onPreview,
   onDelete,
   fields,
-  topics,
 }) => {
-  const getFieldName = (fieldId?: string) => {
+  const getFieldName = (fieldId?: number) => {
     if (!fieldId) return 'N/A';
-    const field = fields.find((f) => f.fieldId === fieldId);
-    return field?.fieldName || 'N/A';
-  };
-
-  const getTopicName = (topicId?: string) => {
-    if (!topicId) return 'N/A';
-    const topic = topics.find((t) => t.topicId === topicId);
-    return topic?.topicName || 'N/A';
+    const field = fields.find((f) => f.id === fieldId);
+    return field?.name || 'N/A';
   };
 
   const columns = [
@@ -53,16 +45,8 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
       title: 'Lĩnh vực',
       dataIndex: 'fieldId',
       key: 'fieldId',
-      render: (fieldId: string) => (
+      render: (fieldId: number) => (
         <Tag color="blue">{getFieldName(fieldId)}</Tag>
-      ),
-    },
-    {
-      title: 'Chủ đề',
-      dataIndex: 'topicId',
-      key: 'topicId',
-      render: (topicId: string) => (
-        <Tag color="green">{getTopicName(topicId)}</Tag>
       ),
     },
     {
@@ -98,7 +82,7 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
               danger
               icon={<DeleteOutlined />}
               size="small"
-              onClick={() => onDelete(record.newsId)}
+              onClick={() => onDelete(record.id)}
             />
           </Tooltip>
         </Space>
@@ -110,7 +94,7 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
     <Table
       columns={columns}
       dataSource={dataList}
-      rowKey="newsId"
+      rowKey="id"
       pagination={{
         total: dataList.length,
         pageSize: 10,
