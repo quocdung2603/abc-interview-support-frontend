@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { RecruitmentNews as RNews } from '@abc-interview-support-frontend/types';
 import { RecruitmentNewsCard } from './RecruitmentNewsCard';
 
@@ -10,6 +11,20 @@ export const RecruitmentNewsList = ({
   news,
   onNewsClick,
 }: RecruitmentNewsListProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  // Tính toán phân trang
+  const totalPages = Math.ceil(news.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentNews = news.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of the list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   if (news.length === 0) {
     return (
       <div className="text-center py-16 animate-fade-in">
@@ -43,7 +58,7 @@ export const RecruitmentNewsList = ({
   return (
     <div className="animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {news.map((newsItem) => (
+        {currentNews.map((newsItem) => (
           <RecruitmentNewsCard
             key={newsItem.id}
             news={newsItem}
@@ -52,10 +67,120 @@ export const RecruitmentNewsList = ({
         ))}
       </div>
 
-      {/* Load More Button - Placeholder for future pagination */}
-      {news.length > 0 && (
-        <div className="text-center mt-8">
-          <button className="btn-outline">Xem thêm cơ hội việc làm</button>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 space-y-4">
+          {/* Page Info */}
+          <div className="text-center text-body text-neutral-600">
+            Trang {currentPage} của {totalPages} ({news.length} tin tức)
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center items-center space-x-2">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Đầu
+            </button>
+
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ← Trước
+            </button>
+
+            <div className="flex space-x-1">
+              {(() => {
+                const pages = [];
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Adjust startPage if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                // Add first page and ellipsis if needed
+                if (startPage > 1) {
+                  pages.push(
+                    <button
+                      key={1}
+                      onClick={() => handlePageChange(1)}
+                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                    >
+                      1
+                    </button>
+                  );
+                  if (startPage > 2) {
+                    pages.push(
+                      <span key="start-ellipsis" className="px-2 py-2 text-neutral-500">
+                        ...
+                      </span>
+                    );
+                  }
+                }
+
+                // Add visible pages
+                for (let page = startPage; page <= endPage; page++) {
+                  pages.push(
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
+                          ? 'bg-primary text-white'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                }
+
+                // Add last page and ellipsis if needed
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pages.push(
+                      <span key="end-ellipsis" className="px-2 py-2 text-neutral-500">
+                        ...
+                      </span>
+                    );
+                  }
+                  pages.push(
+                    <button
+                      key={totalPages}
+                      onClick={() => handlePageChange(totalPages)}
+                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                    >
+                      {totalPages}
+                    </button>
+                  );
+                }
+
+                return pages;
+              })()}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau →
+            </button>
+
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cuối
+            </button>
+          </div>
         </div>
       )}
 

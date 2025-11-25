@@ -135,8 +135,14 @@ export const RecruitmentNews: React.FC = () => {
   }, [news, searchTerm, companyFilter, locationFilter, salaryFilter, sortBy]);
 
   const handleNewsClick = (newsItem: RNews) => {
-    // Navigate to recruitment news detail page
-    navigate(`/recruitment-news-detail/${newsItem.id}`);
+    // Navigate to recruitment news detail page with state
+    console.log('Navigating to recruitment news detail with ID:', newsItem.id, typeof newsItem.id);
+    navigate(`/recruitment-news-detail/${newsItem.id}`, {
+      state: {
+        news: newsItem,
+        allNews: news // Pass all news for related articles
+      }
+    });
   };
 
   return (

@@ -1,19 +1,15 @@
-import { News } from '@abc-interview-support-frontend/types';
+import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 import React from 'react';
 
 interface RecruitmentNewsDetailSidebarProps {
-  news: News;
+  news: RecruitmentNews;
 }
 
 export const RecruitmentNewsDetailSidebar: React.FC<
   RecruitmentNewsDetailSidebarProps
 > = ({ news }) => {
   const getCompanyName = () => {
-    // Extract company name from userId hoặc content
-    if (news.userId.startsWith('recruiter-')) {
-      return 'TechViet Solutions';
-    }
-    return 'Công ty ABC';
+    return news.companyName || 'Không rõ tên Công ty';
   };
 
   return (
@@ -28,14 +24,10 @@ export const RecruitmentNewsDetailSidebar: React.FC<
             <h3 className="font-semibold text-neutral-900">
               {getCompanyName()}
             </h3>
-            <p className="text-sm text-neutral-600">Fintech Company</p>
+            <p className="text-sm text-neutral-600">Tech Company</p>
           </div>
         </div>
-        <p className="text-neutral-600 text-sm mb-4">
-          Công ty fintech hàng đầu với 500+ nhân viên, chuyên về giải pháp thanh
-          toán số.
-        </p>
-        <button className="w-full btn-outline">Xem trang công ty</button>
+        <button className="w-full btn-outline">Tìm hiểu thêm về công</button>
       </div>
 
       {/* Quick Apply */}

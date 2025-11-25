@@ -15,9 +15,6 @@ const TrendNewsDetail: React.FC = () => {
   const [loading, setLoading] = useState(!newsFromState);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('TrendNewsDetail - news from state:', newsFromState);
-  console.log('TrendNewsDetail - current location state:', location.state);
-
   const fetchAuthor = async (userId: string) => {
     try {
       const userData = await userService.getUserById(userId);
