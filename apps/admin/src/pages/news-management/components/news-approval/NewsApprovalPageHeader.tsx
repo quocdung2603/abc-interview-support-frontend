@@ -14,7 +14,7 @@ const NewsApprovalPageHeader = () => {
             className="text-heading-2 text-gradient-primary"
             style={{ marginBottom: 'var(--spacing-sm)' }}
           >
-            📃 Kiểm duyệt tin tức
+            Kiểm duyệt tin tức
           </div>
           <div className="text-body text-neutral-600">
             Xét duyệt tin tức xu hướng, tin tức tuyển dụng trên hệ thống.

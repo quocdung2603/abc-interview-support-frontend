@@ -1,12 +1,12 @@
 import React from 'react';
-import { Drawer } from 'antd';
+import { Drawer, Tag } from 'antd';
 import JobStatusTag from './JobStatusTag';
-import { JobPost } from './types';
+import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 
 interface JobPreviewDrawerProps {
   visible: boolean;
   onClose: () => void;
-  job: JobPost | null;
+  job: RecruitmentNews | null;
 }
 
 const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
@@ -14,15 +14,8 @@ const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
   onClose,
   job,
 }) => {
-  const formatSalary = (min: number, max: number, currency: string) => {
-    const formatNumber = (num: number) => {
-      if (num >= 1000000) {
-        return `${(num / 1000000).toFixed(0)}M`;
-      }
-      return num.toLocaleString();
-    };
-
-    return `${formatNumber(min)} - ${formatNumber(max)} ${currency}`;
+  const formatSalary = (salary: string) => {
+    return salary || 'Thỏa thuận';
   };
 
   return (
@@ -43,27 +36,60 @@ const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
 
           <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
             <div>
+              <strong>Công ty:</strong> {job.companyName}
+            </div>
+            <div>
               <strong>Vị trí:</strong> {job.position}
             </div>
             <div>
               <strong>Địa điểm:</strong> {job.location}
             </div>
             <div>
-              <strong>Mức lương:</strong>{' '}
-              {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
+              <strong>Mức lương:</strong> {formatSalary(job.salary || '')}
+            </div>
+            <div>
+              <strong>Kinh nghiệm:</strong> {job.experience || 'Không yêu cầu'}
+            </div>
+            <div>
+              <strong>Giờ làm việc:</strong> {job.workingHours || 'Chưa cập nhật'}
             </div>
             <div>
               <strong>Hạn nộp:</strong>{' '}
-              {new Date(job.deadline).toLocaleDateString('vi-VN')}
+              {job.deadline ? new Date(job.deadline).toLocaleDateString('vi-VN') : 'Không giới hạn'}
+            </div>
+            <div>
+              <strong>Ngày hết hạn:</strong>{' '}
+              {job.expiredAt ? new Date(job.expiredAt).toLocaleDateString('vi-VN') : 'Không giới hạn'}
+            </div>
+            <div>
+              <strong>Phương thức ứng tuyển:</strong> {job.applicationMethod || 'Chưa cập nhật'}
+            </div>
+            <div>
+              <strong>Lĩnh vực:</strong> {job.fieldId ? `ID: ${job.fieldId}` : 'Chưa chọn'}
+            </div>
+            {job.examId && (
+              <div>
+                <strong>ID bài thi:</strong> {job.examId}
+              </div>
+            )}
+            <div>
+              <strong>Ngày xuất bản:</strong>{' '}
+              {job.publishedAt ? new Date(job.publishedAt).toLocaleDateString('vi-VN') : 'Chưa xuất bản'}
+            </div>
+            <div>
+              <strong>Lượt vote hữu ích:</strong> {job.usefulVote || 0}
+            </div>
+            <div>
+              <strong>Lượt vote quan tâm:</strong> {job.interestVote || 0}
             </div>
             <div>
               <strong>Trạng thái:</strong>{' '}
               <JobStatusTag
                 status={job.status}
-                rejectionReason={job.rejectionReason}
+                rejectionReason={job.rejectReason}
               />
             </div>
-            {job.rejectionReason && (
+            {job.rejectReason && (
               <div>
                 <strong>Lý do trả lại:</strong>
                 <div
@@ -73,7 +99,7 @@ const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
                     background: 'var(--color-accent-10)',
                   }}
                 >
-                  {job.rejectionReason}
+                  {job.rejectReason}
                 </div>
               </div>
             )}
@@ -87,11 +113,14 @@ const JobPreviewDrawer: React.FC<JobPreviewDrawerProps> = ({
               Mô tả công việc:
             </div>
             <div className="prose-custom">
-              <p>
-                Đây là nội dung mô tả công việc chi tiết sẽ được hiển thị khi
-                tích hợp với editor...
-              </p>
-              <p>Bao gồm: mục tiêu, nhiệm vụ, yêu cầu ứng viên, quyền lợi...</p>
+              {job.content ? (
+                <div dangerouslySetInnerHTML={{ __html: job.content }} />
+              ) : (
+                <p>
+                  Đây là nội dung mô tả công việc chi tiết sẽ được hiển thị khi
+                  tích hợp với editor...
+                </p>
+              )}
             </div>
           </div>
         </div>

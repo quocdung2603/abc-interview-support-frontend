@@ -1,9 +1,9 @@
 import React from 'react';
 import { Tag, Tooltip } from 'antd';
-import { JobPost } from './types';
+import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 
 interface JobStatusTagProps {
-  status: JobPost['status'];
+  status: RecruitmentNews['status'];
   rejectionReason?: string;
 }
 
@@ -11,27 +11,31 @@ const JobStatusTag: React.FC<JobStatusTagProps> = ({
   status,
   rejectionReason,
 }) => {
-  const getStatusColor = (status: JobPost['status']) => {
+  const getStatusColor = (status: RecruitmentNews['status']) => {
     switch (status) {
-      case 'approved':
+      case 'APPROVED':
         return 'success';
-      case 'pending':
+      case 'PENDING':
         return 'warning';
-      case 'rejected':
+      case 'REJECTED':
         return 'error';
+      case 'PUBLISHED':
+        return 'processing';
       default:
         return 'default';
     }
   };
 
-  const getStatusText = (status: JobPost['status']) => {
+  const getStatusText = (status: RecruitmentNews['status']) => {
     switch (status) {
-      case 'approved':
+      case 'APPROVED':
         return 'Đã duyệt';
-      case 'pending':
+      case 'PENDING':
         return 'Chờ duyệt';
-      case 'rejected':
+      case 'REJECTED':
         return 'Trả lại';
+      case 'PUBLISHED':
+        return 'Đã xuất bản';
       default:
         return 'Bản nháp';
     }

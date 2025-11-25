@@ -7,26 +7,20 @@ export interface Role {
 }
 
 export interface User {
-  userId: string;
-  roleId: string;
+  id: number;
+  roleId: number;
+  roleName: string;
   email: string;
-  passWord: string; // Encrypted
+  passWord?: string; // Encrypted - optional for responses
   fullName: string;
-  dateOfBirth: Date;
+  dateOfBirth: string;
   address: string;
-  status: 'Pending' | 'Verified' | 'Locked';
+  status: string; // 'Pending' | 'Verified' | 'Locked' | 'ACTIVE'
   isStudying: boolean;
   eloScore: number;
-  eloRank:
-    | 'Newbie'
-    | 'Learner'
-    | 'Contributor'
-    | 'Solver'
-    | 'Expert'
-    | 'Senior Expert'
-    | 'Master'
-    | 'Legend';
-  createdAt: Date;
+  eloRank: string; // 'Newbie' | 'Learner' | etc. or actual values like 'NEWBIE'
+  createdAt: string;
+  verifyToken?: string | null;
 }
 
 export interface RecruiterVerification {

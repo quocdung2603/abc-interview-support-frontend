@@ -13,7 +13,6 @@ interface JobsToolbarProps {
   locationFilter: string;
   onLocationFilterChange: (value: string) => void;
   selectedRowKeys: React.Key[];
-  isVerified: boolean;
 }
 
 const JobsToolbar: React.FC<JobsToolbarProps> = ({
@@ -24,7 +23,6 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
   locationFilter,
   onLocationFilterChange,
   selectedRowKeys,
-  isVerified,
 }) => {
   return (
     <div
@@ -51,10 +49,10 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
         style={{ width: 130 }}
       >
         <Option value="all">Tất cả</Option>
-        <Option value="draft">Bản nháp</Option>
-        <Option value="pending">Chờ duyệt</Option>
-        <Option value="approved">Đã duyệt</Option>
-        <Option value="rejected">Trả lại</Option>
+        <Option value="PENDING">Chờ duyệt</Option>
+        <Option value="APPROVED">Đã duyệt</Option>
+        <Option value="REJECTED">Trả lại</Option>
+        <Option value="PUBLISHED">Đã xuất bản</Option>
       </Select>
 
       <Select
@@ -71,16 +69,6 @@ const JobsToolbar: React.FC<JobsToolbarProps> = ({
       </Select>
 
       <RangePicker style={{ width: 250 }} />
-
-      {selectedRowKeys.length > 0 && (
-        <Tooltip
-          title={
-            !isVerified
-              ? 'Cần xác thực tài khoản'
-              : `Gửi duyệt ${selectedRowKeys.length} bài`
-          }
-        ></Tooltip>
-      )}
     </div>
   );
 };

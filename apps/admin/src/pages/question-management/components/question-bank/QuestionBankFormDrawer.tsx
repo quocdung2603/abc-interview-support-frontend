@@ -142,7 +142,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
       setLoading(true);
 
       // Check if user is authenticated
-      if (!user?.userId) {
+      if (!user?.id) {
         message.error('Không thể xác định người dùng. Vui lòng đăng nhập lại.');
         return;
       }
@@ -152,7 +152,7 @@ const QuestionBankFormDrawer: React.FC<FormDrawerProps> = ({
 
       // Prepare the complete question data including userId
       const questionData = {
-        userId: Number.parseInt(user.userId),
+        userId: user.id,
         topicId: formData.topicId,
         fieldId: formData.fieldId,
         levelId: formData.levelId,

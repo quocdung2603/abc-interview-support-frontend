@@ -1,4 +1,4 @@
-import { Table, Button, Space, Popconfirm, Image, Tag } from 'antd';
+import { Table, Button, Space, Popconfirm, Tag } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
@@ -6,122 +6,62 @@ import {
   LikeOutlined,
   ReadOutlined,
 } from '@ant-design/icons';
-import { TrendNews } from './types';
+import { News } from '@abc-interview-support-frontend/types';
 import TrendNewsStatusTag from './TrendNewsStatusTag';
 
 interface TrendNewsTableProps {
-  data: TrendNews[];
-  loading: boolean;
-  onEdit: (news: TrendNews) => void;
-  onDelete: (id: string) => void;
-  onPreview: (news: TrendNews) => void;
+  data: News[];
+  onEdit: (news: News) => void;
+  onDelete: (id: number) => void;
+  onPreview: (news: News) => void;
 }
 
 const TrendNewsTable: React.FC<TrendNewsTableProps> = ({
   data,
-  loading,
   onEdit,
   onDelete,
   onPreview,
 }) => {
   const columns = [
     {
-      title: 'Ảnh đại diện',
-      dataIndex: 'featuredImage',
-      key: 'featuredImage',
-      width: 100,
-      render: (image: string) => (
-        <Image
-          width={50}
-          height={50}
-          src={image || '/placeholder-news.jpg'}
-          alt="Featured"
-          style={{ borderRadius: '6px', objectFit: 'cover' }}
-          fallback="/placeholder-news.jpg"
-        />
-      ),
-    },
-    {
       title: 'Tiêu đề',
       dataIndex: 'title',
       key: 'title',
       width: 200,
-      render: (title: string, record: TrendNews) => (
+      render: (title: string, record: News) => (
         <div>
-          <div style={{ fontWeight: 500, marginBottom: '4px' }}>{title}</div>
+          <div style={{ fontWeight: 500, marginBottom: '4px' }}>#{record.id}: {title}</div>
           <div style={{ fontSize: '12px', color: '#666' }}>
-            {record.summary && record.summary.length > 80
-              ? `${record.summary.substring(0, 80)}...`
-              : record.summary}
+            {record.content && record.content.length > 80
+              ? `${record.content.substring(0, 80)}...`
+              : record.content}
           </div>
         </div>
       ),
     },
     {
-      title: 'Danh mục',
-      dataIndex: 'category',
-      key: 'category',
+      title: 'Loại tin tức',
+      dataIndex: 'newsType',
+      key: 'newsType',
       width: 120,
-      render: (category: string) => {
-        const categoryMap = {
-          technology: { color: 'blue', text: 'Công nghệ' },
-          career: { color: 'green', text: 'Sự nghiệp' },
-          interview: { color: 'orange', text: 'Phỏng vấn' },
-          skills: { color: 'purple', text: 'Kỹ năng' },
-          industry: { color: 'cyan', text: 'Ngành nghề' },
+      render: (newsType: string) => {
+        const typeMap = {
+          NEWS: { color: 'blue', text: 'Xu hướng' },
+          RECRUITMENT: { color: 'green', text: 'Tuyển dụng' },
         };
-        const config = categoryMap[category as keyof typeof categoryMap] || {
+        const config = typeMap[newsType as keyof typeof typeMap] || {
           color: 'default',
-          text: category,
+          text: newsType,
         };
         return <Tag color={config.color}>{config.text}</Tag>;
       },
-    },
-    {
-      title: 'Tags',
-      dataIndex: 'tags',
-      key: 'tags',
-      width: 120,
-      render: (tags: string[]) => (
-        <Space wrap size={[4, 4]}>
-          {tags?.slice(0, 3).map((tag, index) => (
-            <Tag key={index} style={{ fontSize: '11px' }}>
-              {tag}
-            </Tag>
-          ))}
-          {tags && tags.length > 3 && (
-            <Tag style={{ fontSize: '11px' }}>+{tags.length - 3}</Tag>
-          )}
-        </Space>
-      ),
-    },
-    {
-      title: 'Tác giả',
-      dataIndex: 'author',
-      key: 'author',
-      width: 120,
-      render: (author: { name: string; avatar?: string }) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {author.avatar && (
-            <Image
-              width={24}
-              height={24}
-              src={author.avatar}
-              alt={author.name}
-              style={{ borderRadius: '50%' }}
-              fallback="/default-avatar.png"
-            />
-          )}
-          <span>{author.name}</span>
-        </div>
-      ),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: TrendNews['status']) => (
+      render: (status: News['status']) => (
         <TrendNewsStatusTag status={status} />
       ),
     },
@@ -129,15 +69,15 @@ const TrendNewsTable: React.FC<TrendNewsTableProps> = ({
       title: 'Thống kê',
       key: 'stats',
       width: 100,
-      render: (record: TrendNews) => (
+      render: (record: News) => (
         <Space direction="vertical" size={0} style={{ fontSize: '12px' }}>
           <Space size={8}>
-            <ReadOutlined />
-            <span>{record.viewCount || 0}</span>
+            <LikeOutlined />
+            <span>{record.usefulVote || 0}</span>
           </Space>
           <Space size={8}>
-            <LikeOutlined />
-            <span>{record.likeCount || 0}</span>
+            <ReadOutlined />
+            <span>{record.interestVote || 0}</span>
           </Space>
         </Space>
       ),
@@ -147,14 +87,14 @@ const TrendNewsTable: React.FC<TrendNewsTableProps> = ({
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 100,
-      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: string | Date) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
       key: 'actions',
       width: 120,
       fixed: 'right' as const,
-      render: (_: any, record: TrendNews) => (
+      render: (_: any, record: News) => (
         <Space size="small">
           <Button
             icon={<EyeOutlined />}
@@ -188,7 +128,6 @@ const TrendNewsTable: React.FC<TrendNewsTableProps> = ({
       columns={columns}
       dataSource={data}
       rowKey="id"
-      loading={loading}
       pagination={{
         showSizeChanger: true,
         showQuickJumper: true,

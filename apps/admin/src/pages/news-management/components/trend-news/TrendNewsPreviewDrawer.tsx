@@ -124,6 +124,12 @@ const TrendNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                   {formatDate(newsData.publishedAt)}
                 </div>
               )}
+              {newsData.expiredAt && (
+                <div>
+                  <Text strong>Ngày hết hạn:</Text>{' '}
+                  {formatDate(newsData.expiredAt)}
+                </div>
+              )}
               {newsData.approvedBy && (
                 <div>
                   <Text strong>Người duyệt:</Text> User {newsData.approvedBy}

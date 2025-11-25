@@ -1,102 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { message } from 'antd';
-import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import {
   TrendNewsPageHeader,
   TrendNewsToolbar,
   TrendNewsTable,
   TrendNewsPreviewDrawer,
-  VerificationWarning,
-  TrendNews,
   TrendNewsFormDrawer,
 } from './components/trend';
 import dayjs from 'dayjs';
+import { newsService } from '@abc-interview-support-frontend/services';
+import { News } from '@abc-interview-support-frontend/types';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 const TrendNewsPage = () => {
   const { user } = useAuth();
-  const isVerified = user?.status === 'Verified';
 
-  const [loading, setLoading] = useState(false);
   const [openForm, setOpenForm] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [selectedNews, setSelectedNews] = useState<TrendNews | null>(null);
-  const [editingNews, setEditingNews] = useState<TrendNews | null>(null);
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [editingNews, setEditingNews] = useState<News | null>(null);
 
   // Filter states
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [newsTypeFilter, setNewsTypeFilter] = useState('');
   const [dateRange, setDateRange] = useState<
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
 
-  const mockData: TrendNews[] = [
-    {
-      id: '1',
-      title: 'Xu hướng tuyển dụng IT 2024',
-      summary: 'Những xu hướng mới trong việc tuyển dụng nhân tài IT năm 2024',
-      content: '<p>Nội dung chi tiết về xu hướng tuyển dụng IT...</p>',
-      category: 'technology',
-      tags: ['IT', 'Tuyển dụng', '2024'],
-      featuredImage: '/trend-it-2024.jpg',
-      author: {
-        id: 'author1',
-        name: 'Nguyễn Văn A',
-        avatar: '/avatar1.jpg',
-      },
-      status: 'published',
-      viewCount: 1250,
-      likeCount: 89,
-      isFeature: true,
-      seo: {
-        metaTitle: 'Xu hướng tuyển dụng IT 2024',
-        metaDescription: 'Khám phá những xu hướng mới nhất trong tuyển dụng IT',
-        keywords: ['tuyển dụng IT', 'xu hướng 2024', 'công nghệ'],
-      },
-      createdAt: '2024-01-15T10:00:00Z',
-      publishedAt: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      title: 'Kỹ năng mềm quan trọng cho developer',
-      summary: 'Những kỹ năng mềm cần thiết mà mọi developer nên có',
-      content: '<p>Nội dung về kỹ năng mềm...</p>',
-      category: 'skills',
-      tags: ['Kỹ năng mềm', 'Developer', 'Phát triển'],
-      author: {
-        id: 'author2',
-        name: 'Trần Thị B',
-      },
-      status: 'draft',
-      viewCount: 0,
-      likeCount: 0,
-      isFeature: false,
-      createdAt: '2024-01-14T14:30:00Z',
-    },
-  ];
+  const [trendNewsList, setTrendNewsList] = useState<News[]>([]);
 
-  const [trendNewsList, setTrendNewsList] = useState<TrendNews[]>(mockData);
+  const getNewsByUser = async (userId: string) => {
+    try {
+      const res = await newsService.getNewsByUser(userId);
+      let news = res.content || [];
+      news = news.filter((news: News) => news.newsType === 'NEWS');
+      setTrendNewsList(news);
+    } catch (error) {
+      console.error('Error fetching trend news:', error);
+      setTrendNewsList([]);
+    }
+  }
+
+  useEffect(() => {
+    getNewsByUser(user?.userId || '')
+  }, [user?.userId]);
 
   // Filter logic
-  const filteredNews = trendNewsList.filter((news) => {
-    const matchesSearch =
-      !searchValue ||
-      news.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      news.content.toLowerCase().includes(searchValue.toLowerCase());
+  const filteredNews = useMemo(() => {
+    return trendNewsList.filter((news) => {
+      const matchesSearch =
+        !searchValue ||
+        news.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+        news.content.toLowerCase().includes(searchValue.toLowerCase());
 
-    const matchesStatus = !statusFilter || news.status === statusFilter;
-    const matchesCategory = !categoryFilter || news.category === categoryFilter;
+      const matchesStatus = !statusFilter || news.status === statusFilter;
+      const matchesCategory = !newsTypeFilter || news.newsType === newsTypeFilter;
 
-    const matchesDate =
-      !dateRange?.[0] ||
-      !dateRange?.[1] ||
-      (dayjs(news.createdAt).isAfter(dateRange[0].startOf('day')) &&
-        dayjs(news.createdAt).isBefore(dateRange[1].endOf('day')));
+      const matchesDate =
+        !dateRange?.[0] ||
+        !dateRange?.[1] ||
+        (dayjs(news.createdAt).isAfter(dateRange[0].startOf('day')) &&
+          dayjs(news.createdAt).isBefore(dateRange[1].endOf('day')));
 
-    return matchesSearch && matchesStatus && matchesCategory && matchesDate;
-  });
+      return matchesSearch && matchesStatus && matchesCategory && matchesDate;
+    });
+  }, [trendNewsList, searchValue, statusFilter, newsTypeFilter, dateRange]);
 
-  const handlePreviewNews = (news: TrendNews) => {
+  const handlePreviewNews = (news: News) => {
     setSelectedNews(news);
     setPreviewVisible(true);
   };
@@ -106,38 +77,29 @@ const TrendNewsPage = () => {
     setOpenForm(true);
   };
 
-  const handleEditNews = (news: TrendNews) => {
+  const handleEditNews = (news: News) => {
     setEditingNews(news); // <- sửa => đổ dữ liệu
     setOpenForm(true);
   };
 
-  const handleDeleteNews = async (id: string) => {
-    //api delete news
+  const handleDeleteNews = async (id: number) => {
+    try {
+      await newsService.deleteNews(id);
+      setTrendNewsList((prev) => prev.filter((news) => news.id !== id));
+      message.success('Đã xóa tin tức thành công');
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      message.error('Có lỗi xảy ra khi xóa tin tức');
+    }
   };
 
-  const handleSaveNews = async (
-    payload: TrendNews,
-    mode: 'create' | 'update'
-  ) => {
-    const now = new Date().toISOString().slice(0, 10);
+  const handleSaveNews = (data: News, mode: 'create' | 'update') => {
     if (mode === 'create') {
-      const newJob: TrendNews = {
-        ...payload,
-        id: crypto.randomUUID?.() ?? String(Date.now()),
-        status: 'draft',
-        createdAt: now,
-        updatedAt: now,
-      };
-      setTrendNewsList((prev) => [newJob, ...prev]);
-      console.log(trendNewsList);
-      message.success('Đã tạo tin xu hướng');
+      setTrendNewsList((prev) => [data, ...prev]);
     } else {
       setTrendNewsList((prev) =>
-        prev.map((j) =>
-          j.id === payload.id ? { ...j, ...payload, updatedAt: now } : j
-        )
+        prev.map((j) => (j.id === data.id ? data : j))
       );
-      message.success('Đã cập nhật tin xu hướng');
     }
     setOpenForm(false);
   };
@@ -145,31 +107,27 @@ const TrendNewsPage = () => {
   const handleResetFilters = () => {
     setSearchValue('');
     setStatusFilter('');
-    setCategoryFilter('');
+    setNewsTypeFilter('');
     setDateRange(null);
   };
 
   return (
     <div className="container-center animate-fade-in-up">
       <TrendNewsPageHeader onCreateNews={handleCreateNews} />
-
-      <VerificationWarning isVerified={isVerified} />
-
       <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
         <TrendNewsToolbar
           searchValue={searchValue}
           statusFilter={statusFilter}
-          categoryFilter={categoryFilter}
+          newsTypeFilter={newsTypeFilter}
           onSearchChange={setSearchValue}
           onStatusFilterChange={setStatusFilter}
-          onCategoryFilterChange={setCategoryFilter}
+          onNewsTypeFilterChange={setNewsTypeFilter}
           onDateRangeChange={setDateRange}
           onResetFilters={handleResetFilters}
         />
 
         <TrendNewsTable
           data={filteredNews}
-          loading={loading}
           onEdit={handleEditNews}
           onDelete={handleDeleteNews}
           onPreview={handlePreviewNews}
@@ -189,6 +147,7 @@ const TrendNewsPage = () => {
         onClose={() => setOpenForm(false)}
         onSave={handleSaveNews}
         initForm={editingNews || undefined}
+        user={user}
       />
     </div>
   );

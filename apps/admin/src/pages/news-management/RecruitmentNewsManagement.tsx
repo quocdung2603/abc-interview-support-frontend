@@ -1,7 +1,8 @@
-import { News, Field } from '@abc-interview-support-frontend/types';
+import { RecruitmentNews, Field } from '@abc-interview-support-frontend/types';
 
 import { useState, useEffect, useMemo } from 'react';
 import confirm from 'antd/es/modal/confirm';
+import { message } from 'antd';
 import {
   RecruitmentNewsPageHeader,
   RecruitmentNewsPreviewDrawer,
@@ -11,7 +12,7 @@ import {
 import { newsService, questionService } from '@abc-interview-support-frontend/services';
 
 const RecruitmentNewsManagement = () => {
-  const [dataList, setDataList] = useState<News[]>([]);
+  const [dataList, setDataList] = useState<RecruitmentNews[]>([]);
   const [fieldData, setFieldData] = useState<Field[]>([]);
   const [searchText, setSearchText] = useState('');
   const [fieldFilter, setFieldFilter] = useState<string>('all');
@@ -35,7 +36,18 @@ const RecruitmentNewsManagement = () => {
   }, [dataList, searchText, fieldFilter, locationFilter]);
 
   const handleDelete = (newsId: number) => {
-    console.log('Delete news:', newsId);
+    const confirmDelete = async () => {
+      try {
+        await newsService.deleteNews(newsId);
+        const updatedList = dataList.filter((news) => news.id !== newsId);
+        setDataList(updatedList);
+        message.success('Đã xóa tin tuyển dụng thành công');
+      } catch (error) {
+        console.error('Error deleting news:', error);
+        message.error('Có lỗi xảy ra khi xóa tin tuyển dụng');
+      }
+    };
+
     confirm({
       title: 'Bạn có chắc muốn xóa tin tuyển dụng này?',
       content: 'Hành động này không thể hoàn tác.',
@@ -43,15 +55,12 @@ const RecruitmentNewsManagement = () => {
       okType: 'danger',
       maskClosable: true,
       closable: true,
-      onOk() {
-        // API call to delete news
-        console.log('News deleted:', newsId);
-      },
+      onOk: confirmDelete,
       cancelText: 'Hủy',
     });
   };
 
-  const handlePreview = (data: News) => {
+  const handlePreview = (data: RecruitmentNews) => {
     setPreviewVisible(true);
     setSelectedNewsId(data.id);
   };
@@ -70,7 +79,7 @@ const RecruitmentNewsManagement = () => {
     try {
       const res = await newsService.getAllNews();
       let news = res.content || [];
-      news = news.filter((item: News) => item.newsType === 'RECRUITMENT' && (item.status === 'APPROVED' || item.status === 'PUBLISHED'));
+      news = news.filter((item: RecruitmentNews) => item.newsType === 'RECRUITMENT' && (item.status === 'APPROVED' || item.status === 'PUBLISHED'));
       setDataList(news);
     } catch (error) {
       console.error('Error fetching news:', error);

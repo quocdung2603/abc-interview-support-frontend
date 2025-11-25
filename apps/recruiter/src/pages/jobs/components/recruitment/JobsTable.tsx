@@ -3,15 +3,15 @@ import { Table, Button, Tag, Space, Popconfirm, Tooltip, message } from 'antd';
 import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import JobStatusTag from './JobStatusTag';
-import { JobPost } from './types';
+import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 
 interface JobsTableProps {
-  jobPosts: JobPost[];
+  jobPosts: RecruitmentNews[];
   selectedRowKeys: React.Key[];
   onSelectionChange: (newSelectedRowKeys: React.Key[]) => void;
-  onPreview: (job: JobPost) => void;
-  onEdit: (job: JobPost) => void;
-  onDelete?: (jobId: string) => void;
+  onPreview: (job: RecruitmentNews) => void;
+  onEdit: (job: RecruitmentNews) => void;
+  onDelete?: (jobId: number) => void;
 }
 
 const JobsTable: React.FC<JobsTableProps> = ({
@@ -22,24 +22,17 @@ const JobsTable: React.FC<JobsTableProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const formatSalary = (min: number, max: number, currency: string) => {
-    const formatNumber = (num: number) => {
-      if (num >= 1000000) {
-        return `${(num / 1000000).toFixed(0)}M`;
-      }
-      return num.toLocaleString();
-    };
-
-    return `${formatNumber(min)} - ${formatNumber(max)} ${currency}`;
+  const formatSalary = (salary: string) => {
+    return salary || 'Thỏa thuận';
   };
 
-  const columns: ColumnsType<JobPost> = [
+  const columns: ColumnsType<RecruitmentNews> = [
     {
       title: 'Tiêu đề',
       dataIndex: 'title',
       key: 'title',
       width: 300,
-      render: (text: string, record: JobPost) => (
+      render: (text: string, record: RecruitmentNews) => (
         <div>
           <div
             className="text-body"
@@ -62,13 +55,9 @@ const JobsTable: React.FC<JobsTableProps> = ({
       title: 'Mức lương',
       key: 'salary',
       width: 140,
-      render: (_, record: JobPost) => (
+      render: (_, record: RecruitmentNews) => (
         <div className="text-body-small">
-          {formatSalary(
-            record.salaryMin,
-            record.salaryMax,
-            record.salaryCurrency
-          )}
+          {formatSalary(record.salary || '')}
         </div>
       ),
     },
@@ -79,7 +68,7 @@ const JobsTable: React.FC<JobsTableProps> = ({
       width: 110,
       render: (text: string) => (
         <div className="text-body-small">
-          {new Date(text).toLocaleDateString('vi-VN')}
+          {text ? new Date(text).toLocaleDateString('vi-VN') : 'Không giới hạn'}
         </div>
       ),
     },
@@ -88,19 +77,19 @@ const JobsTable: React.FC<JobsTableProps> = ({
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (status: JobPost['status'], record: JobPost) => (
+      render: (status: RecruitmentNews['status'], record: RecruitmentNews) => (
         <JobStatusTag
           status={status}
-          rejectionReason={record.rejectionReason}
+          rejectionReason={record.rejectReason}
         />
       ),
     },
     {
-      title: 'Cập nhật',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 110,
-      render: (text: string) => (
+      render: (text: string | Date) => (
         <div className="text-caption text-neutral-500">
           {new Date(text).toLocaleDateString('vi-VN')}
         </div>
@@ -110,7 +99,7 @@ const JobsTable: React.FC<JobsTableProps> = ({
       title: 'Hành động',
       key: 'actions',
       width: 200,
-      render: (_, record: JobPost) => (
+      render: (_, record: RecruitmentNews) => (
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
@@ -153,8 +142,8 @@ const JobsTable: React.FC<JobsTableProps> = ({
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectionChange,
-    getCheckboxProps: (record: JobPost) => ({
-      disabled: record.status !== 'draft',
+    getCheckboxProps: (record: RecruitmentNews) => ({
+      disabled: record.status !== 'PENDING',
     }),
   };
 

@@ -15,7 +15,7 @@ import { userService } from '@abc-interview-support-frontend/services';
 
 const RecruiterManagement = () => {
   const mockData: User[] = Array.from({ length: 3 }, (_, i) => {
-    const statuses = ['Pending', 'Verified', 'Locked'] as const;
+    const statuses = ['Pending', 'Verified', 'Locked', 'ACTIVE'] as const;
     const ranks = [
       'Newbie',
       'Learner',
@@ -25,6 +25,8 @@ const RecruiterManagement = () => {
       'Senior Expert',
       'Master',
       'Legend',
+      'NEWBIE',
+      'EXPERT',
     ] as const;
     const streets = [
       'Lê Lợi',
@@ -52,20 +54,20 @@ const RecruiterManagement = () => {
     );
 
     return {
-      userId: String(i + 1),
-      roleId: String(1 + Math.floor(Math.random() * 3)), // ví dụ 1-3
+      id: i + 1,
+      roleId: 1 + Math.floor(Math.random() * 3), // 1-3
+      roleName: Math.random() < 0.5 ? 'Recruiter' : 'User',
       email: `user${i + 1}${Math.floor(Math.random() * 900 + 100)}@gmail.com`,
-      passWord: Math.random().toString(36).slice(-10), // demo ngẫu nhiên
       fullName: `User ${String(i + 1).padStart(2, '0')}`,
-      dateOfBirth: dob,
+      dateOfBirth: dob.toISOString().split('T')[0], // YYYY-MM-DD format
       address: `Số ${1 + Math.floor(Math.random() * 200)}/${1 + Math.floor(Math.random() * 50)
         }, đường ${streets[Math.floor(Math.random() * streets.length)]}, ${districts[Math.floor(Math.random() * districts.length)]
         }`,
       status: statuses[Math.floor(Math.random() * statuses.length)],
       isStudying: Math.random() < 0.5,
       eloScore: Math.floor(Math.random() * 2001), // 0–2000
-      eloRank: ranks[Math.floor(Math.random() * ranks.length)].toString(),
-      createdAt,
+      eloRank: ranks[Math.floor(Math.random() * ranks.length)],
+      createdAt: createdAt.toISOString(),
     } as User;
   });
 
@@ -87,7 +89,7 @@ const RecruiterManagement = () => {
 
       return {
         recruiterVerificationId: index + 1,
-        userId: parseInt(user.userId),
+        userId: user.id,
         companyName: `Công ty TNHH ${user.fullName.split(' ')[1]} ${index + 1}`,
         companyAddress: `Tầng ${index + 1}, Tòa nhà ABC, ${user.address.split(',')[1] || 'Quận 1, TP.HCM'
           }`,
@@ -105,7 +107,7 @@ const RecruiterManagement = () => {
               Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)
             )
             : undefined,
-        createdAt: user.createdAt,
+        createdAt: new Date(user.createdAt),
       };
     }
   );
@@ -180,12 +182,12 @@ const RecruiterManagement = () => {
 
     // Tìm verification data tương ứng
     const verification = mockVerificationData.find(
-      (v) => v.userId === Number.parseInt(data.userId)
+      (v) => v.userId === data.id
     );
     setSelectedVerification(verification || null);
 
     // Tìm documents tương ứng
-    const userIndex = mockData.findIndex((u) => u.userId === data.userId);
+    const userIndex = mockData.findIndex((u) => u.id === data.id);
     const documents = userIndex >= 0 ? mockDocumentsData[userIndex] : [];
     setSelectedDocuments(documents);
   };

@@ -63,7 +63,7 @@ const RecruiterTable: React.FC<TableProps> = ({
               danger
               icon={<LockOutlined />}
               size="small"
-              onClick={() => onLock(record.userId)}
+              onClick={() => onLock(record.id)}
             />
           </Tooltip>
         </Space>

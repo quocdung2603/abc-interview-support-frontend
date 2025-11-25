@@ -1,21 +1,21 @@
 import { Tag } from 'antd';
-import { TrendNews } from './types';
+import { News } from '@abc-interview-support-frontend/types';
 
 interface TrendNewsStatusTagProps {
-  status: TrendNews['status'];
+  status: News['status'];
 }
 
 const TrendNewsStatusTag: React.FC<TrendNewsStatusTagProps> = ({ status }) => {
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'published':
+      case 'PUBLISHED':
         return { color: 'green', text: 'Đã xuất bản' };
-      case 'draft':
-        return { color: 'orange', text: 'Bản nháp' };
-      case 'archived':
-        return { color: 'red', text: 'Đã lưu trữ' };
-      case 'pending':
-        return { color: 'blue', text: 'Chờ duyệt' };
+      case 'APPROVED':
+        return { color: 'blue', text: 'Đã duyệt' };
+      case 'PENDING':
+        return { color: 'orange', text: 'Chờ duyệt' };
+      case 'REJECTED':
+        return { color: 'red', text: 'Từ chối' };
       default:
         return { color: 'default', text: status };
     }

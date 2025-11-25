@@ -34,12 +34,52 @@ export class NewsService {
   }
 
   async getAllNews() {
-    const response = await this.apiClient.get('/news');
+    const response = await this.apiClient.get('/news', {
+      params: {
+        page: 0,
+        size: 1000,
+      },
+    });
     return response.data;
   }
 
   async getNewById(newsId: number) {
     const response = await this.apiClient.get(`/news/${newsId}`);
+    return response.data;
+  }
+
+  async getNewsByType(newsType: string) {
+    const response = await this.apiClient.get(`/news/type?type=${newsType}`, {
+      params: {
+        page: 0,
+        size: 1000,
+      },
+    });
+    return response.data;
+  }
+
+  async getNewsByUser(userId: string) {
+    const response = await this.apiClient.get(`/news/user/${userId}`,{
+      params: {
+        page: 0,
+        size: 1000,
+      },
+    });
+    return response.data;
+  }
+
+  async createNews(newsData: any) {
+    const response = await this.apiClient.post('/news', newsData);
+    return response.data;
+  }
+
+  async updateNews(newsId: number, newsData: any) {
+    const response = await this.apiClient.put(`news/${newsId}`, newsData);
+    return response.data;
+  }
+
+  async deleteNews(newsId: number) {
+    const response = await this.apiClient.delete(`/news/${newsId}`);
     return response.data;
   }
 

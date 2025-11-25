@@ -5,10 +5,10 @@ import dayjs from 'dayjs';
 interface TrendNewsToolbarProps {
   searchValue: string;
   statusFilter: string;
-  categoryFilter: string;
+  newsTypeFilter: string;
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: string) => void;
-  onCategoryFilterChange: (value: string) => void;
+  onNewsTypeFilterChange: (value: string) => void;
   onDateRangeChange: (
     dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   ) => void;
@@ -20,10 +20,10 @@ const { RangePicker } = DatePicker;
 const TrendNewsToolbar: React.FC<TrendNewsToolbarProps> = ({
   searchValue,
   statusFilter,
-  categoryFilter,
+  newsTypeFilter,
   onSearchChange,
   onStatusFilterChange,
-  onCategoryFilterChange,
+  onNewsTypeFilterChange,
   onDateRangeChange,
   onResetFilters,
 }) => {
@@ -53,24 +53,21 @@ const TrendNewsToolbar: React.FC<TrendNewsToolbarProps> = ({
           style={{ width: 150 }}
           allowClear
         >
-          <Select.Option value="published">Đã xuất bản</Select.Option>
-          <Select.Option value="draft">Bản nháp</Select.Option>
-          <Select.Option value="pending">Chờ duyệt</Select.Option>
-          <Select.Option value="archived">Đã lưu trữ</Select.Option>
+          <Select.Option value="PENDING">Chờ duyệt</Select.Option>
+          <Select.Option value="APPROVED">Đã duyệt</Select.Option>
+          <Select.Option value="REJECTED">Từ chối</Select.Option>
+          <Select.Option value="PUBLISHED">Đã xuất bản</Select.Option>
         </Select>
 
         <Select
-          placeholder="Danh mục"
-          value={categoryFilter || undefined}
-          onChange={onCategoryFilterChange}
+          placeholder="Loại tin tức"
+          value={newsTypeFilter || undefined}
+          onChange={onNewsTypeFilterChange}
           style={{ width: 180 }}
           allowClear
         >
-          <Select.Option value="technology">Công nghệ</Select.Option>
-          <Select.Option value="career">Sự nghiệp</Select.Option>
-          <Select.Option value="interview">Phỏng vấn</Select.Option>
-          <Select.Option value="skills">Kỹ năng</Select.Option>
-          <Select.Option value="industry">Ngành nghề</Select.Option>
+          <Select.Option value="NEWS">Xu hướng</Select.Option>
+          <Select.Option value="RECRUITMENT">Tuyển dụng</Select.Option>
         </Select>
 
         <RangePicker

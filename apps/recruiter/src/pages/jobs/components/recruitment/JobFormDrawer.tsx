@@ -1,13 +1,14 @@
-import { Button, Drawer, Input, notification } from 'antd';
-import React, { useEffect, useMemo } from 'react';
-import { JobPost } from './types';
+import { Button, Drawer, Input, notification, Select } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { RecruitmentNews, Field } from '@abc-interview-support-frontend/types';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 interface JobFormDrawerProps {
-  initForm?: JobPost; // undefined => tạo mới; có giá trị => sửa
+  initForm?: RecruitmentNews; // undefined => tạo mới; có giá trị => sửa
   visible: boolean;
   onClose: () => void;
-  onSave: (data: JobPost, mode: 'create' | 'update') => void;
+  onSave: (data: RecruitmentNews, mode: 'create' | 'update') => void;
 }
 
 const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
@@ -16,18 +17,22 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
   onClose,
   onSave,
 }) => {
-  const defaultFormValue: JobPost = {
-    id: '', // để khớp type JobPost khi update
+  const [fields, setFields] = useState<Field[]>([]);
+
+  const defaultFormValue: Partial<RecruitmentNews> = {
     title: '',
+    content: '',
     position: '',
     location: '',
-    salaryMin: 0,
-    salaryMax: 0,
-    salaryCurrency: 'VND',
+    salary: '',
+    experience: '',
+    workingHours: '',
     deadline: '',
-    status: 'draft',
-    createdAt: '',
-    updatedAt: '',
+    applicationMethod: '',
+    companyName: '',
+    fieldId: undefined,
+    examId: undefined,
+    expiredAt: '',
   };
 
   const isEdit = useMemo(() => Boolean(initForm?.id), [initForm]);
@@ -37,9 +42,23 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
     reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<JobPost>({
+  } = useForm<RecruitmentNews>({
     defaultValues: defaultFormValue,
   });
+
+  // Fetch fields on mount
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        const res = await questionService.getAllFields();
+        setFields(res.content || []);
+      } catch (error) {
+        console.error('Error fetching fields:', error);
+        setFields([]);
+      }
+    };
+    fetchFields();
+  }, []);
 
   // Reset form mỗi khi mở Drawer hoặc đổi initForm
   useEffect(() => {
@@ -48,7 +67,7 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
     else reset(defaultFormValue);
   }, [visible, initForm, reset]);
 
-  const onSubmit: SubmitHandler<JobPost> = async (data) => {
+  const onSubmit: SubmitHandler<RecruitmentNews> = async (data) => {
     try {
       if (isEdit) {
         onSave({ ...initForm!, ...data }, 'update');
@@ -137,79 +156,140 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
             <span className="text-red-500">{errors.location.message}</span>
           )}
         </div>
-        <div className="mb-4 flex justify-center items-center space-x-5">
-          <div className="w-1/3">
-            <p className="text-[16px] text-[grey]">Mức lương tối thiểu</p>
-            <Controller
-              name="salaryMin"
-              control={control}
-              rules={{ required: 'Vui lòng nhập Mức lương tối thiểu' }}
-              render={({ field }) => (
-                <Input
-                  type="text"
-                  placeholder="Nhập Mức lương tối thiểu..."
-                  {...field}
-                />
-              )}
-            />
-            {errors.location && (
-              <span className="text-red-500">{errors.location.message}</span>
-            )}
-          </div>
-          <div className="w-1/3">
-            <p className="text-[16px] text-[grey]">Mức lương tối đa</p>
-            <Controller
-              name="salaryMax"
-              control={control}
-              rules={{ required: 'Vui lòng nhập Mức lương tối đa' }}
-              render={({ field }) => (
-                <Input
-                  type="text"
-                  placeholder="Nhập Mức lương tối đa..."
-                  {...field}
-                />
-              )}
-            />
-            {errors.location && (
-              <span className="text-red-500">{errors.location.message}</span>
-            )}
-          </div>
-          <div className="w-1/3">
-            <p className="text-[16px] text-[grey]">Đơn vị tiền tệ lương</p>
-            <Controller
-              name="salaryCurrency"
-              control={control}
-              rules={{ required: 'Vui lòng nhập Đơn vị tiền tệ lương' }}
-              render={({ field }) => (
-                <Input
-                  type="text"
-                  placeholder="Nhập Đơn vị tiền tệ lương..."
-                  {...field}
-                />
-              )}
-            />
-            {errors.location && (
-              <span className="text-red-500">{errors.location.message}</span>
-            )}
-          </div>
-        </div>
         <div className="mb-4">
-          <p className="text-[16px] text-[grey]">Thời hạn nhận CV</p>
+          <p className="text-[16px] text-[grey]">Mức lương</p>
           <Controller
-            name="deadline"
+            name="salary"
             control={control}
-            rules={{ required: 'Vui lòng nhập Thời hạn nhận CV' }}
+            rules={{ required: 'Vui lòng nhập mức lương' }}
             render={({ field }) => (
               <Input
                 type="text"
-                placeholder="Nhập Thời hạn nhận CV..."
+                placeholder="Ví dụ: 2000-3000 USD hoặc Thỏa thuận"
                 {...field}
               />
             )}
           />
-          {errors.location && (
-            <span className="text-red-500">{errors.location.message}</span>
+          {errors.salary && (
+            <span className="text-red-500">{errors.salary.message}</span>
           )}
+        </div>
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Tên công ty</p>
+          <Controller
+            name="companyName"
+            control={control}
+            rules={{ required: 'Vui lòng nhập tên công ty' }}
+            render={({ field }) => (
+              <Input
+                type="text"
+                placeholder="Nhập tên công ty..."
+                {...field}
+              />
+            )}
+          />
+          {errors.companyName && (
+            <span className="text-red-500">{errors.companyName.message}</span>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Kinh nghiệm yêu cầu</p>
+          <Controller
+            name="experience"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                placeholder="Ví dụ: 3-5 năm hoặc Fresher"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Giờ làm việc</p>
+          <Controller
+            name="workingHours"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                placeholder="Ví dụ: 9AM-6PM"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Phương thức ứng tuyển</p>
+          <Controller
+            name="applicationMethod"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                placeholder="Ví dụ: Gửi CV về hr@company.com"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Lĩnh vực</p>
+          <Controller
+            name="fieldId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                placeholder="Chọn lĩnh vực"
+                style={{ width: '100%' }}
+                {...field}
+              >
+                {fields.map((field) => (
+                  <Select.Option key={field.id} value={field.id}>
+                    {field.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">ID bài thi (tùy chọn)</p>
+          <Controller
+            name="examId"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="number"
+                placeholder="Nhập ID bài thi..."
+                {...field}
+                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Ngày hết hạn (tùy chọn)</p>
+          <Controller
+            name="expiredAt"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="date"
+                placeholder="Chọn ngày hết hạn..."
+                {...field}
+                value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+              />
+            )}
+          />
         </div>
       </form>
     </Drawer>

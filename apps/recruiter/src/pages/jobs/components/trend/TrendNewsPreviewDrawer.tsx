@@ -1,20 +1,19 @@
-import { Drawer, Typography, Image, Tag, Space, Divider } from 'antd';
+import { Drawer, Typography, Tag, Space, Divider } from 'antd';
 import {
   CalendarOutlined,
   UserOutlined,
-  EyeOutlined,
   LikeOutlined,
 } from '@ant-design/icons';
-import { TrendNews } from './types';
+import { News } from '@abc-interview-support-frontend/types';
 import TrendNewsStatusTag from './TrendNewsStatusTag';
 
 interface TrendNewsPreviewDrawerProps {
-  news: TrendNews | null;
+  news: News | null;
   visible: boolean;
   onClose: () => void;
 }
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
 const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
   news,
@@ -23,12 +22,9 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
 }) => {
   if (!news) return null;
 
-  const categoryMap = {
-    technology: 'Công nghệ',
-    career: 'Sự nghiệp',
-    interview: 'Phỏng vấn',
-    skills: 'Kỹ năng',
-    industry: 'Ngành nghề',
+  const newsTypeMap = {
+    NEWS: 'Xu hướng',
+    RECRUITMENT: 'Tuyển dụng',
   };
 
   return (
@@ -54,23 +50,6 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
       }}
     >
       <div style={{ padding: '24px' }}>
-        {/* Featured Image */}
-        {news.featuredImage && (
-          <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-            <Image
-              src={news.featuredImage}
-              alt={news.title}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '300px',
-                borderRadius: '8px',
-                objectFit: 'cover',
-              }}
-              fallback="/placeholder-news.jpg"
-            />
-          </div>
-        )}
-
         {/* Header Info */}
         <div style={{ marginBottom: '24px' }}>
           <div
@@ -83,10 +62,8 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
           >
             <TrendNewsStatusTag status={news.status} />
             <Tag color="blue">
-              {categoryMap[news.category as keyof typeof categoryMap] ||
-                news.category}
+              {newsTypeMap[news.newsType] || news.newsType}
             </Tag>
-            {news.isFeature && <Tag color="gold">Nổi bật</Tag>}
           </div>
 
           <Title
@@ -99,53 +76,36 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
           <Space direction="vertical" size={8} style={{ width: '100%' }}>
             <Space>
               <UserOutlined style={{ color: 'var(--color-text-secondary)' }} />
-              <Text type="secondary">{news.author?.name}</Text>
+              <Text type="secondary">User {news.userId}</Text>
             </Space>
             <Space>
               <CalendarOutlined
                 style={{ color: 'var(--color-text-secondary)' }}
               />
               <Text type="secondary">
-                {/* {new Date(news?.createdAt).toLocaleDateString('vi-VN', {
+                {new Date(news.createdAt).toLocaleDateString('vi-VN', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                })} */}
-                {news?.createdAt}
+                })}
               </Text>
             </Space>
             <Space size="large">
               <Space>
-                <EyeOutlined style={{ color: 'var(--color-text-secondary)' }} />
-                <Text type="secondary">{news.viewCount || 0} lượt xem</Text>
+                <LikeOutlined
+                  style={{ color: 'var(--color-text-secondary)' }}
+                />
+                <Text type="secondary">Hữu ích: {news.usefulVote || 0}</Text>
               </Space>
               <Space>
                 <LikeOutlined
                   style={{ color: 'var(--color-text-secondary)' }}
                 />
-                <Text type="secondary">{news.likeCount || 0} lượt thích</Text>
+                <Text type="secondary">Thú vị: {news.interestVote || 0}</Text>
               </Space>
             </Space>
           </Space>
         </div>
-
-        {/* Summary */}
-        {news.summary && (
-          <>
-            <Title level={4}>Tóm tắt</Title>
-            <Paragraph
-              style={{
-                fontSize: '16px',
-                lineHeight: '1.6',
-                color: 'var(--color-text-secondary)',
-                fontStyle: 'italic',
-                marginBottom: '24px',
-              }}
-            >
-              {news.summary}
-            </Paragraph>
-          </>
-        )}
 
         <Divider />
 
@@ -157,52 +117,63 @@ const TrendNewsPreviewDrawer: React.FC<TrendNewsPreviewDrawerProps> = ({
             lineHeight: '1.8',
             color: 'var(--color-text-primary)',
             marginBottom: '24px',
+            whiteSpace: 'pre-wrap',
           }}
-          dangerouslySetInnerHTML={{ __html: news.content }}
-        />
+        >
+          {news.content}
+        </div>
 
-        {/* Tags */}
-        {news.tags && news.tags.length > 0 && (
-          <>
-            <Divider />
-            <Title level={5}>Thẻ</Title>
-            <Space wrap>
-              {news.tags.map((tag, index) => (
-                <Tag key={index} style={{ marginBottom: '8px' }}>
-                  #{tag}
-                </Tag>
-              ))}
-            </Space>
-          </>
-        )}
-
-        {/* SEO Info */}
-        {(news.seo?.metaTitle || news.seo?.metaDescription) && (
-          <>
-            <Divider />
-            <Title level={5}>Thông tin SEO</Title>
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              {news.seo.metaTitle && (
-                <div>
-                  <Text strong>Meta Title: </Text>
-                  <Text>{news.seo.metaTitle}</Text>
-                </div>
-              )}
-              {news.seo.metaDescription && (
-                <div>
-                  <Text strong>Meta Description: </Text>
-                  <Text>{news.seo.metaDescription}</Text>
-                </div>
-              )}
-              {news.seo.keywords && news.seo.keywords.length > 0 && (
-                <div>
-                  <Text strong>Keywords: </Text>
-                  <Text>{news.seo.keywords.join(', ')}</Text>
-                </div>
-              )}
-            </Space>
-          </>
-        )}
+        {/* Additional Info */}
+        <Divider />
+        <Title level={5}>Thông tin bổ sung</Title>
+        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+          <div>
+            <Text strong>ID: </Text>
+            <Text>{news.id}</Text>
+          </div>
+          {news.fieldId && (
+            <div>
+              <Text strong>Lĩnh vực: </Text>
+              <Text>Field {news.fieldId}</Text>
+            </div>
+          )}
+          {news.publishedAt && (
+            <div>
+              <Text strong>Ngày xuất bản: </Text>
+              <Text>
+                {new Date(news.publishedAt).toLocaleDateString('vi-VN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </Text>
+            </div>
+          )}
+          {news.expiredAt && (
+            <div>
+              <Text strong>Ngày hết hạn: </Text>
+              <Text>
+                {new Date(news.expiredAt).toLocaleDateString('vi-VN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </Text>
+            </div>
+          )}
+          {news.approvedBy && (
+            <div>
+              <Text strong>Người duyệt: </Text>
+              <Text>User {news.approvedBy}</Text>
+            </div>
+          )}
+          {news.rejectReason && (
+            <div>
+              <Text strong style={{ color: '#ff4d4f' }}>Lý do từ chối: </Text>
+              <Text style={{ color: '#ff4d4f' }}>{news.rejectReason}</Text>
+            </div>
+          )}
+        </Space>
       </div>
     </Drawer>
   );

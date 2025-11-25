@@ -5,11 +5,11 @@ import {
   NewsApprovalTable,
   NewsApprovalToolbar,
 } from './components/news-approval';
-import { News, Field } from '@abc-interview-support-frontend/types';
+import { NewsItem, Field } from '@abc-interview-support-frontend/types';
 import { newsService, questionService } from '@abc-interview-support-frontend/services';
 
 const NewsApproval = () => {
-  const [dataList, setDataList] = useState<News[]>([]);
+  const [dataList, setDataList] = useState<NewsItem[]>([]);
   const [fieldData, setFieldData] = useState<Field[]>([]);
   const [searchText, setSearchText] = useState('');
   const [fieldFilter, setFieldFilter] = useState<string>('all');
@@ -28,7 +28,7 @@ const NewsApproval = () => {
         item.content.toLowerCase().includes(searchText.toLowerCase());
       const matchesField = fieldFilter === 'all' || item.fieldId === Number(fieldFilter);
       const matchesLocation =
-        locationFilter === 'all' || item.location === locationFilter;
+        locationFilter === 'all' || (item.newsType === 'RECRUITMENT' && item.location === locationFilter);
       const matchesStatus =
         statusFilter === 'all' || item.status === statusFilter;
       const matchesNewsType =
@@ -44,7 +44,7 @@ const NewsApproval = () => {
     });
   }, [dataList, searchText, fieldFilter, locationFilter, statusFilter, newsTypeFilter]);
 
-  const handlePreview = (data: News) => {
+  const handlePreview = (data: NewsItem) => {
     setPreviewVisible(true);
     setSelectedNewsId(data.id);
     setSelectedUserId(data.userId);
@@ -64,7 +64,7 @@ const NewsApproval = () => {
     try {
       const res = await newsService.getAllNews();
       let news = res.content || [];
-      news = news.filter((item: News) => (item.status === 'PENDING' || item.status === 'REJECTED'));
+      news = news.filter((item: NewsItem) => (item.status === 'PENDING' || item.status === 'REJECTED'));
       setDataList(news);
     } catch (error) {
       console.error('Error fetching news:', error);

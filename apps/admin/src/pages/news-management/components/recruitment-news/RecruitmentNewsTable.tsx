@@ -1,11 +1,11 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
 import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
-import { News, Field, Topic } from '@abc-interview-support-frontend/types';
+import { RecruitmentNews, Field, Topic } from '@abc-interview-support-frontend/types';
 
 interface TableProps {
-  dataList: News[];
-  onPreview: (data: News) => void;
+  dataList: RecruitmentNews[];
+  onPreview: (data: RecruitmentNews) => void;
   onDelete: (newsId: number) => void;
   fields: Field[];
 }
@@ -66,7 +66,7 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      render: (record: News) => (
+      render: (record: RecruitmentNews) => (
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button

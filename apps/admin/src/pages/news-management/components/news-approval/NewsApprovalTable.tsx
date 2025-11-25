@@ -3,11 +3,11 @@ import { Table, Button, Space, Tooltip, Tag } from 'antd';
 import {
   EyeOutlined,
 } from '@ant-design/icons';
-import { News, Field } from '@abc-interview-support-frontend/types';
+import { NewsItem, Field } from '@abc-interview-support-frontend/types';
 
 interface TableProps {
-  dataList: News[];
-  onPreview: (data: News) => void;
+  dataList: NewsItem[];
+  onPreview: (data: NewsItem) => void;
   fields: Field[];
 }
 
@@ -75,7 +75,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       title: 'Tiêu đề',
       dataIndex: 'title',
       key: 'title',
-      render: (title: string, record: News) => (
+      render: (title: string, record: NewsItem) => (
         <div style={{ fontWeight: 'bold', maxWidth: '300px' }}>
           <div
             style={{
@@ -145,7 +145,7 @@ const NewsApprovalTable: React.FC<TableProps> = ({
     {
       title: 'Thao tác',
       key: 'action',
-      render: (record: News) => (
+      render: (record: NewsItem) => (
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button

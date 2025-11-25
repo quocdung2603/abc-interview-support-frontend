@@ -26,44 +26,44 @@ const UserProfile: React.FC = () => {
   const [user, setUser] = useState<User>(() => {
     if (authUser) {
       return {
-        userId: authUser.userId,
-        roleId: authUser.roleId,
+        id: Number(authUser.userId),
+        roleId: Number(authUser.roleId),
+        roleName: authUser.roleName,
         fullName: authUser.fullName || '',
         email: authUser.email,
         passWord: '', // Not available from auth
-        dateOfBirth: authUser.dateOfBirth
-          ? new Date(authUser.dateOfBirth)
-          : new Date(),
+        dateOfBirth: authUser.dateOfBirth || '',
         address: authUser.address || '',
         status: authUser.status,
         isStudying: authUser.isStudying || false,
         eloScore: authUser.eloScore || 0,
         eloRank: authUser.eloRank || 'Newbie',
-        createdAt: new Date(),
-      } as any;
+        createdAt: new Date().toISOString(),
+      };
     }
     // Fallback to mock data if no auth user (shouldn't happen in normal flow)
     return {
-      userId: 'user-001',
-      roleId: 'role-001',
+      id: 1,
+      roleId: 3,
+      roleName: 'User',
       fullName: 'User',
       email: 'user@example.com',
       passWord: '',
-      dateOfBirth: new Date(),
+      dateOfBirth: new Date().toISOString(),
       address: '',
       status: 'Verified',
       isStudying: false,
       eloScore: 0,
       eloRank: 'Newbie',
-      createdAt: new Date(),
-    } as any;
+      createdAt: new Date().toISOString(),
+    };
   });
 
   // Mock ELO history
   const [eloHistory] = useState<EloHistory[]>([
     {
       eloHistoryId: 'elo-001',
-      userId: 'user-001',
+      userId: '1',
       createdAt: new Date('2024-01-01'),
       action: 'Hoàn thành bài kiểm tra JavaScript',
       points: 50,
@@ -73,7 +73,7 @@ const UserProfile: React.FC = () => {
     },
     {
       eloHistoryId: 'elo-002',
-      userId: 'user-001',
+      userId: '1',
       createdAt: new Date('2024-01-03'),
       action: 'Trả lời câu hỏi cộng đồng',
       points: 15,
@@ -83,7 +83,7 @@ const UserProfile: React.FC = () => {
     },
     {
       eloHistoryId: 'elo-003',
-      userId: 'user-001',
+      userId: '1',
       createdAt: new Date('2024-01-05'),
       action: 'Hoàn thành bài kiểm tra React',
       points: 75,
@@ -110,7 +110,7 @@ const UserProfile: React.FC = () => {
       result: {
         resultId: 'result-001',
         examId: 'exam-001',
-        userId: 'user-001',
+        userId: '1',
         score: 85,
         passStatus: true,
         feedback: 'Excellent understanding of JavaScript fundamentals',
@@ -132,7 +132,7 @@ const UserProfile: React.FC = () => {
       result: {
         resultId: 'result-002',
         examId: 'exam-002',
-        userId: 'user-001',
+        userId: '1',
         score: 92,
         passStatus: true,
         feedback: 'Outstanding performance in advanced React concepts',
@@ -157,7 +157,7 @@ const UserProfile: React.FC = () => {
       registration: {
         registrationId: 'reg-001',
         examId: 'exam-003',
-        userId: 'user-001',
+        userId: '1',
         registeredAt: new Date('2024-01-10'),
         scheduledAt: new Date('2024-01-20'),
         status: 'Confirmed' as const,
@@ -186,7 +186,7 @@ const UserProfile: React.FC = () => {
       registration: {
         registrationId: 'reg-002',
         examId: 'exam-004',
-        userId: 'user-001',
+        userId: '1',
         registeredAt: new Date('2024-01-20'),
         scheduledAt: new Date('2024-01-25'),
         status: 'Pending' as const,
@@ -320,7 +320,7 @@ const UserProfile: React.FC = () => {
   // Handler functions
   const handleUpdateUser = async (updatedUser: User) => {
     try {
-      const res = await userService.updateUser(user.userId, updatedUser);
+      const res = await userService.updateUser(user.id.toString(), updatedUser);
       setUser(res);
     } catch (error) {
       console.error('Error updating user:', error);

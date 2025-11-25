@@ -13,7 +13,7 @@ import {
   Spin,
   Descriptions,
 } from 'antd';
-import { News, Field, User } from '@abc-interview-support-frontend/types';
+import { NewsItem, Field, User } from '@abc-interview-support-frontend/types';
 import { newsService, userService } from '@abc-interview-support-frontend/services';
 import type { TabsProps } from 'antd';
 
@@ -39,7 +39,7 @@ const NewsApprovalFormDrawer: React.FC<PreviewDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [userData, setUserData] = useState<User | null>(null);
-  const [newsData, setNewsData] = useState<News | null>(null);
+  const [newsData, setNewsData] = useState<NewsItem | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -110,7 +110,7 @@ const NewsApprovalFormDrawer: React.FC<PreviewDrawerProps> = ({
       ) : userData ? (
         <Card title="Thông tin người dùng" size="small">
           <Descriptions column={2}>
-            <Descriptions.Item label="ID">{userData.userId}</Descriptions.Item>
+            <Descriptions.Item label="ID">{userData.id}</Descriptions.Item>
             <Descriptions.Item label="Họ tên">{userData.fullName || 'N/A'}</Descriptions.Item>
             <Descriptions.Item label="Email">{userData.email || 'N/A'}</Descriptions.Item>
             <Descriptions.Item label="Vai trò ID">{userData.roleId || 'N/A'}</Descriptions.Item>
@@ -147,7 +147,7 @@ const NewsApprovalFormDrawer: React.FC<PreviewDrawerProps> = ({
                 {getNewsTypeText(newsData.newsType)}
               </Tag>
               <Tag color="blue">{getFieldName(newsData.fieldId)}</Tag>
-              {newsData.location && <Tag color="orange">{newsData.location}</Tag>}
+              {newsData.newsType === 'RECRUITMENT' && newsData.location && <Tag color="orange">{newsData.location}</Tag>}
             </div>
           </div>
 
@@ -183,7 +183,7 @@ const NewsApprovalFormDrawer: React.FC<PreviewDrawerProps> = ({
                 <Text strong>Lĩnh vực:</Text>{' '}
                 <Tag color="blue">{getFieldName(newsData.fieldId)}</Tag>
               </div>
-              {newsData.location && (
+              {newsData.newsType === 'RECRUITMENT' && newsData.location && (
                 <div>
                   <Text strong>Địa điểm:</Text>{' '}
                   <Tag color="orange">{newsData.location}</Tag>

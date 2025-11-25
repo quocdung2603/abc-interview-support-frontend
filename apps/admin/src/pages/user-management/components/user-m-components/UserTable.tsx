@@ -69,7 +69,7 @@ const UserTable: React.FC<TableProps> = ({ dataList, onPreview, onLock }) => {
               danger
               icon={<LockOutlined />}
               size="small"
-              onClick={() => onLock(record.userId)}
+              onClick={() => onLock(record.id)}
             />
           </Tooltip>
         </Space>

@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { message } from 'antd';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 import {
   JobsPageHeader,
-  VerificationWarning,
   JobsToolbar,
   JobsTable,
   JobPreviewDrawer,
   JobFormDrawer,
 } from './components/recruitment';
-import { JobPost } from './components/recruitment/types';
+import { RecruitmentNews } from '@abc-interview-support-frontend/types';
+import { newsService } from '@abc-interview-support-frontend/services';
 
 const JobsPage: React.FC = () => {
   const { user } = useAuth();
-  const isVerified = user?.status === 'Verified';
 
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -22,70 +21,13 @@ const JobsPage: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [openForm, setOpenForm] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<JobPost | null>(null);
+  const [selectedJob, setSelectedJob] = useState<RecruitmentNews | null>(null);
 
-  const [editingJob, setEditingJob] = useState<JobPost | null>(null);
+  const [editingJob, setEditingJob] = useState<RecruitmentNews | null>(null);
 
-  // Mock data
-  const initialJobs: JobPost[] = [
-    {
-      id: '1',
-      title: 'Senior Frontend Developer - React/TypeScript',
-      position: 'Senior Frontend Developer',
-      location: 'Hồ Chí Minh',
-      salaryMin: 25000000,
-      salaryMax: 40000000,
-      salaryCurrency: 'VND',
-      deadline: '2024-12-31',
-      status: 'approved',
-      updatedAt: '2024-11-15',
-      createdAt: '2024-11-01',
-    },
-    {
-      id: '2',
-      title: 'Backend Developer - Node.js/NestJS',
-      position: 'Backend Developer',
-      location: 'Hà Nội',
-      salaryMin: 20000000,
-      salaryMax: 35000000,
-      salaryCurrency: 'VND',
-      deadline: '2024-12-25',
-      status: 'pending',
-      updatedAt: '2024-11-14',
-      createdAt: '2024-11-10',
-    },
-    {
-      id: '3',
-      title: 'Full-stack Developer - MERN Stack',
-      position: 'Full-stack Developer',
-      location: 'Remote',
-      salaryMin: 18000000,
-      salaryMax: 30000000,
-      salaryCurrency: 'VND',
-      deadline: '2024-12-20',
-      status: 'draft',
-      updatedAt: '2024-11-13',
-      createdAt: '2024-11-12',
-    },
-    {
-      id: '4',
-      title: 'DevOps Engineer - AWS/Docker/K8s',
-      position: 'DevOps Engineer',
-      location: 'Đà Nẵng',
-      salaryMin: 30000000,
-      salaryMax: 45000000,
-      salaryCurrency: 'VND',
-      deadline: '2024-12-15',
-      status: 'rejected',
-      rejectionReason: 'Mô tả công việc chưa rõ ràng về yêu cầu kinh nghiệm',
-      updatedAt: '2024-11-12',
-      createdAt: '2024-11-05',
-    },
-  ];
+  const [jobPosts, setJobPosts] = useState<RecruitmentNews[]>([]);
 
-  const [jobPosts, setJobPosts] = useState<JobPost[]>(initialJobs);
-
-  const handlePreview = (job: JobPost) => {
+  const handlePreview = (job: RecruitmentNews) => {
     setSelectedJob(job);
     setPreviewVisible(true);
   };
@@ -95,20 +37,21 @@ const JobsPage: React.FC = () => {
     setOpenForm(true);
   };
 
-  const handleEditJob = (job: JobPost) => {
+  const handleEditJob = (job: RecruitmentNews) => {
     setEditingJob(job); // <- sửa => đổ dữ liệu
     setOpenForm(true);
   };
 
-  const handleSaveJob = (payload: JobPost, mode: 'create' | 'update') => {
+  const handleSaveJob = (payload: RecruitmentNews, mode: 'create' | 'update') => {
     const now = new Date().toISOString().slice(0, 10);
     if (mode === 'create') {
-      const newJob: JobPost = {
+      const newJob: RecruitmentNews = {
         ...payload,
-        id: crypto.randomUUID?.() ?? String(Date.now()),
-        status: 'draft',
+        id: Number(crypto.randomUUID?.() ?? String(Date.now())),
+        newsType: 'RECRUITMENT',
+        status: 'PENDING',
         createdAt: now,
-        updatedAt: now,
+        userId: user?.userId ? Number(user.userId) : 1, // TODO: get from current user
       };
       setJobPosts((prev) => [newJob, ...prev]);
       console.log(jobPosts);
@@ -124,26 +67,44 @@ const JobsPage: React.FC = () => {
     setOpenForm(false);
   };
 
-  const handleDeleteJob = (jobId: string) => {
+  const handleDeleteJob = async (jobId: number) => {
     //api delete job
   };
 
-  const filteredData = jobPosts.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      job.position.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-    const matchesLocation =
-      locationFilter === 'all' || job.location === locationFilter;
+  const filteredData = useMemo(() => {
+    return jobPosts.filter((job) => {
+      const matchesSearch =
+        job.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        job.position?.toLowerCase().includes(searchText.toLowerCase()) ||
+        job.companyName?.toLowerCase().includes(searchText.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+      const matchesLocation =
+        locationFilter === 'all' || job.location === locationFilter;
 
-    return matchesSearch && matchesStatus && matchesLocation;
-  });
+      return matchesSearch && matchesStatus && matchesLocation;
+    });
+  }, [jobPosts, searchText, statusFilter, locationFilter]);
+
+  const getNewsByUser = async (userId: string) => {
+    try {
+      const res = await newsService.getNewsByUser(userId);
+      let news = res.content || [];
+      news = news.filter((news: RecruitmentNews) => news.newsType === 'RECRUITMENT');
+      setJobPosts(news);
+    } catch (error) {
+      console.error('Error fetching recruitment news:', error);
+      setJobPosts([]);
+    }
+  }
+
+  useEffect(() => {
+    getNewsByUser(user?.userId || '')
+  }, [user?.userId]);
+
 
   return (
     <div className="container-center animate-fade-in-up">
       <JobsPageHeader onCreateJob={handleCreateJob} />
-
-      <VerificationWarning isVerified={isVerified} />
 
       <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
         <JobsToolbar
@@ -154,7 +115,6 @@ const JobsPage: React.FC = () => {
           locationFilter={locationFilter}
           onLocationFilterChange={setLocationFilter}
           selectedRowKeys={selectedRowKeys}
-          isVerified={isVerified}
         />
 
         <JobsTable
