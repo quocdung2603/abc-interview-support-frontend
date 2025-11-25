@@ -1,34 +1,43 @@
 import React from 'react';
-import { News } from '@frontend/types';
+import { News, User } from '@abc-interview-support-frontend/types';
+import { Link } from 'react-router-dom';
 
 interface TrendNewsDetailHeaderProps {
   news: News;
+  author?: User | null;
 }
 
 export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
   news,
+  author,
 }) => {
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('vi-VN', {
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    }).format(date);
+    });
   };
 
-  const getAuthorName = (userId: string) => {
-    if (userId.startsWith('admin')) return 'Quản trị viên';
-    if (userId.startsWith('recruiter')) return 'Nhà tuyển dụng';
-    if (userId.startsWith('user')) return 'Người dùng';
-    return 'Tác giả';
+  const getAuthorName = () => {
+    if (author?.fullName) {
+      return author.fullName;
+    }
+    return 'Unknown Author';
   };
 
-  const getAuthorInitials = (userId: string) => {
-    if (userId.startsWith('admin')) return 'QT';
-    if (userId.startsWith('recruiter')) return 'NTD';
-    if (userId.startsWith('user')) return 'ND';
+  const getAuthorInitials = () => {
+    if (author?.fullName) {
+      return author.fullName.split(' ').map(name => name[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (news.userId) {
+      const userIdStr = news.userId.toString();
+      if (userIdStr.startsWith('admin')) return 'QT';
+      if (userIdStr.startsWith('recruiter')) return 'NTD';
+      if (userIdStr.startsWith('user')) return 'ND';
+    }
     return 'TG';
   };
 
@@ -41,7 +50,7 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb */}
           <nav className="mb-6 animate-fade-in-up">
-            <div className="flex items-center space-x-2 text-white-80">
+            <Link to={`/trend-news`} className="flex items-center space-x-2 text-white-80">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -54,7 +63,7 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
               </span>
               <span>/</span>
               <span className="text-white">Chi tiết bài viết</span>
-            </div>
+            </Link>
           </nav>
 
           {/* Article Badge */}
@@ -85,11 +94,11 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
             {/* Author */}
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-accent-avatar rounded-full flex items-center justify-center text-white font-semibold">
-                {getAuthorInitials(news.userId)}
+                {getAuthorInitials()}
               </div>
               <div>
                 <div className="text-white font-medium">
-                  {getAuthorName(news.userId)}
+                  {getAuthorName()}
                 </div>
                 <div className="text-white-80 text-caption">Tác giả</div>
               </div>

@@ -2,6 +2,10 @@ import React from 'react';
 
 export interface ExamControlsProps {
   // Filters
+  examType: string;
+  onExamTypeChange: (v: string) => void;
+  examTypeOptions: { value: string; label: string }[];
+
   field: string;
   onFieldChange: (v: string) => void;
   fieldOptions: string[];
@@ -50,6 +54,9 @@ const inputStyle: React.CSSProperties = {
 };
 
 const ExamFilter: React.FC<ExamControlsProps> = ({
+  examType,
+  onExamTypeChange,
+  examTypeOptions,
   field,
   onFieldChange,
   fieldOptions,
@@ -80,6 +87,18 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
     >
       {/* Filters */}
       <div style={controlRow}>
+        <select
+          style={selectStyle}
+          value={examType}
+          onChange={(e) => onExamTypeChange(e.target.value)}
+        >
+          {examTypeOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
         <select
           style={selectStyle}
           value={field}
@@ -157,7 +176,7 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
           <select
             style={{ ...selectStyle, minWidth: 100 }}
             value={pageSize}
-            onChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
+            onChange={(e) => onPageSizeChange(Number.parseInt(e.target.value, 10))}
           >
             {[5, 10, 20, 50].map((s) => (
               <option key={s} value={s}>

@@ -1,12 +1,12 @@
-import { News } from '@abc-interview-support-frontend/types';
+import { RecruitmentNews as RNews } from '@abc-interview-support-frontend/types';
 
 interface RecruitmentNewsCardProps {
-  news: News; // CHỈ NHẬN TIN TỨC CÓ NEWSTYPE = 'recruitment'
-  onClick?: (news: News) => void;
+  news: RNews; // CHỈ NHẬN TIN TỨC CÓ NEWSTYPE = 'RECRUITMENT'
+  onClick?: (news: RNews) => void;
 }
 
 // Extended news data for recruitment with additional fields
-interface RecruitmentNewsData extends News {
+interface RecruitmentNewsData extends RNews {
   companyName?: string;
   location?: string;
   salary?: string;
@@ -19,7 +19,7 @@ export const RecruitmentNewsCard = ({
   onClick,
 }: RecruitmentNewsCardProps) => {
   // Kiểm tra để đảm bảo chỉ hiển thị tin tức tuyển dụng
-  if (news.newsType !== 'recruitment') {
+  if (news.newsType !== 'RECRUITMENT') {
     return null;
   }
 
@@ -33,10 +33,10 @@ export const RecruitmentNewsCard = ({
     urgency: 'high',
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric',
     }).format(new Date(date));
   };
@@ -50,11 +50,11 @@ export const RecruitmentNewsCard = ({
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency) {
       case 'high':
-        return <span className="badge-warning">🔥 Tuyển gấp</span>;
+        return <span className="badge-warning">Tuyển gấp</span>;
       case 'medium':
-        return <span className="badge-accent">⏰ Ưu tiên</span>;
+        return <span className="badge-accent">Ưu tiên</span>;
       default:
-        return <span className="badge-secondary">📅 Thông thường</span>;
+        return <span className="badge-secondary">Thông thường</span>;
     }
   };
 
@@ -65,8 +65,8 @@ export const RecruitmentNewsCard = ({
       aria-label={`Xem tin tuyển dụng: ${news.title}`}
     >
       {/* Card Header */}
-      <div className="p-4 pb-3">
-        <div className="flex items-start justify-between mb-2">
+      <div className="p-3 pb-2">
+        <div className="flex items-start justify-between mb-1">
           <div className="flex items-center gap-2">
             {getUrgencyBadge(recruitmentData.urgency || 'low')}
             <span className="badge-primary">Tuyển dụng</span>
@@ -77,12 +77,12 @@ export const RecruitmentNewsCard = ({
         </div>
 
         {/* Job Title */}
-        <h3 className="text-body-large font-semibold text-neutral-800 line-clamp-2 mb-2 transition-colors duration-200 hover:text-accent">
+        <h3 className="text-body-large font-semibold text-neutral-800 line-clamp-2 mb-1 transition-colors duration-200 hover:text-accent">
           {news.title}
         </h3>
 
         {/* Company Info */}
-        <div className="flex items-center space-x-3 mb-2">
+        <div className="flex items-center space-x-3 mb-1">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-primary rounded-lg flex items-center justify-center">
               <svg
@@ -104,7 +104,7 @@ export const RecruitmentNewsCard = ({
         </div>
 
         {/* Job Details */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="grid grid-cols-2 gap-2 mb-2">
           <div className="flex items-center space-x-2">
             <svg
               className="w-3 h-3 text-neutral-500"
@@ -157,7 +157,7 @@ export const RecruitmentNewsCard = ({
       </div>
 
       {/* Card Footer */}
-      <div className="px-4 pb-4">
+      <div className="px-3 pb-3">
         <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 bg-gradient-accent rounded-full flex items-center justify-center">

@@ -1,6 +1,9 @@
 import { AxiosInstance } from 'axios';
 import { createRequestInstance } from './request.config.js';
-import { CreateExamData, UpdateExamData } from '@abc-interview-support-frontend/types';
+import {
+  CreateExamData,
+  UpdateExamData,
+} from '@abc-interview-support-frontend/types';
 
 export class ExamService {
   private readonly apiClient: AxiosInstance;
@@ -36,6 +39,18 @@ export class ExamService {
     return response.data;
   }
 
+  async createExamWithRandomQuestions(examData: CreateExamData) {
+    const newExamData = {
+      ...examData,
+      language: 'Vietnamese',
+    };
+    const response = await this.apiClient.post(
+      '/exams/with-random-questions',
+      newExamData
+    );
+    return response.data;
+  }
+
   async updateExam(examId: string, examData: UpdateExamData) {
     const newExamData = {
       ...examData,
@@ -59,6 +74,16 @@ export class ExamService {
       examId: Number.parseInt(examId),
       questionId,
       orderNumber,
+    });
+    return response.data;
+  }
+
+  async getExamResultByUserId(userId: string) {
+    const response = await this.apiClient.get(`/exams/results/user/${userId}`, {
+      params: {
+        page: 0,
+        size: 1000,
+      },
     });
     return response.data;
   }

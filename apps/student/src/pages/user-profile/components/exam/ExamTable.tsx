@@ -4,10 +4,13 @@ import { Exam } from '@abc-interview-support-frontend/types';
 import { questionService } from '@abc-interview-support-frontend/services';
 
 interface Props {
-  exams: Exam[]; // truyền toàn bộ danh sách
-  onJoin?: (id: string) => void; // Tham gia
-  onOpen?: (id: string) => void; // Mở (kết quả/ghi hình)
-  onDetails?: (id: string) => void; // Chi tiết
+  exams: Exam[];
+  onJoin?: (id: number) => void; // Tham gia (Virtual)
+  onOpen?: (id: number) => void; // Mở kết quả (Virtual)
+  onDetails?: (id: number) => void; // Chi tiết
+  onEnter?: (id: number) => void; // Vào thi (Recruiter)
+  onInfo?: (id: number) => void; // Xem thông tin (Recruiter)
+  onResult?: (id: number) => void; // Xem kết quả (Recruiter)
 }
 
 const tableShell: React.CSSProperties = {
@@ -29,8 +32,11 @@ const badgeBase: React.CSSProperties = {
   color: 'var(--color-neutral-700)',
 };
 
-const parseJsonArray = (jsonString?: string): string[] => {
+const parseJsonArray = (jsonString?: string | number[]): string[] => {
   if (!jsonString) return [];
+  if (Array.isArray(jsonString)) {
+    return jsonString.map(String);
+  }
   try {
     const parsed = JSON.parse(jsonString);
     if (Array.isArray(parsed)) return parsed.map(String);
@@ -46,12 +52,12 @@ const parseJsonArray = (jsonString?: string): string[] => {
 const formatDateTime = (d?: Date) =>
   d
     ? new Date(d).toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : '—';
 
 const formatDuration = (minutes?: number) => {
@@ -64,32 +70,23 @@ const formatDuration = (minutes?: number) => {
 type RuntimeState = 'UPCOMING' | 'ONGOING' | 'DONE' | 'INACTIVE';
 
 const runtimeStateOf = (ex: Exam, now = new Date()): RuntimeState => {
-  const start = ex.startTime ? new Date(ex.startTime) : undefined;
-  const end = ex.endTime ? new Date(ex.endTime) : undefined;
-
-  if (ex.status === 'Completed') return 'DONE';
-  if (ex.status === 'Inactive') return 'INACTIVE';
-
-  if (start && now < start) return 'UPCOMING';
-  if (start && end && now >= start && now <= end) return 'ONGOING';
-  if (end && now > end) return 'DONE';
-
-  return ex.status === 'Active' ? 'ONGOING' : 'UPCOMING';
+  // Since Exam interface doesn't have startTime/endTime, we'll use status-based logic
+  if (ex.status === 'COMPLETED') return 'DONE';
+  if (ex.status === 'INACTIVE') return 'INACTIVE';
+  if (ex.status === 'ACTIVE') return 'ONGOING';
+  return 'UPCOMING'; // DRAFT
 };
 
-const VirtualInterviewTab: React.FC<Props> = ({
+const ExamTable: React.FC<Props> = ({
   exams,
   onJoin,
   onOpen,
   onDetails,
+  onEnter,
+  onInfo,
+  onResult,
 }) => {
-  // 1) Lọc Virtual
-  const virtualExams = useMemo(
-    () => (exams || []).filter((e) => e.examType === 'VIRTUAL'),
-    [exams]
-  );
-
-  // 2) State cho options từ API
+  // State cho options từ API
   const [fieldOptions, setFieldOptions] = useState<string[]>([]);
   const [topicOptions, setTopicOptions] = useState<string[]>([]);
 
@@ -115,10 +112,10 @@ const VirtualInterviewTab: React.FC<Props> = ({
           questionService.getAllFields(),
           questionService.getAllTopics(),
         ]);
-        
+
         setFieldOptions(processResponse(fieldsRes.content));
         setTopicOptions(processResponse(topicsRes.content));
-        
+
         console.log('Options set successfully');
       } catch (error) {
         console.error('Failed to fetch options:', error);
@@ -128,7 +125,8 @@ const VirtualInterviewTab: React.FC<Props> = ({
     fetchOptions();
   }, []);
 
-  // 3) State bộ lọc + phân trang
+  // State bộ lọc + phân trang
+  const [examType, setExamType] = useState<string>('');
   const [field, setField] = useState<string>('');
   const [topic, setTopic] = useState<string>('');
   const [search, setSearch] = useState<string>('');
@@ -137,38 +135,46 @@ const VirtualInterviewTab: React.FC<Props> = ({
   const [pageSize, setPageSize] = useState<number>(10);
 
   const resetFilters = () => {
+    setExamType('');
     setField('');
     setTopic('');
     setSearch('');
     setPage(1);
   };
 
-  // 4) Áp dụng lọc
+  // Áp dụng lọc
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return virtualExams.filter((e: any) => {
+    return (exams || []).filter((e: Exam) => {
+      if (examType && e.examType !== examType) return false;
       if (field && e.position !== field) return false;
       if (topic) {
-        const topics = e.topics.map(String);
+        const topics = parseJsonArray(e.topics);
         if (!topics.includes(topic)) return false;
       }
 
       if (term) {
-        const hay = `${e.id} ${e.title} ${e.position || ''} ${
-          e.language || ''
-        }`.toLowerCase();
+        const hay = `${e.id} ${e.title} ${e.position || ''} ${e.language || ''
+          }`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
     });
-  }, [virtualExams, field, topic, search]);
+  }, [exams, examType, field, topic, search]);
 
-  // 5) Phân trang
+  // Phân trang
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
   const currentPage = Math.min(page, totalPages);
   const startIdx = (currentPage - 1) * pageSize;
   const pageData = filtered.slice(startIdx, startIdx + pageSize);
+
+  // Exam type options
+  const examTypeOptions = [
+    { value: '', label: 'Tất cả loại' },
+    { value: 'VIRTUAL', label: 'Phỏng vấn ảo' },
+    { value: 'RECRUITER', label: 'Kiểm tra sơ loại' },
+  ];
 
   return (
     <section
@@ -183,16 +189,22 @@ const VirtualInterviewTab: React.FC<Props> = ({
           marginBottom: 'var(--spacing-sm)',
         }}
       >
-        <span aria-hidden>🎥</span>
+        <span aria-hidden>📝</span>
         <h3
           className="text-heading-2"
           style={{ margin: 0, color: 'var(--color-neutral-800)' }}
         >
-          Virtual Interview — {total} mục
+          Danh sách bài kiểm tra — {total} mục
         </h3>
       </div>
 
       <ExamFilter
+        examType={examType}
+        onExamTypeChange={(v) => {
+          setExamType(v);
+          setPage(1);
+        }}
+        examTypeOptions={examTypeOptions}
         field={field}
         onFieldChange={(v) => {
           setField(v);
@@ -227,6 +239,7 @@ const VirtualInterviewTab: React.FC<Props> = ({
             <tr style={{ backgroundColor: 'var(--color-neutral-50)' }}>
               {[
                 'Bài kiểm tra',
+                'Loại',
                 'Field',
                 'Topic',
                 'Loại câu hỏi',
@@ -240,10 +253,9 @@ const VirtualInterviewTab: React.FC<Props> = ({
                     padding: 'var(--spacing-sm)',
                     textAlign:
                       th === 'Bài kiểm tra' ||
-                      th === 'Field' ||
-                      th === 'Level' ||
-                      th === 'Topic' ||
-                      th === 'Loại câu hỏi'
+                        th === 'Field' ||
+                        th === 'Topic' ||
+                        th === 'Loại câu hỏi'
                         ? 'left'
                         : 'center',
                     borderBottom: '2px solid var(--color-neutral-200)',
@@ -257,9 +269,9 @@ const VirtualInterviewTab: React.FC<Props> = ({
             </tr>
           </thead>
           <tbody>
-            {pageData.map((ex: any) => {
-              const topics = ex.topics.map(String);
-              const qTypes = ex.questionTypes.map(String);
+            {pageData.map((ex: Exam) => {
+              const topics = parseJsonArray(ex.topics);
+              const qTypes = parseJsonArray(ex.questionTypes);
               const rt = runtimeStateOf(ex);
 
               return (
@@ -269,17 +281,17 @@ const VirtualInterviewTab: React.FC<Props> = ({
                     borderBottom: '1px solid var(--color-neutral-200)',
                     transition: 'background-color 0.15s',
                   }}
-                  onMouseEnter={(e: any) =>
-                    (e.currentTarget.style.backgroundColor =
-                      'var(--color-neutral-50)')
+                  onMouseEnter={(e: React.MouseEvent<HTMLTableRowElement>) =>
+                  (e.currentTarget.style.backgroundColor =
+                    'var(--color-neutral-50)')
                   }
-                  onMouseLeave={(e: any) =>
+                  onMouseLeave={(e: React.MouseEvent<HTMLTableRowElement>) =>
                     (e.currentTarget.style.backgroundColor = 'transparent')
                   }
                 >
                   <td style={{ padding: 'var(--spacing-sm)' }}>
                     <div
-                      className="truncate max-w-[100px]"
+                      className="truncate max-w-[200px]"
                       style={{
                         fontWeight: 600,
                         color: 'var(--color-neutral-900)',
@@ -295,6 +307,20 @@ const VirtualInterviewTab: React.FC<Props> = ({
                     >
                       ID: {ex.id}
                     </div>
+                  </td>
+                  <td style={{ padding: 'var(--spacing-sm)', textAlign: 'center' }}>
+                    <span
+                      className="badge-secondary"
+                      style={{
+                        background:
+                          ex.examType === 'VIRTUAL'
+                            ? 'var(--color-primary)'
+                            : 'var(--color-accent)',
+                        color: '#fff',
+                      }}
+                    >
+                      {ex.examType === 'VIRTUAL' ? 'Phỏng vấn ảo' : 'Kiểm tra sơ loại'}
+                    </span>
                   </td>
                   <td style={{ padding: 'var(--spacing-sm)' }}>
                     {ex.position || (
@@ -407,27 +433,62 @@ const VirtualInterviewTab: React.FC<Props> = ({
                     }}
                   >
                     <div style={{ display: 'inline-flex', gap: 8 }}>
-                      {rt === 'ONGOING' ? (
-                        <button
-                          className="btn-primary btn-sm"
-                          onClick={() => onJoin?.(ex.id)}
-                        >
-                          Tham gia
-                        </button>
-                      ) : rt === 'DONE' ? (
-                        <button
-                          className="btn-accent btn-sm"
-                          onClick={() => onOpen?.(ex.id)}
-                        >
-                          Mở
-                        </button>
+                      {ex.examType === 'VIRTUAL' ? (
+                        rt === 'ONGOING' ? (
+                          <button
+                            className="btn-primary btn-sm"
+                            onClick={() => onJoin?.(ex.id)}
+                          >
+                            Tham gia
+                          </button>
+                        ) : rt === 'DONE' ? (
+                          <button
+                            className="btn-accent btn-sm"
+                            onClick={() => onOpen?.(ex.id)}
+                          >
+                            Mở
+                          </button>
+                        ) : (
+                          <button
+                            className="btn-outline btn-sm"
+                            onClick={() => onDetails?.(ex.id)}
+                          >
+                            Chi tiết
+                          </button>
+                        )
                       ) : (
-                        <button
-                          className="btn-outline btn-sm"
-                          onClick={() => onDetails?.(ex.id)}
-                        >
-                          Chi tiết
-                        </button>
+                        <>
+                          {rt === 'UPCOMING' && (
+                            <button
+                              className="btn-outline btn-sm"
+                              onClick={() => onInfo?.(ex.id)}
+                            >
+                              Xem thông tin
+                            </button>
+                          )}
+                          {rt === 'ONGOING' && (
+                            <button
+                              className="btn-primary btn-sm"
+                              onClick={() => onEnter?.(ex.id)}
+                            >
+                              Vào thi
+                            </button>
+                          )}
+                          {rt === 'DONE' && (
+                            <button
+                              className="btn-accent btn-sm"
+                              onClick={() => onResult?.(ex.id)}
+                            >
+                              Xem kết quả
+                            </button>
+                          )}
+                          <button
+                            className="btn-outline btn-sm"
+                            onClick={() => onDetails?.(ex.id)}
+                          >
+                            Chi tiết
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -437,7 +498,7 @@ const VirtualInterviewTab: React.FC<Props> = ({
             {pageData.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   style={{
                     padding: 'var(--spacing-lg)',
                     textAlign: 'center',
@@ -455,4 +516,4 @@ const VirtualInterviewTab: React.FC<Props> = ({
   );
 };
 
-export default VirtualInterviewTab;
+export default ExamTable;

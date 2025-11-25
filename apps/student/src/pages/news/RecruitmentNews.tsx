@@ -3,119 +3,42 @@ import { useNavigate } from 'react-router-dom';
 import { RecruitmentNewsHeader } from './components/recruiment-news/RecruitmentNewsHeader';
 import { RecruitmentNewsFilter } from './components/recruiment-news/RecruitmentNewsFilter';
 import { RecruitmentNewsList } from './components/recruiment-news/RecruitmentNewsList';
-import { News } from '@abc-interview-support-frontend/types';
-
-/**
- * TRANG TIN TỨC TUYỂN DỤNG
- *
- * Component này và tất cả các component con của nó CHỈ XỬ LÝ TIN TỨC CÓ newsType = 'recruitment'
- *
- * Features:
- * - Hiển thị danh sách tin tức tuyển dụng từ các công ty
- * - Lọc theo từ khóa, công ty, địa điểm, mức lương
- * - Sắp xếp theo thời gian và mức lương
- * - Responsive design
- * - Hiển thị thông tin chi tiết về việc làm
- *
- * Tin tức tuyển dụng được đăng bởi:
- * - Recruiter (recruiter-xxx)
- * - Company HR (company-xxx)
- */
-
-// Mock data cho tin tức tuyển dụng - Trong thực tế sẽ fetch từ API
-const mockRecruitmentNews: News[] = [
-  {
-    newsId: 'r1',
-    userId: 'recruiter-001',
-    newsType: 'recruitment',
-    title: 'Tuyển Senior Frontend Developer - React/Next.js',
-    content:
-      'Chúng tôi đang tìm kiếm Senior Frontend Developer có kinh nghiệm với React, Next.js để join team phát triển sản phẩm fintech hàng đầu. Yêu cầu: 3+ năm kinh nghiệm, thành thạo TypeScript, có kinh nghiệm với microservices. Lương 25-40M, làm việc hybrid.',
-    createdAt: new Date('2025-01-15T08:30:00'),
-  },
-  {
-    newsId: 'r2',
-    userId: 'recruiter-002',
-    newsType: 'recruitment',
-    title: 'Backend Developer - Node.js/Python tại Startup AI',
-    content:
-      'Startup AI đang scale up cần Backend Developer giỏi Node.js hoặc Python. Làm việc với data science team để phát triển API cho ML models. Remote-first company, flexible working hours. Package 20-35M + equity.',
-    createdAt: new Date('2025-01-14T16:45:00'),
-  },
-  {
-    newsId: 'r3',
-    userId: 'company-001',
-    newsType: 'recruitment',
-    title: 'DevOps Engineer - AWS/Kubernetes - Công ty Fintech',
-    content:
-      'Vị trí DevOps Engineer cho hệ thống fintech xử lý hàng triệu giao dịch/ngày. Cần kinh nghiệm AWS, Kubernetes, Docker, CI/CD. Team quốc tế, làm việc với Singapore office. Lương negotiable up to 50M.',
-    createdAt: new Date('2025-01-14T10:20:00'),
-  },
-  {
-    newsId: 'r4',
-    userId: 'recruiter-003',
-    newsType: 'recruitment',
-    title: 'Product Manager - Tech Startup Series A',
-    content:
-      'Tech startup vừa gọi vốn Series A 10M USD cần Product Manager để lead product strategy. Yêu cầu: MBA hoặc kinh nghiệm tương đương, data-driven mindset, experience với B2B SaaS. Salary: 30-45M + stock options.',
-    createdAt: new Date('2025-01-13T14:15:00'),
-  },
-  {
-    newsId: 'r5',
-    userId: 'company-002',
-    newsType: 'recruitment',
-    title: 'UX/UI Designer - E-commerce Platform',
-    content:
-      'E-commerce platform hàng đầu VN tuyển UX/UI Designer cho mobile app. Cần portfolio mạnh về mobile design, hiểu biết về user research và usability testing. Team design 15+ người, văn phòng đẹp tại Q1. Lương 18-28M.',
-    createdAt: new Date('2025-01-13T09:30:00'),
-  },
-  {
-    newsId: 'r6',
-    userId: 'recruiter-004',
-    newsType: 'recruitment',
-    title: 'Data Scientist - Machine Learning Engineer',
-    content:
-      'Công ty AI hàng đầu cần Data Scientist với strong background về ML/DL. Work with latest tech: PyTorch, TensorFlow, MLOps. Research-oriented environment, publish papers. PhD preferred nhưng không bắt buộc. Salary: 35-60M.',
-    createdAt: new Date('2025-01-12T15:45:00'),
-  },
-];
+import { RecruitmentNews as RNews } from '@abc-interview-support-frontend/types';
+import { newsService } from '@abc-interview-support-frontend/services';
 
 type SortOption = 'newest' | 'oldest' | 'salary';
 
 export const RecruitmentNews: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [news, setNews] = useState<News[]>([]);
+  const [news, setNews] = useState<RNews[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [companyFilter, setCompanyFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [salaryFilter, setSalaryFilter] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
 
-  // Simulate data loading
+  const getNewsByType = async (newsType: string) => {
+    try {
+      const res = await newsService.getNewsByType(newsType);
+      const news = res.content || [];
+      console.log('Fetched recruitment news:', news);
+      setNews(news);
+    } catch (error) {
+      console.error('Error fetching news by type:', error);
+      setNews([]);
+    }
+  }
+
   useEffect(() => {
-    const loadNews = async () => {
-      setLoading(true);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // CHỈ LẤY TIN TỨC CÓ NEWSTYPE LÀ 'RECRUITMENT'
-      const recruitmentNewsOnly = mockRecruitmentNews.filter(
-        (newsItem) => newsItem.newsType === 'recruitment'
-      );
-      setNews(recruitmentNewsOnly);
-      setLoading(false);
-    };
-
-    loadNews();
+    getNewsByType('RECRUITMENT');
   }, []);
 
-  // Filter and sort news - CHỈ XỬ LÝ TIN TỨC TUYỂN DỤNG
+  // Filter and sort news - CHỈ XỬ LÝ TIN TỨC TUYỂN DỤNG ĐÃ ĐƯỢC PUBLISH
   const filteredAndSortedNews = useMemo(() => {
     const filtered = news.filter((newsItem) => {
-      // CHỈ LẤY TIN TỨC CÓ NEWSTYPE LÀ 'RECRUITMENT'
-      const isRecruitmentNews = newsItem.newsType === 'recruitment';
+      // CHỈ LẤY TIN TỨC CÓ NEWSTYPE LÀ 'RECRUITMENT' VÀ STATUS LÀ 'PUBLISHED'
+      const isRecruitmentNews = newsItem.newsType === 'RECRUITMENT';
+      const isPublished = newsItem.status === 'PUBLISHED';
 
       // Filter by search term
       const matchesSearch =
@@ -183,6 +106,7 @@ export const RecruitmentNews: React.FC = () => {
 
       return (
         isRecruitmentNews &&
+        isPublished &&
         matchesSearch &&
         matchesCompany &&
         matchesLocation &&
@@ -197,7 +121,7 @@ export const RecruitmentNews: React.FC = () => {
         const getSalaryValue = (content: string) => {
           const salaryRegex = /(\d+)[\s-]*m/i;
           const salaryMatch = salaryRegex.exec(content);
-          return salaryMatch ? parseInt(salaryMatch[1]) : 0;
+          return salaryMatch ? Number.parseInt(salaryMatch[1]) : 0;
         };
         return getSalaryValue(b.content) - getSalaryValue(a.content);
       } else {
@@ -210,9 +134,9 @@ export const RecruitmentNews: React.FC = () => {
     return filtered;
   }, [news, searchTerm, companyFilter, locationFilter, salaryFilter, sortBy]);
 
-  const handleNewsClick = (newsItem: News) => {
+  const handleNewsClick = (newsItem: RNews) => {
     // Navigate to recruitment news detail page
-    navigate(`/recruitment-news-detail/${newsItem.newsId}`);
+    navigate(`/recruitment-news-detail/${newsItem.id}`);
   };
 
   return (
@@ -239,13 +163,12 @@ export const RecruitmentNews: React.FC = () => {
         {/* News List Section */}
         <RecruitmentNewsList
           news={filteredAndSortedNews}
-          loading={loading}
           onNewsClick={handleNewsClick}
         />
       </div>
 
       {/* Call to Action Section */}
-      {!loading && filteredAndSortedNews.length > 0 && (
+      {filteredAndSortedNews.length > 0 && (
         <div className="bg-gradient-primary py-12">
           <div className="container-center text-center">
             <h2 className="text-heading-2 text-white mb-3">

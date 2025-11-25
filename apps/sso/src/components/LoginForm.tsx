@@ -54,6 +54,7 @@ export function LoginForm({
       // Step 2: Call userService.login to get user info
       // Returns: { id, roleId, roleName, email, fullName, dateOfBirth, address, status, ... }
       const backendUser = await authService.getUserInfo();
+      console.log('Auth Data 123:', authData);
       console.log('Backend user data:', backendUser);
 
       // Step 3: Transform backend user to frontend AuthUser format

@@ -21,9 +21,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
     onUpdateUser({
       fullName: editForm.fullName,
       email: editForm.email,
-      dateOfBirth: editForm.dateOfBirth
-        ? new Date(editForm.dateOfBirth)
-        : undefined,
+      dateOfBirth: editForm.dateOfBirth || undefined,
       address: editForm.address,
     });
     setIsEditing(false);
@@ -43,11 +41,11 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
 
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
-      case 'Verified':
+      case 'ACTIVE':
         return { backgroundColor: 'var(--color-success)', color: 'white' };
-      case 'Pending':
+      case 'PENDING':
         return { backgroundColor: 'var(--color-warning)', color: 'white' };
-      case 'Locked':
+      case 'LOCKED':
         return { backgroundColor: 'var(--color-danger)', color: 'white' };
       default:
         return { backgroundColor: 'var(--color-neutral-400)', color: 'white' };

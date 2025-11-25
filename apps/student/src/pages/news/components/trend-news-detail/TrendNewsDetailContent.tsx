@@ -1,32 +1,59 @@
-import React from 'react';
-import { News } from '@frontend/types';
+import React, { useState, useEffect } from 'react';
+import { News, User } from '@abc-interview-support-frontend/types';
+import { Tag } from 'antd';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 interface TrendNewsDetailContentProps {
   news: News;
+  author?: User | null;
 }
 
 export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
   news,
+  author
 }) => {
+  const [fieldName, setFieldName] = useState<string>('Loading...');
+
+  useEffect(() => {
+    const fetchFieldName = async () => {
+      try {
+        const res = await questionService.getFieldById(news.fieldId || 1);
+        setFieldName(res.name);
+      } catch (error) {
+        console.error('Error fetching field name:', error);
+        setFieldName('Unknown Field');
+      }
+    };
+    fetchFieldName();
+  }, [news.fieldId]);
+
   // Parse content thành các đoạn văn
   const paragraphs = news.content.split('\n').filter((p) => p.trim() !== '');
 
-  const getAuthorInitials = (userId: string) => {
-    if (userId.startsWith('admin')) return 'QT';
-    if (userId.startsWith('recruiter')) return 'NTD';
-    return 'ND';
+  const getAuthorName = () => {
+    if (author?.fullName) {
+      return author.fullName;
+    }
+    return 'Unknown Author';
   };
 
-  const getAuthorName = (userId: string) => {
-    if (userId.startsWith('admin')) return 'Quản trị viên';
-    if (userId.startsWith('recruiter')) return 'Nhà tuyển dụng';
-    return 'Người dùng';
+  const getAuthorInitials = () => {
+    if (author?.fullName) {
+      return author.fullName.split(' ').map(name => name[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (news.userId) {
+      const userIdStr = news.userId.toString();
+      if (userIdStr.startsWith('admin')) return 'QT';
+      if (userIdStr.startsWith('recruiter')) return 'NTD';
+      if (userIdStr.startsWith('user')) return 'ND';
+    }
+    return 'TG';
   };
 
   return (
     <div className="bg-white">
       <div className="container-center section-padding">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Content */}
             <article className="lg:col-span-3">
@@ -74,11 +101,8 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                     Chủ đề liên quan:
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    <span className="badge-accent">Xu hướng</span>
-                    <span className="badge-secondary">Công nghệ</span>
-                    <span className="badge-secondary">Tuyển dụng</span>
-                    <span className="badge-secondary">Kỹ năng</span>
-                    <span className="badge-secondary">IT</span>
+                    <span className="badge-accent">{fieldName}</span>
+
                   </div>
                 </div>
 
@@ -182,15 +206,14 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
                   </h3>
                   <div className="flex items-start space-x-3">
                     <div className="w-12 h-12 bg-gradient-accent-avatar rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                      {getAuthorInitials(news.userId)}
+                      {getAuthorInitials()}
                     </div>
                     <div>
                       <div className="text-body font-semibold text-neutral-800 mb-1">
-                        {getAuthorName(news.userId)}
+                        {getAuthorName()}
                       </div>
                       <p className="text-caption text-neutral-600 leading-relaxed">
-                        Chuyên gia trong lĩnh vực công nghệ và tuyển dụng với
-                        nhiều năm kinh nghiệm.
+                        <Tag color="blue">{author?.roleName}</Tag> - <Tag color="yellow">{author?.eloRank}</Tag>
                       </p>
                     </div>
                   </div>

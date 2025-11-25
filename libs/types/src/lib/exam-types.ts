@@ -23,14 +23,14 @@ export interface ExamQuestion {
   orderNumber: number;
 }
 
-export interface Result {
-  resultId: string;
-  examId: string;
-  userId: string;
+export interface ExamResult {
+  id: number;
+  examId: number;
+  userId: number;
   score: number;
   passStatus: boolean;
   feedback?: string;
-  completedAt: Date;
+  completedAt: string;
 }
 
 export interface UserAnswer {

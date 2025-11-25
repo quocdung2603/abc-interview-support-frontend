@@ -7,7 +7,7 @@ interface EloHistoryProps {
 
 const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(5); // Changed from 10 to 5
   const [sortField, setSortField] = useState<keyof EloHistory>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -203,14 +203,14 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
           <tbody>
             {paginatedData.map((item, index) => (
               <tr
-                key={item.eloHistoryId}
+                key={item.id}
                 style={{
                   borderBottom: '1px solid var(--color-neutral-200)',
                   transition: 'background-color 0.2s ease',
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor =
-                    'var(--color-neutral-50)')
+                (e.currentTarget.style.backgroundColor =
+                  'var(--color-neutral-50)')
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.backgroundColor = 'transparent')

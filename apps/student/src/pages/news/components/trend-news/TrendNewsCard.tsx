@@ -1,17 +1,12 @@
 import { News } from '@abc-interview-support-frontend/types';
 
 interface TrendNewsCardProps {
-  news: News; // CHỈ NHẬN TIN TỨC CÓ NEWSTYPE = 'trend'
+  news: News;
   onClick?: (news: News) => void;
 }
 
 export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
-  // Kiểm tra để đảm bảo chỉ hiển thị tin tức xu hướng
-  if (news.newsType !== 'trend') {
-    return null;
-  }
-
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'long',
@@ -57,11 +52,11 @@ export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 flex items-center justify-center bg-gradient-accent rounded-full text-white">
               <span className="text-caption font-semibold">
-                {news.userId.charAt(0).toUpperCase()}
+                {(news.userId?.toString() || 'U').charAt(0).toUpperCase()}
               </span>
             </div>
             <span className="text-caption text-neutral-600">
-              User {news.userId.slice(0, 8)}...
+              User {(news.userId?.toString() || 'Unknown').slice(0, 8)}...
             </span>
           </div>
 

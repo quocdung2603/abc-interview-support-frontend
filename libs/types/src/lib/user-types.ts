@@ -46,10 +46,10 @@ export interface CompanyDocument {
 }
 
 export interface EloHistory {
-  eloHistoryId: string;
-  userId: string;
+  id: number;
+  userId: number;
   action: string;
   points: number;
   description?: string;
-  createdAt: Date;
+  createdAt: string;
 }

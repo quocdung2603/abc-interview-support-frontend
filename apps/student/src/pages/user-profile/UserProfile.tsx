@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 // Import types
-import { User, EloHistory } from '@abc-interview-support-frontend/types';
+import { User, EloHistory, ExamResult } from '@abc-interview-support-frontend/types';
 
 // Import hooks
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
@@ -13,11 +13,13 @@ import CommunityTabs from './components/community/CommunityTabs';
 import CareerTabs from './components/career/CareerTabs';
 import TabNavigation from './components/TabNavigation';
 import ExamTabs from './components/exam/ExamTabs';
-import { userService } from '@abc-interview-support-frontend/services';
+import { userService, examService } from '@abc-interview-support-frontend/services';
 
 const UserProfile: React.FC = () => {
   // Get authenticated user
   const { user: authUser } = useAuth();
+  console.log('Authenticated User:', authUser);
+
 
   // Tab state
   const [activeTab, setActiveTab] = useState<string>('personal');
@@ -38,7 +40,8 @@ const UserProfile: React.FC = () => {
         isStudying: authUser.isStudying || false,
         eloScore: authUser.eloScore || 0,
         eloRank: authUser.eloRank || 'Newbie',
-        createdAt: new Date().toISOString(),
+        createdAt: authUser.createdAt || new Date().toISOString(),
+        verifyToken: authUser.verifyToken || null,
       };
     }
     // Fallback to mock data if no auth user (shouldn't happen in normal flow)
@@ -60,139 +63,58 @@ const UserProfile: React.FC = () => {
   });
 
   // Mock ELO history
-  const [eloHistory] = useState<EloHistory[]>([
-    {
-      eloHistoryId: 'elo-001',
-      userId: '1',
-      createdAt: new Date('2024-01-01'),
-      action: 'Hoàn thành bài kiểm tra JavaScript',
-      points: 50,
-      description: 'Đạt 85% trong bài kiểm tra JavaScript Fundamentals',
-      examId: 'exam-001',
-      examTitle: 'JavaScript Fundamentals',
-    },
-    {
-      eloHistoryId: 'elo-002',
-      userId: '1',
-      createdAt: new Date('2024-01-03'),
-      action: 'Trả lời câu hỏi cộng đồng',
-      points: 15,
-      description: 'Câu trả lời về React Hooks được vote up',
-      examId: null,
-      examTitle: null,
-    },
-    {
-      eloHistoryId: 'elo-003',
-      userId: '1',
-      createdAt: new Date('2024-01-05'),
-      action: 'Hoàn thành bài kiểm tra React',
-      points: 75,
-      description: 'Đạt 92% trong bài kiểm tra React Advanced',
-      examId: 'exam-002',
-      examTitle: 'React Advanced',
-    },
-  ] as any);
+  const [eloHistory, setEloHistory] = useState<EloHistory[]>([]);
 
-  // Mock exam data
-  const [completedExams] = useState([
-    {
-      examId: 'exam-001',
-      examType: 'Virtual' as const,
-      title: 'JavaScript Fundamentals',
-      topics: JSON.stringify(['Variables', 'Functions', 'Objects', 'Arrays']),
-      questionTypes: JSON.stringify(['Multiple Choice', 'Code']),
-      questionCount: 25,
-      duration: 45,
-      status: 'Completed' as const,
-      language: 'Vietnamese',
-      createdAt: new Date('2023-12-01'),
-      createdBy: 'system',
-      result: {
-        resultId: 'result-001',
-        examId: 'exam-001',
-        userId: '1',
-        score: 85,
-        passStatus: true,
-        feedback: 'Excellent understanding of JavaScript fundamentals',
-        completedAt: new Date('2024-01-01'),
-      },
-    },
-    {
-      examId: 'exam-002',
-      examType: 'Virtual' as const,
-      title: 'React Advanced Concepts',
-      topics: JSON.stringify(['Hooks', 'Context', 'Performance', 'Testing']),
-      questionTypes: JSON.stringify(['Multiple Choice', 'Code', 'Essay']),
-      questionCount: 30,
-      duration: 60,
-      status: 'Completed' as const,
-      language: 'Vietnamese',
-      createdAt: new Date('2023-12-15'),
-      createdBy: 'system',
-      result: {
-        resultId: 'result-002',
-        examId: 'exam-002',
-        userId: '1',
-        score: 92,
-        passStatus: true,
-        feedback: 'Outstanding performance in advanced React concepts',
-        completedAt: new Date('2024-01-05'),
-      },
-    },
-  ] as any);
+  const loadEloHistory = useCallback(async () => {
+    if (user.id) {
+      try {
+        const history = await userService.getEloHistoryById(user.id.toString());
+        setEloHistory(history);
+      } catch (error) {
+        console.error('Error loading ELO history:', error);
+        setEloHistory([]);
+      }
+    }
+  }, [user.id]);
 
-  const [registeredExams] = useState([
-    {
-      examId: 'exam-003',
-      examType: 'Virtual' as const,
-      title: 'Node.js Backend Development',
-      topics: JSON.stringify(['Express', 'Database', 'Authentication', 'APIs']),
-      questionTypes: JSON.stringify(['Multiple Choice', 'Code']),
-      questionCount: 50,
-      duration: 90,
-      status: 'Active' as const,
-      language: 'Vietnamese',
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'system',
-      registration: {
-        registrationId: 'reg-001',
-        examId: 'exam-003',
-        userId: '1',
-        registeredAt: new Date('2024-01-10'),
-        scheduledAt: new Date('2024-01-20'),
-        status: 'Confirmed' as const,
-      },
-    },
-  ] as any);
+  // Exam results state
+  const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
-  const [upcomingExams] = useState([
-    {
-      examId: 'exam-004',
-      examType: 'Virtual' as const,
-      title: 'Database Design & SQL',
-      topics: JSON.stringify([
-        'SQL Queries',
-        'Database Design',
-        'Normalization',
-        'Indexing',
-      ]),
-      questionTypes: JSON.stringify(['Multiple Choice', 'SQL Code']),
-      questionCount: 40,
-      duration: 75,
-      status: 'Active' as const,
-      language: 'Vietnamese',
-      createdAt: new Date('2024-01-15'),
-      createdBy: 'system',
-      registration: {
-        registrationId: 'reg-002',
-        examId: 'exam-004',
-        userId: '1',
-        registeredAt: new Date('2024-01-20'),
-        scheduledAt: new Date('2024-01-25'),
-        status: 'Pending' as const,
-      },
-    },
-  ] as any);
+  const loadExamResults = useCallback(async () => {
+    if (user.id) {
+      try {
+        const results = await examService.getExamResultByUserId(user.id.toString());
+        setExamResults(results.content || results);
+      } catch (error) {
+        console.error('Error loading exam results:', error);
+        setExamResults([]);
+      }
+    }
+  }, [user.id]);
+
+  // Create completed exams from exam results
+  const completedExams = examResults.map(result => ({
+    id: result.id, // Use result.id as unique key instead of examId
+    userId: result.userId,
+    examType: 'VIRTUAL' as const, // Default type
+    title: `Exam ${result.examId}`,
+    position: 'Unknown Position',
+    topics: [],
+    questionTypes: [],
+    questionCount: 0,
+    duration: 0,
+    status: 'COMPLETED' as const,
+    language: 'Vietnamese',
+    createdAt: result.completedAt,
+    createdBy: 0,
+    result: result
+  }));
+
+  // Load ELO history and exam results on component mount
+  useEffect(() => {
+    loadEloHistory();
+    loadExamResults();
+  }, [loadEloHistory, loadExamResults]);
 
   // Mock CV and application data
   const [uploadedCVs, setUploadedCVs] = useState([
@@ -365,7 +287,7 @@ const UserProfile: React.FC = () => {
       label: 'Bài kiểm tra',
       icon: '📝',
       description: '',
-      badge: upcomingExams.length || undefined,
+      badge: completedExams.length || undefined,
     },
     {
       id: 'cv',
@@ -398,9 +320,9 @@ const UserProfile: React.FC = () => {
       case 'personal':
         return (
           <PersonalInfoTabs
-            user={user as any}
-            eloHistory={eloHistory as any}
-            onUpdateUser={handleUpdateUser as any}
+            user={user}
+            eloHistory={eloHistory}
+            onUpdateUser={handleUpdateUser}
           />
         );
 
@@ -408,16 +330,14 @@ const UserProfile: React.FC = () => {
         return (
           <ExamTabs
             completedExams={completedExams}
-            registeredExams={registeredExams}
-            upcomingExams={upcomingExams}
           />
         );
 
       case 'cv':
         return (
           <CVApplicationTabs
-            uploadedCVs={uploadedCVs as any}
-            appliedCompanies={appliedCompanies as any}
+            uploadedCVs={uploadedCVs}
+            appliedCompanies={appliedCompanies}
             onUploadCV={handleUploadCV}
             onDeleteCV={handleDeleteCV}
             onSetActiveCV={handleSetActiveCV}

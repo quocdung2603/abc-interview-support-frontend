@@ -2,61 +2,14 @@ import { News } from '@abc-interview-support-frontend/types';
 import { TrendNewsCard } from './TrendNewsCard';
 
 interface TrendNewsListProps {
-  news: News[]; // CHỈ NHẬN DANH SÁCH TIN TỨC CÓ NEWSTYPE = 'trend'
-  loading?: boolean;
+  news: News[];
   onNewsClick?: (news: News) => void;
 }
 
 export const TrendNewsList = ({
   news,
-  loading,
   onNewsClick,
 }: TrendNewsListProps) => {
-  // Lọc để đảm bảo chỉ hiển thị tin tức xu hướng
-  const trendNewsOnly = news.filter(
-    (newsItem) => newsItem.newsType === 'trend'
-  );
-
-  // Generate unique keys for skeleton loading
-  const skeletonItems = Array.from(
-    { length: 6 },
-    (_, i) => `skeleton-item-${Date.now()}-${i}`
-  );
-
-  if (loading) {
-    return (
-      <div className="animate-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {skeletonItems.map((skeletonId) => (
-            <div key={skeletonId} className="card-elevated animate-pulse">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-6 w-16 bg-neutral-200 rounded-full"></div>
-                  <div className="h-4 w-20 bg-neutral-200 rounded-md"></div>
-                </div>
-                <div className="h-6 mb-2 bg-neutral-200 rounded-md"></div>
-                <div className="h-6 mb-3 w-3/4 bg-neutral-200 rounded-md"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-neutral-200 rounded-md"></div>
-                  <div className="h-4 bg-neutral-200 rounded-md"></div>
-                  <div className="h-4 w-2/3 bg-neutral-200 rounded-md"></div>
-                </div>
-              </div>
-              <div className="px-6 pb-6">
-                <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-neutral-200 rounded-full"></div>
-                    <div className="h-4 w-24 bg-neutral-200 rounded-md"></div>
-                  </div>
-                  <div className="h-4 w-16 bg-neutral-200 rounded-md"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   if (news.length === 0) {
     return (
@@ -91,9 +44,9 @@ export const TrendNewsList = ({
   return (
     <div className="animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trendNewsOnly.map((newsItem) => (
+        {news.map((newsItem) => (
           <TrendNewsCard
-            key={newsItem.newsId}
+            key={newsItem.id}
             news={newsItem}
             onClick={onNewsClick}
           />
@@ -101,7 +54,7 @@ export const TrendNewsList = ({
       </div>
 
       {/* Load More Button - Placeholder for future pagination */}
-      {trendNewsOnly.length > 0 && (
+      {news.length > 0 && (
         <div className="text-center mt-8">
           <button className="btn-outline">Xem thêm tin tức</button>
         </div>

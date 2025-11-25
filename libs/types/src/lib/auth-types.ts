@@ -37,12 +37,14 @@ export interface AuthUser {
   fullName?: string;
   roleId: string;
   roleName: 'User' | 'Recruiter' | 'Admin';
-  status: 'Pending' | 'Verified' | 'Locked';
+  status: string; // 'Pending' | 'Verified' | 'Locked' | 'Active'
   dateOfBirth?: string;
   address?: string;
   isStudying?: boolean;
   eloScore?: number;
   eloRank?: string;
+  createdAt?: string;
+  verifyToken?: string | null;
 }
 
 export interface AuthTokens {
@@ -123,10 +125,11 @@ export function transformBackendUserToAuthUser(
   };
 
   // Map backend status to frontend format
-  const statusMap: Record<string, 'Pending' | 'Verified' | 'Locked'> = {
+  const statusMap: Record<string, string> = {
     PENDING: 'Pending',
     VERIFIED: 'Verified',
     LOCKED: 'Locked',
+    ACTIVE: 'Active',
   };
 
   return {
@@ -135,11 +138,13 @@ export function transformBackendUserToAuthUser(
     fullName: backendUser.fullName,
     roleId: backendUser.roleId.toString(),
     roleName: roleNameMap[backendUser.roleName] || 'User',
-    status: statusMap[backendUser.status] || 'Pending',
+    status: statusMap[backendUser.status] || backendUser.status, // fallback to original if not mapped
     dateOfBirth: backendUser.dateOfBirth,
     address: backendUser.address,
     isStudying: backendUser.isStudying,
     eloScore: backendUser.eloScore,
     eloRank: backendUser.eloRank,
+    createdAt: backendUser.createdAt,
+    verifyToken: backendUser.verifyToken,
   };
 }

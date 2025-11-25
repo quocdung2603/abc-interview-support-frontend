@@ -1,67 +1,52 @@
 import React from 'react';
-import { News } from '@frontend/types';
+import { News } from '@abc-interview-support-frontend/types';
 
 interface TrendNewsDetailRelatedProps {
   currentNewsId: string;
+  currentNews: News;
+  allNews: News[];
 }
 
 export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
   currentNewsId,
+  currentNews,
+  allNews,
 }) => {
-  // Mock related news data - Trong thực tế sẽ fetch từ API
-  const relatedNews: News[] = [
-    {
-      newsId: 'related-1',
-      userId: 'admin-002',
-      newsType: 'trend',
-      title: 'Kỹ năng phỏng vấn online: Bí quyết thành công trong kỷ nguyên số',
-      content:
-        'Với sự phát triển của công nghệ, phỏng vấn online đang trở thành xu hướng phổ biến. Tìm hiểu những kỹ năng cần thiết để gây ấn tượng với nhà tuyển dụng qua màn hình.',
-      createdAt: new Date('2025-01-13T14:30:00'),
-    },
-    {
-      newsId: 'related-2',
-      userId: 'recruiter-005',
-      newsType: 'trend',
-      title: 'DevOps Engineer: Vị trí hot nhất trong ngành IT 2025',
-      content:
-        'DevOps Engineer đang trở thành một trong những vị trí được săn đón nhất. Khám phá lý do tại sao và những kỹ năng cần thiết để trở thành DevOps Engineer chuyên nghiệp.',
-      createdAt: new Date('2025-01-12T09:15:00'),
-    },
-    {
-      newsId: 'related-3',
-      userId: 'admin-003',
-      newsType: 'trend',
-      title: 'Làm việc từ xa: Xu hướng không thể đảo ngược của tương lai',
-      content:
-        'Remote work không chỉ là xu hướng tạm thời mà đã trở thành một phần thiết yếu của môi trường làm việc hiện đại. Tìm hiểu cách tối ưu hóa hiệu quả làm việc từ xa.',
-      createdAt: new Date('2025-01-11T16:45:00'),
-    },
-  ];
+  // Filter related news: same newsType, published, exclude current news, limit to 3
+  const relatedNews = allNews
+    .filter(newsItem =>
+      newsItem.id.toString() !== currentNewsId && // Exclude current news
+      newsItem.status === 'PUBLISHED' && // Only published news
+      newsItem.newsType === currentNews.newsType // Same news type
+    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort by newest first
+    .slice(0, 3); // Limit to 3 items
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Intl.DateTimeFormat('vi-VN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    }).format(date);
+    }).format(new Date(date));
   };
 
-  const getAuthorName = (userId: string) => {
-    if (userId.startsWith('admin')) return 'Quản trị viên';
-    if (userId.startsWith('recruiter')) return 'Nhà tuyển dụng';
+  const getAuthorName = (userId: number) => {
+    // Mock logic based on userId ranges
+    if (userId <= 10) return 'Quản trị viên';
+    if (userId <= 100) return 'Nhà tuyển dụng';
     return 'Người dùng';
   };
 
-  const getAuthorInitials = (userId: string) => {
-    if (userId.startsWith('admin')) return 'QT';
-    if (userId.startsWith('recruiter')) return 'NTD';
+  const getAuthorInitials = (userId: number) => {
+    // Mock logic based on userId ranges
+    if (userId <= 10) return 'QT';
+    if (userId <= 100) return 'NTD';
     return 'ND';
   };
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to news detail - sẽ được implement sau
-    console.log('Navigate to news:', newsItem.newsId);
+    console.log('Navigate to news:', newsItem.id);
   };
 
   return (
@@ -95,33 +80,12 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {relatedNews.map((newsItem, index) => (
               <button
-                key={newsItem.newsId}
+                key={newsItem.id}
                 className="card-interactive overflow-hidden cursor-pointer animate-fade-in-up text-left w-full"
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleNewsClick(newsItem)}
                 type="button"
               >
-                {/* Card Image Placeholder */}
-                <div className="h-48 bg-gradient-accent-avatar flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-pattern-primary opacity-20"></div>
-                  <div className="relative z-10 text-center text-white p-6">
-                    <svg
-                      className="w-12 h-12 mx-auto mb-3 opacity-80"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L9 11.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <div className="text-caption font-semibold opacity-90">
-                      Xu hướng
-                    </div>
-                  </div>
-                </div>
-
                 {/* Card Content */}
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -131,7 +95,7 @@ export const TrendNewsDetailRelated: React.FC<TrendNewsDetailRelatedProps> = ({
                     </time>
                   </div>
 
-                  <h3 className="text-body-large font-semibold text-neutral-800 line-clamp-2 mb-3 hover:text-accent transition-colors">
+                  <h3 className="text-body-large font-bold text-neutral-800 line-clamp-2 mb-3 hover:text-accent transition-colors">
                     {newsItem.title}
                   </h3>
 

@@ -69,6 +69,13 @@ export class UserService {
     });
     return response.data;
   }
+
+  async getEloHistoryById(userId: string) {
+    const response = await this.apiClient.get(
+      `/users/${userId}/elo-history/all`
+    );
+    return response.data;
+  }
 }
 
 /**

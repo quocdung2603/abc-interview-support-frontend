@@ -38,6 +38,11 @@ export class QuestionService {
     return response.data;
   }
 
+  async getFieldById(fieldId: number) {
+    const response = await this.apiClient.get(`/questions/fields/${fieldId}`);
+    return response.data;
+  }
+
   async getAllTopics() {
     const response = await this.apiClient.get('/questions/topics');
     return response.data;

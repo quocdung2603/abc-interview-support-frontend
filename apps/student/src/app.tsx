@@ -104,7 +104,7 @@ function StudentApp() {
 
   return (
     <Routes>
-      <Route path="/*" element={<Layout />}>
+      <Route path="/" element={<Layout />}>
         {Routing.map((route) => {
           return (
             <Route
