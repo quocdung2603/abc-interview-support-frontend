@@ -1,6 +1,12 @@
 import React from 'react';
+import { Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 
-const MockExamPageHeader: React.FC = () => {
+interface MockExamPageHeaderProps {
+  onCreate?: () => void;
+}
+
+const MockExamPageHeader: React.FC<MockExamPageHeaderProps> = ({ onCreate }) => {
   return (
     <div style={{ marginBottom: 'var(--spacing-xl)' }}>
       <div
@@ -22,6 +28,16 @@ const MockExamPageHeader: React.FC = () => {
             Xem các bài phỏng vấn ảo được tạo bởi doanh nghiệp.
           </div>
         </div>
+        {onCreate && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={onCreate}
+            size="large"
+          >
+            Tạo kỳ thi mới
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -5,18 +5,24 @@ import {
   BaseExamTable,
   BaseExamToolbar,
 } from './components/base-exam';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Level, Topic } from '@abc-interview-support-frontend/types';
 import { Dayjs } from 'dayjs';
-import { examService } from '@abc-interview-support-frontend/services';
+import { examService, questionService } from '@abc-interview-support-frontend/services';
 
 const BaseExamManagement = () => {
   const [dataList, setDataList] = useState<Exam[]>([]);
   const [previewDrawerVisible, setPreviewDrawerVisible] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [levels, setLevels] = useState<Level[]>([]);
   const [filters, setFilters] = useState<{
     searchText?: string;
     status?: string;
     position?: string;
+    fieldId?: number;
+    topicIds?: number[];
+    levelId?: number;
     dateRange?: [Dayjs, Dayjs];
   }>({});
 
@@ -30,6 +36,9 @@ const BaseExamManagement = () => {
     searchText?: string;
     status?: string;
     position?: string;
+    fieldId?: number;
+    topicIds?: number[];
+    levelId?: number;
     dateRange?: [Dayjs, Dayjs];
   }) => {
     setFilters(newFilters);
@@ -50,6 +59,22 @@ const BaseExamManagement = () => {
 
     if (filters.position) {
       filtered = filtered.filter((exam) => exam.position === filters.position);
+    }
+
+    if (filters.fieldId) {
+      filtered = filtered.filter((exam) => exam.fieldId === filters.fieldId);
+    }
+
+    if (filters.topicIds && filters.topicIds.length > 0) {
+      filtered = filtered.filter((exam) => {
+        const examTopicIds = exam.topicIds || [];
+        const filterTopicIds = filters.topicIds || [];
+        return examTopicIds.some(topicId => filterTopicIds.includes(topicId));
+      });
+    }
+
+    if (filters.levelId) {
+      filtered = filtered.filter((exam) => exam.levelId === filters.levelId);
     }
 
     if (filters.dateRange) {
@@ -77,21 +102,51 @@ const BaseExamManagement = () => {
     }
   }
 
+  const loadFilterData = async () => {
+    try {
+      const [fieldsRes, topicsRes, levelsRes] = await Promise.all([
+        questionService.getAllFields(),
+        questionService.getAllTopics(),
+        questionService.getAllLevels()
+      ]);
+      setFields(fieldsRes.content || []);
+      setTopics(topicsRes.content || []);
+      setLevels(levelsRes.content || []);
+    } catch (error) {
+      console.error('Error loading filter data:', error);
+    }
+  }
+
   useEffect(() => {
     getAllExams("VIRTUAL");
+    loadFilterData();
   }, [])
 
   return (
     <div className="container-center animate-fade-in-up">
       <BaseExamPageHeader />
       <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-        <BaseExamToolbar onFilterChange={handleFilterChange} />
-        <BaseExamTable data={filteredExams} onView={handleViewExam} />
+        <BaseExamToolbar
+          onFilterChange={handleFilterChange}
+          fields={fields}
+          topics={topics}
+          levels={levels}
+        />
+        <BaseExamTable
+          data={filteredExams}
+          onView={handleViewExam}
+          fields={fields}
+          topics={topics}
+          levels={levels}
+        />
       </div>
       <BaseExamPreviewDrawer
         visible={previewDrawerVisible}
         onClose={() => setPreviewDrawerVisible(false)}
         data={selectedExam}
+        fields={fields}
+        topics={topics}
+        levels={levels}
       />
     </div>
   );

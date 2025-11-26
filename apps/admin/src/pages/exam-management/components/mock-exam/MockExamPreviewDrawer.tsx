@@ -1,112 +1,82 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Card, Tag, Typography, Tabs, Table } from 'antd';
-import { Exam, Question } from '@abc-interview-support-frontend/types';
+import { Drawer, Card, Tag, Typography, Tabs, Table, Spin } from 'antd';
+import { Exam, Field, Level, Topic } from '@abc-interview-support-frontend/types';
+import { userService, examService } from '@abc-interview-support-frontend/services';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 interface PreviewDrawerProps {
   visible: boolean;
   onClose: () => void;
   data: Exam | null;
+  fields: Field[];
+  topics: Topic[];
+  levels: Level[];
 }
 
 const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
   visible,
   onClose,
   data,
+  fields,
+  topics,
+  levels,
 }) => {
-  console.log('MockExamPreviewDrawer render:', { visible, data });
+  const [examDetails, setExamDetails] = useState<Exam | null>(null);
+  const [creator, setCreator] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-
-  // Mock data for questions in the exam
+  // Load exam details and creator info when drawer opens
   useEffect(() => {
-    if (data && visible) {
-      const mockQuestions: Question[] = Array.from(
-        { length: data.questionCount },
-        (_, i) => ({
-          id: i + 1,
-          userId: 1,
-          topicId: 1,
-          fieldId: 1,
-          levelId: 1,
-          questionTypeId: 1,
-          status: 'APPROVED' as const,
-          questionContent: `Câu hỏi ${i + 1}: ${
-            [
-              'React Hook useEffect được sử dụng để làm gì?',
-              'RESTful API là gì?',
-              'Docker container khác gì với Docker image?',
-              'Algorithm nào có độ phức tạp O(n log n)?',
-            ][i % 4]
-          }`,
-          questionAnswer: 'Đáp án mẫu',
-          language: 'vi',
-          similarityScore: 0,
-          usefulVote: Math.floor(Math.random() * 20),
-          unusefulVote: Math.floor(Math.random() * 5),
-          createdAt: new Date().toISOString(),
-          fieldName: 'Frontend',
-          levelName: 'Junior',
-          topicName: 'React',
-          questionTypeName: 'Multiple Choice',
-        })
-      );
-      setQuestions(mockQuestions);
-    }
+    const loadExamDetails = async () => {
+      if (data && visible) {
+        setLoading(true);
+        try {
+          // Load exam details
+          const examRes = await examService.getExamById(data.id.toString());
+          setExamDetails(examRes);
+
+          // Load creator info
+          const creatorRes = await userService.getUserById(data.createdBy.toString());
+          setCreator(creatorRes);
+        } catch (error) {
+          console.error('Error loading exam details:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadExamDetails();
   }, [data, visible]);
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return 'Bản nháp';
-      case 'ACTIVE':
-        return 'Đang hoạt động';
-      case 'INACTIVE':
-        return 'Không hoạt động';
-      case 'COMPLETED':
-        return 'Đã hoàn thành';
-      default:
-        return status;
-    }
+  const getFieldName = (fieldId: number) => {
+    const field = fields.find(f => f.id === fieldId);
+    return field ? field.name : 'N/A';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return 'orange';
-      case 'ACTIVE':
-        return 'green';
-      case 'INACTIVE':
-        return 'red';
-      case 'COMPLETED':
-        return 'blue';
-      default:
-        return 'default';
-    }
+  const getTopicName = (topicId: number) => {
+    const topic = topics.find(t => t.id === topicId);
+    return topic ? topic.name : 'N/A';
   };
 
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return `${hours} giờ ${mins} phút`;
-    }
-    return `${mins} phút`;
+  const getLevelName = (levelId: number) => {
+    const level = levels.find(l => l.id === levelId);
+    return level ? level.name : 'N/A';
   };
 
   const questionColumns = [
     {
       title: 'STT',
       key: 'index',
-      render: (_: string, record: Question, index: number) => index + 1,
+      render: (_: string, record: any, index: number) => index + 1,
       width: 60,
     },
     {
       title: 'Nội dung câu hỏi',
-      dataIndex: 'questionContent',
-      key: 'questionContent',
+      dataIndex: 'questionText',
+      key: 'questionText',
       render: (content: string) => (
         <div
           style={{
@@ -121,19 +91,22 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
       ),
     },
     {
-      title: 'Lượt vote',
-      key: 'votes',
-      render: (record: Question) => (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ color: '#52c41a', fontWeight: 'bold' }}>
-            +{record.usefulVote}
-          </div>
-          <div style={{ color: '#ff4d4f', fontSize: '12px' }}>
-            -{record.unusefulVote}
-          </div>
-        </div>
-      ),
-      width: 100,
+      title: 'Lĩnh vực',
+      dataIndex: 'fieldId',
+      key: 'fieldId',
+      render: (fieldId: number) => getFieldName(fieldId),
+    },
+    {
+      title: 'Chủ đề',
+      dataIndex: 'topicId',
+      key: 'topicId',
+      render: (topicId: number) => getTopicName(topicId),
+    },
+    {
+      title: 'Cấp độ',
+      dataIndex: 'levelId',
+      key: 'levelId',
+      render: (levelId: number) => getLevelName(levelId),
     },
   ];
 
@@ -145,115 +118,82 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
       onClose={onClose}
       style={{ zIndex: 1000 }}
     >
-      {data ? (
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>Đang tải...</div>
+        </div>
+      ) : examDetails ? (
         <Tabs defaultActiveKey="1">
-          <TabPane tab="Thông tin chung" key="1">
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-            >
-              {/* Header */}
-              <div>
-                <Title level={3} style={{ marginBottom: '8px' }}>
-                  {data.title}
-                </Title>
-                <div
-                  style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}
-                >
-                  <Tag color={getStatusColor(data.status)}>
-                    {getStatusText(data.status)}
-                  </Tag>
-                </div>
-              </div>
-
-              {/* Basic Information */}
-              <Card title="Thông tin cơ bản" size="small">
+          <TabPane tab="Thông tin bài kiểm tra" key="1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Creator Info */}
+              <Card title="Thông tin người tạo" size="small">
                 <div style={{ display: 'grid', gap: '12px' }}>
                   <div>
-                    <Text strong>ID bài kiểm tra:</Text> {data.id}
-                  </div>
-                  {data.position && (
-                    <div>
-                      <Text strong>Vị trí:</Text> {data.position}
-                    </div>
-                  )}
-                  <div>
-                    <Text strong>Số câu hỏi:</Text> {data.questionCount}
+                    <Text strong>Tên:</Text> {creator?.fullName || 'N/A'}
                   </div>
                   <div>
-                    <Text strong>Thời gian làm bài:</Text>{' '}
-                    {formatDuration(data.duration)}
+                    <Text strong>Email:</Text> {creator?.email || 'N/A'}
                   </div>
                   <div>
-                    <Text strong>Ngôn ngữ:</Text> {data.language}
-                  </div>
-                  <div>
-                    <Text strong>Trạng thái:</Text>{' '}
-                    <Tag color={getStatusColor(data.status)}>
-                      {getStatusText(data.status)}
-                    </Tag>
+                    <Text strong>Vai trò:</Text> {creator?.role || 'N/A'}
                   </div>
                 </div>
               </Card>
 
-
-
-              {/* Topics and Question Types */}
-              <Card title="Cấu trúc đề thi" size="small">
+              {/* Exam Info */}
+              <Card title="Thông tin bài kiểm tra" size="small">
                 <div style={{ display: 'grid', gap: '12px' }}>
                   <div>
-                    <Text strong>Chủ đề:</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      {data.topics && data.topics.length > 0 ? (
-                        <Text>{data.topics.join(', ')}</Text>
-                      ) : (
-                        <Text type="secondary">Chưa có thông tin</Text>
-                      )}
-                    </div>
+                    <Text strong>Tiêu đề:</Text> {examDetails.title}
                   </div>
                   <div>
-                    <Text strong>Loại câu hỏi:</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      {data.questionTypes && data.questionTypes.length > 0 ? (
-                        <Text>{data.questionTypes.join(', ')}</Text>
-                      ) : (
-                        <Text type="secondary">Chưa có thông tin</Text>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Metadata */}
-              <Card title="Thông tin khác" size="small">
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div>
-                    <Text strong>Người tạo:</Text> {data.createdBy || 'N/A'}
+                    <Text strong>Vị trí:</Text> {examDetails.position}
                   </div>
                   <div>
-                    <Text strong>Ngày tạo:</Text>{' '}
-                    {data.createdAt
-                      ? new Date(data.createdAt).toLocaleDateString('vi-VN', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : 'N/A'}
+                    <Text strong>Lĩnh vực:</Text> {getFieldName(examDetails.fieldId)}
+                  </div>
+                  <div>
+                    <Text strong>Chủ đề:</Text>{' '}
+                    {examDetails.topicIds && examDetails.topicIds.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                        {examDetails.topicIds.map(topicId => (
+                          <Tag key={topicId} color="blue">
+                            {getTopicName(topicId)}
+                          </Tag>
+                        ))}
+                      </div>
+                    ) : 'N/A'}
+                  </div>
+                  <div>
+                    <Text strong>Cấp độ:</Text> {getLevelName(examDetails.levelId)}
+                  </div>
+                  <div>
+                    <Text strong>Thời gian:</Text> {examDetails.duration} phút
+                  </div>
+                  <div>
+                    <Text strong>Số câu hỏi:</Text> {examDetails.questionCount}
+                  </div>
+                  <div>
+                    <Text strong>Trạng thái:</Text> {examDetails.status}
+                  </div>
+                  <div>
+                    <Text strong>Ngày tạo:</Text> {new Date(examDetails.createdAt).toLocaleDateString('vi-VN')}
                   </div>
                 </div>
               </Card>
             </div>
           </TabPane>
 
-          <TabPane tab={`Danh sách câu hỏi (${questions.length})`} key="2">
+          <TabPane tab={`Danh sách câu hỏi (${examDetails.questions?.length || 0})`} key="2">
             <Card title="Danh sách câu hỏi trong bài kiểm tra" size="small">
               <Table
                 columns={questionColumns}
-                dataSource={questions}
+                dataSource={examDetails.questions || []}
                 rowKey="id"
                 pagination={{
-                  total: questions.length,
+                  total: examDetails.questions?.length || 0,
                   pageSize: 10,
                   showSizeChanger: true,
                   showTotal: (total, range) =>
@@ -261,6 +201,14 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
                 }}
                 size="small"
               />
+            </Card>
+          </TabPane>
+
+          <TabPane tab="Danh sách người tham gia" key="3">
+            <Card title="Danh sách người tham gia" size="small">
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Text type="secondary">Chức năng đang được phát triển</Text>
+              </div>
             </Card>
           </TabPane>
         </Tabs>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Question, Answer } from '../../../../../../../libs/types/src/index';
+import { Question, Answer } from '@abc-interview-support-frontend/types';
 
 interface SingleChoiceQuestionProps {
   question: Question;
@@ -30,21 +30,21 @@ const SingleChoiceQuestion: React.FC<SingleChoiceQuestionProps> = ({
         <div className="space-y-3">
           {answers.map((answer) => (
             <label
-              key={answer.answerId}
+              key={answer.answerId.toString()}
               className="flex items-start cursor-pointer p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
               style={{
                 borderColor:
-                  selectedAnswer === answer.answerId ? '#0ea5e9' : '#e2e8f0',
+                  selectedAnswer === answer.answerId.toString() ? '#0ea5e9' : '#e2e8f0',
                 backgroundColor:
-                  selectedAnswer === answer.answerId ? '#f0f9ff' : 'white',
+                  selectedAnswer === answer.answerId.toString() ? '#f0f9ff' : 'white',
               }}
             >
               <input
                 type="radio"
-                name={`question-${question.questionId}`}
-                value={answer.answerId}
-                checked={selectedAnswer === answer.answerId}
-                onChange={() => onAnswerChange(answer.answerId)}
+                name={`question-${question.id.toString()}`}
+                value={answer.answerId.toString()}
+                checked={selectedAnswer === answer.answerId.toString()}
+                onChange={() => onAnswerChange(answer.answerId.toString())}
                 style={radioStyles}
                 className="mt-1 mr-3"
               />

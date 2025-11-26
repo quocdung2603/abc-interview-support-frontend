@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Question, Answer } from '../../../../../../../libs/types/src/index';
+import { Question, Answer } from '@abc-interview-support-frontend/types';
 
 interface FillInTheBlankQuestionProps {
   question: Question;
@@ -65,7 +65,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
         blankIndex++;
         return (
           <select
-            key={`${question.questionId}-blank-${currentBlankIndex}`}
+            key={`${question.id}-blank-${currentBlankIndex}`}
             value={selectedValues[currentBlankIndex] || ''}
             onChange={(e) =>
               handleSelectChange(currentBlankIndex, e.target.value)
@@ -82,7 +82,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
           </select>
         );
       }
-      return <span key={`${question.questionId}-text-${index}`}>{part}</span>;
+      return <span key={`${question.id}-text-${index}`}>{part}</span>;
     });
   };
 
@@ -115,13 +115,13 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
             </div>
             <div>
               <label
-                htmlFor={`answer-${question.questionId}`}
+                htmlFor={`answer-${question.id}`}
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Đáp án của bạn:
               </label>
               <select
-                id={`answer-${question.questionId}`}
+                id={`answer-${question.id}`}
                 value={selectedValues[0] || ''}
                 onChange={(e) => handleSelectChange(0, e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
@@ -166,7 +166,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
                 (value, index) =>
                   value && (
                     <span
-                      key={`${question.questionId}-selected-${index}-${value}`}
+                      key={`${question.id}-selected-${index}-${value}`}
                       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
                     >
                       Chỗ trống {index + 1}: {value}

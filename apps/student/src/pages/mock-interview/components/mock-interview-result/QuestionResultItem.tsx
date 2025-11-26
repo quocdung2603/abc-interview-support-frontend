@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Question, Answer } from '../../../../../../../libs/types/src/index';
+import { Question, Answer } from '@abc-interview-support-frontend/types';
 
 interface QuestionResultItemProps {
   question: Question;
@@ -18,8 +18,8 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const getQuestionTypeLabel = (typeId: string) => {
-    switch (typeId) {
+  const getQuestionTypeLabel = (typeName: string) => {
+    switch (typeName) {
       case 'SingleChoice':
         return 'Trắc nghiệm 1 đáp án';
       case 'MultipleChoice':
@@ -29,7 +29,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
       case 'OpenEnded':
         return 'Tự luận';
       default:
-        return typeId;
+        return typeName;
     }
   };
 
@@ -73,12 +73,12 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
     };
 
     if (
-      question.questionTypeId === 'MultipleChoice' ||
-      question.questionTypeId === 'FillInTheBlank'
+      question.questionTypeName === 'MultipleChoice' ||
+      question.questionTypeName === 'FillInTheBlank'
     ) {
       const userAnswers = userAnswer.split('|');
       const answerContents = userAnswers.map((answerId) => {
-        const answer = answers.find((a) => a.answerId === answerId);
+        const answer = answers.find((a) => a.answerId.toString() === answerId);
         return answer?.answerContent || answerId;
       });
 
@@ -88,7 +88,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
           <div style={{ marginTop: '0.5rem' }}>
             {answerContents.map((content, index) => (
               <span
-                key={`${question.questionId}-answer-${index}-${content}`}
+                key={`${question.id}-answer-${index}-${content}`}
                 style={{
                   display: 'inline-block',
                   background: 'rgba(255, 255, 255, 0.3)',
@@ -108,7 +108,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
     }
 
     // Single choice or open ended
-    const answer = answers.find((a) => a.answerId === userAnswer);
+    const answer = answers.find((a) => a.answerId.toString() === userAnswer);
     const displayAnswer = answer?.answerContent || userAnswer;
 
     return (
@@ -231,7 +231,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
             }}
           >
             <span className="badge-secondary" style={{ fontSize: '0.75rem' }}>
-              {getQuestionTypeLabel(question.questionTypeId)}
+              {getQuestionTypeLabel(question.questionTypeName)}
             </span>
             <div
               style={{

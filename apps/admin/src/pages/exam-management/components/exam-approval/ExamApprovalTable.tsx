@@ -18,9 +18,9 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
 }) => {
   const getExamTypeText = (examType: string) => {
     switch (examType) {
-      case 'Virtual':
+      case 'VIRTUAL':
         return 'Bài kiểm tra ảo';
-      case 'Recruiter':
+      case 'RECRUITER':
         return 'Bài kiểm tra nhà tuyển dụng';
       default:
         return examType;
@@ -86,7 +86,7 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
       dataIndex: 'examType',
       key: 'examType',
       render: (examType: string) => (
-        <Tag color={examType === 'Virtual' ? 'blue' : 'purple'}>
+        <Tag color={examType === 'VIRTUAL' ? 'blue' : 'purple'}>
           {getExamTypeText(examType)}
         </Tag>
       ),
@@ -157,7 +157,7 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
     <Table
       columns={columns}
       dataSource={data}
-      rowKey="examId"
+      rowKey="id"
       pagination={{
         total: data.length,
         pageSize: 10,

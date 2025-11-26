@@ -13,11 +13,8 @@ interface CreateFormFields extends Exam {
   endTime: string;
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
-  questionBank?: any; // File upload for CSV
+  questionBank?: File | null; // File upload for CSV
   selectedQuestions: number[]; // Add selected questions
-  // Override to use correct field names
-  topics?: number[];
-  questionTypes?: number[];
 }
 
 interface BasicInfoStepProps {

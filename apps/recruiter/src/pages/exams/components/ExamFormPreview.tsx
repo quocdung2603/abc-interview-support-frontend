@@ -4,14 +4,29 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Exam, QuestionType } from '@abc-interview-support-frontend/types';
 import { examService } from '@abc-interview-support-frontend/services';
 
-// Interface for exam detail with questions
-interface ExamDetail extends Exam {
+// Interface for exam detail with questions from API response
+interface ExamDetail {
+  id: number;
+  userId: number;
+  examType: 'VIRTUAL' | 'RECRUITER';
+  title: string;
+  position: string;
+  fieldId: number;
+  levelId: number;
+  topicIds: number[];
+  questionTypeIds: number[];
+  questionCount: number;
+  duration: number;
+  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
+  language: string;
+  createdAt: string;
+  createdBy: number;
   questions: Array<{
     id: number;
     field: string;
-    topics: string[];
+    topicId: number;
     level: string;
-    questionType: string;
+    questionTypeId: number;
     questionText: string;
     questionAnswer: string;
   }>;
@@ -106,17 +121,18 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     },
     {
       title: 'Chủ đề',
-      dataIndex: 'topics',
-      key: 'topics',
-      render: (topics: string[]) => (
-        <div>
-          {topics.map((topic) => (
-            <Tag key={topic} color="blue" style={{ marginBottom: '2px' }}>
-              {topic}
-            </Tag>
-          ))}
-        </div>
-      ),
+      dataIndex: 'topicId',
+      key: 'topicId',
+      render: (topicId: number) => {
+        const topicMap: Record<number, string> = {
+          1: 'JavaScript',
+          2: 'React',
+          3: 'Node.js',
+          4: 'Database',
+          5: 'Algorithms',
+        };
+        return <Tag color="blue">{topicMap[topicId] || `Topic ${topicId}`}</Tag>;
+      },
     },
     {
       title: 'Mức độ',
@@ -125,8 +141,12 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     },
     {
       title: 'Loại',
-      dataIndex: 'questionType',
-      key: 'questionType',
+      dataIndex: 'questionTypeId',
+      key: 'questionTypeId',
+      render: (questionTypeId: number) => {
+        const questionType = questionTypes.find(qt => qt.id === questionTypeId);
+        return questionType ? questionType.name : `Type ${questionTypeId}`;
+      },
     },
   ];
 
@@ -190,11 +210,20 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
                 <strong>Chủ đề:</strong>{' '}
                 {examDetail.questions && examDetail.questions.length > 0 ? (
                   <div>
-                    {Array.from(new Set(examDetail.questions.flatMap(q => q.topics))).map((topic) => (
-                      <Tag key={topic} color="blue">
-                        {topic}
-                      </Tag>
-                    ))}
+                    {Array.from(new Set(examDetail.questions.map(q => q.topicId))).map((topicId) => {
+                      const topicMap: Record<number, string> = {
+                        1: 'JavaScript',
+                        2: 'React',
+                        3: 'Node.js',
+                        4: 'Database',
+                        5: 'Algorithms',
+                      };
+                      return (
+                        <Tag key={topicId} color="blue">
+                          {topicMap[topicId] || `Topic ${topicId}`}
+                        </Tag>
+                      );
+                    })}
                   </div>
                 ) : (
                   'Chưa có chủ đề'
@@ -204,11 +233,11 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
                 <strong>Loại câu hỏi:</strong>{' '}
                 {examDetail.questions && examDetail.questions.length > 0 ? (
                   <div>
-                    {Array.from(new Set(examDetail.questions.map(q => q.questionType))).map((type) => {
-                      const questionType = questionTypes.find(qt => qt.id.toString() === type);
+                    {Array.from(new Set(examDetail.questions.map(q => q.questionTypeId))).map((typeId) => {
+                      const questionType = questionTypes.find(qt => qt.id === typeId);
                       return (
-                        <Tag key={type} color="green">
-                          {questionType ? questionType.name : type}
+                        <Tag key={typeId} color="green">
+                          {questionType ? questionType.name : `Type ${typeId}`}
                         </Tag>
                       );
                     })}

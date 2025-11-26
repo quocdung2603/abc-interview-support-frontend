@@ -31,23 +31,21 @@ const MockInterviewDetail = () => {
 
   // Mock data for development
   const mockExam: Exam = {
-    examId: examId || 'mock-exam-1',
-    examType: 'Virtual',
+    id: 1,
+    userId: 1,
+    examType: 'RECRUITER',
     title: 'Bài kiểm tra React Developer - Level Junior',
     position: 'React Developer',
-    topics: JSON.stringify(['React', 'JavaScript', 'HTML/CSS']),
-    questionTypes: JSON.stringify([
-      'SingleChoice',
-      'MultipleChoice',
-      'FillInTheBlank',
-      'OpenEnded',
-    ]),
+    fieldId: 1,
+    levelId: 1,
+    topicIds: [1, 2, 3], // React, JavaScript, HTML/CSS
+    questionTypeIds: [1, 2, 3, 4], // SingleChoice, MultipleChoice, FillInTheBlank, OpenEnded
     questionCount: 10,
     duration: 60, // 60 minutes
-    status: 'Active',
+    status: 'ACTIVE',
     language: 'Vietnamese',
-    createdAt: new Date(),
-    createdBy: 'system',
+    createdAt: new Date().toISOString(),
+    createdBy: '1',
   };
 
   const mockQuestions: Question[] = [

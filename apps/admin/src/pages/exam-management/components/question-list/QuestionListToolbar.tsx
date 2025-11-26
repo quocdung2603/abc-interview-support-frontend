@@ -9,12 +9,12 @@ const { Search } = Input;
 interface QuestionListToolbarProps {
   searchText: string;
   onSearchChange: (value: string) => void;
-  fieldFilter: string;
-  onFieldFilterChange: (value: string) => void;
-  topicFilter: string;
-  onTopicFilterChange: (value: string) => void;
-  levelFilter: string;
-  onLevelFilterChange: (value: string) => void;
+  fieldFilter: number | undefined;
+  onFieldFilterChange: (value: number | undefined) => void;
+  topicFilter: number | undefined;
+  onTopicFilterChange: (value: number | undefined) => void;
+  levelFilter: number | undefined;
+  onLevelFilterChange: (value: number | undefined) => void;
   statusFilter: string;
   onStatusFilterChange: (value: string) => void;
   fields: Field[];
@@ -38,7 +38,7 @@ const QuestionListToolbar: React.FC<QuestionListToolbarProps> = ({
   levels,
 }) => {
   const filteredTopics = topics.filter(
-    (topic) => fieldFilter === 'all' || topic.fieldId === fieldFilter
+    (topic) => !fieldFilter || topic.fieldId === fieldFilter
   );
 
   return (
@@ -70,7 +70,6 @@ const QuestionListToolbar: React.FC<QuestionListToolbarProps> = ({
           style={{ width: 120 }}
           allowClear
         >
-          <Option value="all">Tất cả</Option>
           {fields.map((field) => (
             <Option key={field.id} value={field.id}>
               {field.name}
@@ -89,9 +88,8 @@ const QuestionListToolbar: React.FC<QuestionListToolbarProps> = ({
           onChange={onTopicFilterChange}
           style={{ width: 120 }}
           allowClear
-          disabled={fieldFilter === 'all'}
+          disabled={!fieldFilter}
         >
-          <Option value="all">Tất cả</Option>
           {filteredTopics.map((topic) => (
             <Option key={topic.id} value={topic.id}>
               {topic.name}
@@ -111,7 +109,6 @@ const QuestionListToolbar: React.FC<QuestionListToolbarProps> = ({
           style={{ width: 120 }}
           allowClear
         >
-          <Option value="all">Tất cả</Option>
           {levels.map((level) => (
             <Option key={level.id} value={level.id}>
               {level.name}
@@ -132,9 +129,9 @@ const QuestionListToolbar: React.FC<QuestionListToolbarProps> = ({
           allowClear
         >
           <Option value="all">Tất cả</Option>
-          <Option value="Approved">Đã duyệt</Option>
-          <Option value="Pending">Chờ duyệt</Option>
-          <Option value="Rejected">Đã từ chối</Option>
+          <Option value="APPROVED">Đã duyệt</Option>
+          <Option value="PENDING">Chờ duyệt</Option>
+          <Option value="REJECTED">Đã từ chối</Option>
         </Select>
       </div>
     </div>

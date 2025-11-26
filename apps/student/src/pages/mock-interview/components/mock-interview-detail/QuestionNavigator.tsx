@@ -1,5 +1,5 @@
 import React from 'react';
-import { Question } from '../../../../../../../libs/types/src/index';
+import { Question } from '@abc-interview-support-frontend/types';
 
 interface QuestionNavigatorProps {
   questions: Question[];
@@ -20,9 +20,9 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 }) => {
   const getQuestionStatus = (question: Question, index: number) => {
     const hasAnswer =
-      userAnswers[question.questionId] !== undefined &&
-      userAnswers[question.questionId] !== '';
-    const isMarked = markedQuestions.has(question.questionId);
+      userAnswers[question.id.toString()] !== undefined &&
+      userAnswers[question.id.toString()] !== '';
+    const isMarked = markedQuestions.has(question.id.toString());
     const isCurrent = index === currentQuestionIndex;
 
     if (isCurrent) {
@@ -76,9 +76,9 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 
     questions.forEach((question) => {
       const hasAnswer =
-        userAnswers[question.questionId] !== undefined &&
-        userAnswers[question.questionId] !== '';
-      const isMarked = markedQuestions.has(question.questionId);
+        userAnswers[question.id.toString()] !== undefined &&
+        userAnswers[question.id.toString()] !== '';
+      const isMarked = markedQuestions.has(question.id.toString());
 
       if (hasAnswer) answered++;
       if (isMarked) marked++;
@@ -141,10 +141,10 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
       <div className="grid grid-cols-5 gap-2 max-h-80 overflow-y-auto">
         {questions.map((question, index) => {
           const status = getQuestionStatus(question, index);
-          const isMarked = markedQuestions.has(question.questionId);
+          const isMarked = markedQuestions.has(question.id.toString());
 
           return (
-            <div key={question.questionId} className="relative">
+            <div key={question.id.toString()} className="relative">
               <button
                 onClick={() => onQuestionSelect(index)}
                 className="w-full h-10 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -163,7 +163,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onToggleMark(question.questionId);
+                    onToggleMark(question.id.toString());
                   }}
                   className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600 transition-colors"
                   title="Bỏ đánh dấu"

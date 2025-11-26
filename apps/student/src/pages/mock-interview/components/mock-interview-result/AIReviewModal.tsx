@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
-import { Question, Answer } from '../../../../../../../libs/types/src/index';
+import { Question, Answer } from '@abc-interview-support-frontend/types';
 
 interface AIReviewModalProps {
   visible: boolean;
@@ -43,21 +43,21 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
 
     // Analyze mistakes
     const incorrectQuestions = questions.filter((q) => {
-      const userAnswer = userAnswers[q.questionId];
-      const questionAnswers = answers[q.questionId] || [];
+      const userAnswer = userAnswers[q.id];
+      const questionAnswers = answers[q.id] || [];
 
       if (!userAnswer) return true; // No answer = incorrect
 
-      if (q.questionTypeId === 'SingleChoice') {
+      if (q.questionTypeName === 'SingleChoice') {
         const correctAnswer = questionAnswers.find((a) => a.isCorrect);
-        return userAnswer !== correctAnswer?.answerId;
-      } else if (q.questionTypeId === 'MultipleChoice') {
+        return userAnswer !== correctAnswer?.answerId.toString();
+      } else if (q.questionTypeName === 'MultipleChoice') {
         const correctAnswerIds = questionAnswers
           .filter((a) => a.isCorrect)
-          .map((a) => a.answerId);
+          .map((a) => a.answerId.toString());
         const userAnswerIds = userAnswer.split('|');
         return !arraysEqual(correctAnswerIds.sort(), userAnswerIds.sort());
-      } else if (q.questionTypeId === 'FillInTheBlank') {
+      } else if (q.questionTypeName === 'FillInTheBlank') {
         const correctAnswers = questionAnswers
           .filter((a) => a.isCorrect)
           .map((a) => a.answerContent);
@@ -73,20 +73,21 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
 
     // Count question types
     const questionTypes = questions.reduce((acc, q) => {
-      acc[q.questionTypeId] = (acc[q.questionTypeId] || 0) + 1;
+      acc[q.questionTypeName] = (acc[q.questionTypeName] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     // Analyze topic performance
     const topicAnalysis = questions.reduce((acc, q) => {
       const isCorrect = !incorrectQuestions.some(
-        (iq) => iq.questionId === q.questionId
+        (iq) => iq.id === q.id
       );
-      if (!acc[q.topicId]) {
-        acc[q.topicId] = { correct: 0, total: 0 };
+      const topicKey = q.topicName || q.topicId.toString();
+      if (!acc[topicKey]) {
+        acc[topicKey] = { correct: 0, total: 0 };
       }
-      acc[q.topicId].total++;
-      if (isCorrect) acc[q.topicId].correct++;
+      acc[topicKey].total++;
+      if (isCorrect) acc[topicKey].correct++;
       return acc;
     }, {} as Record<string, { correct: number; total: number }>);
 
@@ -127,8 +128,8 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
 
       const correctCount = questions.filter(
         (q) =>
-          q.questionTypeId === type &&
-          !incorrectQuestions.some((iq) => iq.questionId === q.questionId)
+          q.questionTypeName === type &&
+          !incorrectQuestions.some((iq) => iq.id === q.id)
       ).length;
       review += `- ${typeLabel}: ${correctCount}/${count} câu đúng\n`;
     });
@@ -168,11 +169,10 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
     review += `• Không bỏ trống câu nào, hãy đoán nếu không chắc chắn\n`;
     review += `• Thực hành thường xuyên để cải thiện kỹ năng\n\n`;
 
-    review += `💡 **Kết luận:** ${
-      percentage >= 70
-        ? 'Bạn đã có nền tảng tốt! Hãy tiếp tục duy trì và hoàn thiện thêm.'
-        : 'Đây là cơ hội tuyệt vời để học hỏi và phát triển. Hãy tiếp tục cố gắng!'
-    }`;
+    review += `💡 **Kết luận:** ${percentage >= 70
+      ? 'Bạn đã có nền tảng tốt! Hãy tiếp tục duy trì và hoàn thiện thêm.'
+      : 'Đây là cơ hội tuyệt vời để học hỏi và phát triển. Hãy tiếp tục cố gắng!'
+      }`;
 
     setAiReview(review);
     setLoading(false);

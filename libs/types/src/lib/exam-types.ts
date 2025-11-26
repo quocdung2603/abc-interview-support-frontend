@@ -6,21 +6,27 @@ export interface Exam {
   examType: 'VIRTUAL' | 'RECRUITER';
   title: string;
   position: string;
-  topics: number[]; // Array of topic IDs
-  questionTypes: number[]; // Array of question type IDs
+  fieldId: number;
+  levelId: number;
+  topicIds: number[]; // Array of topic IDs
+  questionTypeIds: number[]; // Array of question type IDs
   questionCount: number;
   duration: number;
   status: 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
   language: string;
   createdAt: string;
   createdBy: number;
+  questions?: ExamQuestion[];
 }
 
 export interface ExamQuestion {
-  examQuestionId: string;
-  examId: string;
-  questionId: string;
-  orderNumber: number;
+  id: string;
+  fieldId: number;
+  topicId: number;
+  levelId: number;
+  questionTypeId: number;
+  questionText: string;
+  questionAnswer: string;
 }
 
 export interface ExamResult {

@@ -1,14 +1,31 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Level, Topic } from '@abc-interview-support-frontend/types';
 
 interface BaseExamTableProps {
   data: Exam[];
   onView: (exam: Exam) => void;
+  fields: Field[];
+  topics: Topic[];
+  levels: Level[];
 }
 
-const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
+const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, topics, levels }) => {
+  const getFieldName = (fieldId: number) => {
+    const field = fields.find(f => f.id === fieldId);
+    return field ? field.name : 'N/A';
+  };
+
+  const getTopicName = (topicId: number) => {
+    const topic = topics.find(t => t.id === topicId);
+    return topic ? topic.name : 'N/A';
+  };
+
+  const getLevelName = (levelId: number) => {
+    const level = levels.find(l => l.id === levelId);
+    return level ? level.name : 'N/A';
+  };
   const getStatusText = (status: string) => {
     switch (status) {
       case 'DRAFT':
@@ -55,11 +72,10 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
       title: 'Tiêu đề bài kiểm tra',
       dataIndex: 'title',
       key: 'title',
-      width: '25%',
       render: (title: string) => (
         <div
           style={{
-            maxWidth: '300px',
+            maxWidth: '200px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -76,16 +92,30 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView }) => {
       render: (position: string) => position || 'N/A',
     },
     {
-      title: 'Số câu hỏi',
-      dataIndex: 'questionCount',
-      key: 'questionCount',
-      render: (count: number) => count,
+      title: 'Lĩnh vực',
+      dataIndex: 'fieldId',
+      key: 'fieldId',
+      render: (fieldId: number) => getFieldName(fieldId),
     },
     {
-      title: 'Thời gian',
-      dataIndex: 'duration',
-      key: 'duration',
-      render: (duration: number) => formatDuration(duration),
+      title: 'Chủ đề',
+      dataIndex: 'topicIds',
+      key: 'topicIds',
+      render: (topicIds: number[]) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+          {topicIds?.map(topicId => (
+            <Tag key={topicId} color="blue">
+              {getTopicName(topicId)}
+            </Tag>
+          )) || 'N/A'}
+        </div>
+      ),
+    },
+    {
+      title: 'Cấp độ',
+      dataIndex: 'levelId',
+      key: 'levelId',
+      render: (levelId: number) => getLevelName(levelId),
     },
     {
       title: 'Trạng thái',

@@ -51,10 +51,10 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
     },
     {
       title: 'Chủ đề',
-      dataIndex: 'topics',
-      key: 'topics',
-      render: (topics: number[]) => {
-        const topicNames = topics.map(id => {
+      dataIndex: 'topicIds',
+      key: 'topicIds',
+      render: (topicIds: number[]) => {
+        const topicNames = topicIds.map(id => {
           const topicMap: Record<number, string> = {
             1: 'JavaScript',
             2: 'React',

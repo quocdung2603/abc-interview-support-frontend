@@ -24,6 +24,9 @@ interface CreateFormFields extends Exam {
     hard: boolean;
   };
   selectedQuestions: number[]; // Add selected questions
+  // Override to use correct field names
+  topics?: number[];
+  questionTypes?: number[];
 }
 
 const ExamsPage: React.FC = () => {
@@ -121,8 +124,8 @@ const ExamsPage: React.FC = () => {
           examType: "RECRUITER",
           title: payload.title || '',
           position: payload.position || '',
-          topics: payload.topics || [], // Already an array of numbers
-          questionTypes: payload.questionTypes || [], // Already an array of numbers
+          topics: payload.topicIds || [], // Already an array of numbers
+          questionTypes: payload.questionTypeIds || [], // Already an array of numbers
           questionCount: payload.questionCount,
           duration: payload.duration,
           userId: user.userId
@@ -176,8 +179,8 @@ const ExamsPage: React.FC = () => {
           examType: "VIRTUAL", // Different from create
           title: payload.title || '',
           position: payload.position || '',
-          topics: payload.topics || [],
-          questionTypes: payload.questionTypes || [],
+          topics: payload.topicIds || [],
+          questionTypes: payload.questionTypeIds || [],
           questionCount: payload.questionCount,
           duration: payload.duration,
           language: "English" // Different from create

@@ -7,6 +7,7 @@ import {
   Level,
   QuestionType,
 } from '@abc-interview-support-frontend/types';
+import { questionService } from '@abc-interview-support-frontend/services';
 import QuestionListToolbar from './QuestionListToolbar';
 import QuestionListTable from './QuestionListTable';
 
@@ -14,11 +15,13 @@ interface QuestionListDrawerProps {
   visible: boolean;
   onClose: () => void;
   onAddQuestion: (question: Question) => void;
-  selectedQuestionIds: string[];
+  selectedQuestionIds: number[];
   fields: Field[];
   topics: Topic[];
   levels: Level[];
   questionTypes: QuestionType[];
+  mode?: 'add' | 'compare'; // add for exam creation, compare for approval
+  onCompareQuestions?: (question1: Question, question2: Question) => void;
 }
 
 const QuestionListDrawer: React.FC<QuestionListDrawerProps> = ({
@@ -30,77 +33,50 @@ const QuestionListDrawer: React.FC<QuestionListDrawerProps> = ({
   topics,
   levels,
   questionTypes,
+  mode = 'add',
+  onCompareQuestions,
 }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [fieldFilter, setFieldFilter] = useState<string>('all');
-  const [topicFilter, setTopicFilter] = useState<string>('all');
-  const [levelFilter, setLevelFilter] = useState<string>('all');
+  const [fieldFilter, setFieldFilter] = useState<number | undefined>();
+  const [topicFilter, setTopicFilter] = useState<number | undefined>();
+  const [levelFilter, setLevelFilter] = useState<number | undefined>();
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Mock data for questions
+  // Load questions from API
   useEffect(() => {
-    if (visible) {
-      const mockQuestions: Question[] = Array.from({ length: 50 }, (_, i) => {
-        const questionTitles = [
-          'React Hook useEffect được sử dụng để làm gì?',
-          'Trong JavaScript, phương thức nào được sử dụng để thêm phần tử vào cuối mảng?',
-          'RESTful API là gì?',
-          'Trong CSS, thuộc tính nào được sử dụng để tạo khoảng cách giữa các phần tử?',
-          'Git command nào được sử dụng để tạo một commit mới?',
-          'Trong SQL, mệnh đề nào được sử dụng để lọc dữ liệu?',
-          'Docker container khác gì với Docker image?',
-          'Trong React, lifecycle method nào được gọi sau khi component được render lần đầu?',
-          'Algorithm nào có độ phức tạp thời gian O(n log n)?',
-          'Trong HTML, thẻ nào được sử dụng để tạo hyperlink?',
-        ];
+    const loadQuestions = async () => {
+      if (visible) {
+        setLoading(true);
+        try {
+          const response = await questionService.getAllQuestions();
+          // Assuming response.data is an array of questions or response.data.data
+          const questionsData = response.data?.data || response.data || [];
+          setQuestions(questionsData);
+        } catch (error) {
+          console.error('Failed to load questions:', error);
+          message.error('Không thể tải danh sách câu hỏi');
+          setQuestions([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
 
-        const field = fields[Math.floor(Math.random() * fields.length)];
-        const topic = topics.filter((t) => t.fieldId === field.fieldId)[
-          Math.floor(
-            Math.random() *
-              topics.filter((t) => t.fieldId === field.fieldId).length
-          )
-        ];
-        const level = levels[Math.floor(Math.random() * levels.length)];
-
-        return {
-          questionId: String(i + 1),
-          userId: String(Math.floor(Math.random() * 10) + 1),
-          topicId: topic?.topicId || '1',
-          fieldId: field.fieldId,
-          levelId: level.levelId,
-          status: ['Pending', 'Approved', 'Rejected'][
-            Math.floor(Math.random() * 3)
-          ] as 'Pending' | 'Approved' | 'Rejected',
-          questionTitle: questionTitles[i % questionTitles.length],
-          questionVariant: `${Math.floor(Math.random() * 3) + 1}`,
-          similarityScore: Math.random() * 100,
-          usefulVote: Math.floor(Math.random() * 50),
-          unusefulVote: Math.floor(Math.random() * 10),
-          createdAt: new Date(
-            Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)
-          ),
-        } as Question;
-      });
-
-      setQuestions(mockQuestions);
-    }
-  }, [visible, fields, topics, levels]);
+    loadQuestions();
+  }, [visible]);
 
   // Filter questions based on search and filters
   useEffect(() => {
     const filtered = questions.filter((question) => {
-      const matchesSearch = question.questionTitle
+      const matchesSearch = question.questionContent
         .toLowerCase()
         .includes(searchText.toLowerCase());
-      const matchesField =
-        fieldFilter === 'all' || question.fieldId === fieldFilter;
-      const matchesTopic =
-        topicFilter === 'all' || question.topicId === topicFilter;
-      const matchesLevel =
-        levelFilter === 'all' || question.levelId === levelFilter;
+      const matchesField = !fieldFilter || question.fieldId === fieldFilter;
+      const matchesTopic = !topicFilter || question.topicId === topicFilter;
+      const matchesLevel = !levelFilter || question.levelId === levelFilter;
       const matchesStatus =
         statusFilter === 'all' || question.status === statusFilter;
 
@@ -124,7 +100,7 @@ const QuestionListDrawer: React.FC<QuestionListDrawerProps> = ({
   ]);
 
   const handleAddQuestion = (question: Question) => {
-    if (selectedQuestionIds.includes(question.questionId)) {
+    if (selectedQuestionIds.includes(question.id)) {
       message.warning('Câu hỏi này đã được thêm vào bài kiểm tra!');
       return;
     }
@@ -133,9 +109,21 @@ const QuestionListDrawer: React.FC<QuestionListDrawerProps> = ({
     message.success('Đã thêm câu hỏi vào bài kiểm tra!');
   };
 
+  const handleCompareQuestions = (question1: Question, question2: Question) => {
+    if (onCompareQuestions) {
+      onCompareQuestions(question1, question2);
+    }
+  };
+
+  const getDrawerTitle = () => {
+    return mode === 'compare'
+      ? 'So sánh câu hỏi tương tự'
+      : 'Chọn câu hỏi từ ngân hàng';
+  };
+
   return (
     <Drawer
-      title="Chọn câu hỏi từ ngân hàng"
+      title={getDrawerTitle()}
       width={900}
       open={visible}
       onClose={onClose}
@@ -171,7 +159,10 @@ const QuestionListDrawer: React.FC<QuestionListDrawerProps> = ({
           fields={fields}
           topics={topics}
           levels={levels}
-          onAddQuestion={handleAddQuestion}
+          onAddQuestion={mode === 'add' ? handleAddQuestion : undefined}
+          onCompareQuestions={mode === 'compare' ? handleCompareQuestions : undefined}
+          loading={loading}
+          mode={mode}
         />
       </div>
     </Drawer>

@@ -1,24 +1,6 @@
 import { useState } from 'react';
 import ExamCard from './ExamCard';
-
-interface Exam {
-  id: number;
-  examId?: string;
-  userId?: string;
-  examType: 'Virtual' | 'Recruiter';
-  title: string;
-  position?: string;
-  topics: string;
-  questionTypes: string;
-  questionCount: number;
-  duration: number;
-  startTime?: Date;
-  endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
-  language: string;
-  createdAt: Date;
-  createdBy: string;
-}
+import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamListProps {
   title: string;
@@ -164,8 +146,8 @@ const ExamList: React.FC<ExamListProps> = ({
                           key={page}
                           onClick={() => handlePageChange(page)}
                           className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
-                              ? 'bg-primary text-white'
-                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                            ? 'bg-primary text-white'
+                            : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                             }`}
                         >
                           {page}

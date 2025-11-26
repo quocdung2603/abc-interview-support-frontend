@@ -20,6 +20,9 @@ interface CreateFormFields extends Exam {
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
   selectedQuestions: number[]; // Add selected questions
+  // Override to use correct field names
+  topics?: number[];
+  questionTypes?: number[];
 }
 
 interface ExamFormDrawerProps {
@@ -59,8 +62,10 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     examType: 'RECRUITER',
     title: '',
     position: '',
-    topics: [],
-    questionTypes: [],
+    fieldId: 0,
+    levelId: 0,
+    topicIds: [],
+    questionTypeIds: [],
     questionCount: 1,
     duration: 1,
     status: 'DRAFT',
@@ -74,6 +79,9 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     examPeriod: undefined,
     questionSource: 'upload',
     selectedQuestions: [], // Initialize empty array
+    // Legacy fields for backward compatibility
+    topics: [],
+    questionTypes: [],
   }), []);
 
   const {
@@ -102,7 +110,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'topics', 'questionTypes', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc

@@ -1,23 +1,5 @@
-import {useState} from 'react';
-
-interface Exam {
-  id: number;
-  examId?: string;
-  userId?: string;
-  examType: 'Virtual' | 'Recruiter';
-  title: string;
-  position?: string;
-  topics: string;
-  questionTypes: string;
-  questionCount: number;
-  duration: number;
-  startTime?: Date;
-  endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
-  language: string;
-  createdAt: Date;
-  createdBy: string;
-}
+import { useState } from 'react';
+import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamCardProps {
   exam: Exam;
@@ -59,9 +41,8 @@ const ExamCard: React.FC<ExamCardProps> = ({
 
   return (
     <div
-      className={`card-interactive p-2.5 relative animate-fade-in-up ${
-        isCreated ? 'border-2 border-accent ' : ''
-      }`}
+      className={`card-interactive p-2.5 relative animate-fade-in-up ${isCreated ? 'border-2 border-accent ' : ''
+        }`}
       style={{
         background: isCreated
           ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.02) 0%, rgba(14, 165, 233, 0.05) 100%)'
@@ -110,28 +91,18 @@ const ExamCard: React.FC<ExamCardProps> = ({
         </div>
 
         {/* Dates - More compact */}
-        {(exam.startTime || exam.endTime) && (
-          <div className="pt-1.5 mt-1.5 border-t border-neutral-200">
-            {exam.startTime && (
-              <div className="text-xs text-neutral-600 mb-1 flex items-center gap-1">
-                <span className="font-semibold">Bắt đầu:</span>
-                <span>{new Date(exam.startTime).toLocaleString('vi-VN')}</span>
-              </div>
-            )}
-            {exam.endTime && (
-              <div className="text-xs text-neutral-600 flex items-center gap-1">
-                <span className="font-semibold">Kết thúc:</span>
-                <span>{new Date(exam.endTime).toLocaleString('vi-VN')}</span>
-              </div>
-            )}
+        <div className="pt-1.5 mt-1.5 border-t border-neutral-200">
+          <div className="text-xs text-neutral-600 mb-1 flex items-center gap-1">
+            <span className="font-semibold">Ngày tạo:</span>
+            <span>{new Date(exam.createdAt).toLocaleString('vi-VN')}</span>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Action Button */}
       <div className="flex justify-end pt-1">
         {(() => {
-          if (exam.status === 'Active' || exam.status === 'DRAFT') {
+          if (exam.status === 'ACTIVE' || exam.status === 'DRAFT') {
             return (
               <button
                 onClick={handleStartExam}
@@ -142,7 +113,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
             );
           }
 
-          if (exam.status === 'Completed') {
+          if (exam.status === 'COMPLETED') {
             return (
               <button
                 className="btn-secondary flex items-center gap-1 px-3 py-1 text-xs"

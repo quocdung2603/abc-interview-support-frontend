@@ -1,5 +1,5 @@
 import React from 'react';
-import { Exam } from '../../../../../../../libs/types/src/index';
+import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamSummaryProps {
   exam: Exam;
@@ -240,7 +240,7 @@ const ExamSummary: React.FC<ExamSummaryProps> = ({
                 color: '#1e293b',
               }}
             >
-              {JSON.parse(exam.topics || '[]').join(', ')}
+              {exam.topicIds.join(', ')}
             </span>
           </div>
           <div>
@@ -254,7 +254,7 @@ const ExamSummary: React.FC<ExamSummaryProps> = ({
                 color: '#1e293b',
               }}
             >
-              {JSON.parse(exam.questionTypes || '[]').join(', ')}
+              {exam.questionTypeIds.join(', ')}
             </span>
           </div>
           <div>

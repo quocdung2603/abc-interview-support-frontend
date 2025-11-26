@@ -5,77 +5,45 @@ import {
   ExamApprovalTable,
   ExamApprovalToolbar,
 } from './components/exam-approval';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 
 const ExamApproval = () => {
   const [formDrawerVisible, setFormDrawerVisible] = useState(false);
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
   const [filteredExams, setFilteredExams] = useState<Exam[]>([]);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [questionTypes, setQuestionTypes] = useState<QuestionType[]>([]);
 
-  // Mock data for exams pending approval
+  // Load exams and reference data
   useEffect(() => {
-    const statusOptions = ['Active', 'Inactive'] as const;
-    const positions = [
-      'Frontend Developer',
-      'Backend Developer',
-      'Fullstack Developer',
-      'DevOps Engineer',
-      'Mobile Developer',
-      'Data Analyst',
-      'QA Engineer',
-      'Product Manager',
-      'Business Analyst',
-      'UI/UX Designer',
-    ] as const;
-    const companies = [
-      'TechCorp Vietnam',
-      'Innovate Solutions',
-      'Digital Dynamics',
-      'Future Systems',
-      'Smart Tech Co.',
-      'Global Solutions',
-      'NextGen Tech',
-      'Enterprise Solutions',
-    ] as const;
-    const users = [
-      'john.doe@example.com',
-      'jane.smith@company.com',
-      'mike.wilson@tech.com',
-      'sarah.jones@startup.com',
-      'david.brown@enterprise.com',
-    ] as const;
+    // TODO: Replace with actual API calls
+    // Mock data for now
+    setFields([
+      { id: 1, name: 'Frontend' },
+      { id: 2, name: 'Backend' },
+      { id: 3, name: 'DevOps' },
+    ]);
+    setTopics([
+      { id: 1, fieldId: 1, fieldName: 'Frontend', name: 'React' },
+      { id: 2, fieldId: 1, fieldName: 'Frontend', name: 'Vue' },
+      { id: 3, fieldId: 2, fieldName: 'Backend', name: 'Node.js' },
+    ]);
+    setLevels([
+      { id: 1, name: 'Junior' },
+      { id: 2, name: 'Mid' },
+      { id: 3, name: 'Senior' },
+    ]);
+    setQuestionTypes([
+      { id: 1, name: 'Multiple Choice' },
+      { id: 2, name: 'Essay' },
+      { id: 3, name: 'Fill in the Blank' },
+    ]);
 
-    const mockExams: Exam[] = Array.from({ length: 15 }, (_, i) => {
-      const startOffset =
-        Math.floor(Math.random() * 14 + 1) * 24 * 60 * 60 * 1000;
-      const endOffset =
-        Math.floor(Math.random() * 14 + 15) * 24 * 60 * 60 * 1000;
-
-      return {
-        examId: `pending-exam${i + 1}`,
-        title: `Bài kiểm tra chờ duyệt ${i + 1}: ${
-          positions[i % 10] || 'Unknown'
-        } - ${companies[i % 8]}`,
-        examType: i % 2 === 0 ? 'Virtual' : 'Recruiter',
-        position: positions[i % 10] || 'Unknown',
-        questionCount: Math.floor(Math.random() * 15) + 10,
-        duration: Math.floor(Math.random() * 90) + 45,
-        language: 'Vietnamese',
-        status: statusOptions[i % 2],
-        topics:
-          'JavaScript, React, Node.js, Database, Testing, Problem Solving',
-        questionTypes: 'Trắc nghiệm, Tự luận, Coding, Case Study',
-        startTime: new Date(Date.now() + startOffset),
-        endTime: new Date(Date.now() + endOffset),
-        createdBy: i % 3 === 0 ? companies[i % 8] : users[i % 5],
-        createdAt: new Date(
-          Date.now() - Math.floor(Math.random() * 7 + 1) * 24 * 60 * 60 * 1000
-        ),
-      };
-    });
-    setExams(mockExams);
-    setFilteredExams(mockExams);
+    setExams([]);
+    setFilteredExams([]);
   }, []);
 
   const handleViewExam = (exam: Exam) => {
@@ -96,15 +64,15 @@ const ExamApproval = () => {
     setFormDrawerVisible(true);
   };
 
-  const handleSubmitApprove = (examId: string) => {
-    setExams((prev) => prev.filter((exam) => exam.examId !== examId));
-    setFilteredExams((prev) => prev.filter((exam) => exam.examId !== examId));
+  const handleSubmitApprove = (examId: number) => {
+    setExams((prev) => prev.filter((exam) => exam.id !== examId));
+    setFilteredExams((prev) => prev.filter((exam) => exam.id !== examId));
   };
 
-  const handleSubmitReject = (examId: string, reason: string) => {
+  const handleSubmitReject = (examId: number, reason: string) => {
     console.log('Rejecting exam:', examId, 'Reason:', reason);
-    setExams((prev) => prev.filter((exam) => exam.examId !== examId));
-    setFilteredExams((prev) => prev.filter((exam) => exam.examId !== examId));
+    setExams((prev) => prev.filter((exam) => exam.id !== examId));
+    setFilteredExams((prev) => prev.filter((exam) => exam.id !== examId));
   };
 
   const handleFilterChange = (filters: {
@@ -115,9 +83,10 @@ const ExamApproval = () => {
   }) => {
     let filtered = exams;
 
-    if (filters.searchText) {
+    if (filters.searchText && typeof filters.searchText === 'string') {
+      const searchText = filters.searchText;
       filtered = filtered.filter((exam) =>
-        exam.title.toLowerCase().includes(filters.searchText!.toLowerCase())
+        exam.title.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
@@ -132,7 +101,7 @@ const ExamApproval = () => {
     if (filters.dateRange) {
       const [startDate, endDate] = filters.dateRange;
       filtered = filtered.filter((exam) => {
-        const examDate = exam.createdAt;
+        const examDate = new Date(exam.createdAt);
         return examDate >= startDate && examDate <= endDate;
       });
     }
@@ -158,6 +127,10 @@ const ExamApproval = () => {
         data={selectedExam}
         onApprove={handleSubmitApprove}
         onReject={handleSubmitReject}
+        fields={fields}
+        topics={topics}
+        levels={levels}
+        questionTypes={questionTypes}
       />
     </div>
   );

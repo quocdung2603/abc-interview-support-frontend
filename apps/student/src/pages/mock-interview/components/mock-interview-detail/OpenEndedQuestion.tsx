@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Question } from '../../../../../../../libs/types/src/index';
+import { Question } from '@abc-interview-support-frontend/types';
 
 interface OpenEndedQuestionProps {
   question: Question;
@@ -55,13 +55,13 @@ const OpenEndedQuestion: React.FC<OpenEndedQuestionProps> = ({
         <div className="space-y-4">
           <div>
             <label
-              htmlFor={`essay-${question.questionId}`}
+              htmlFor={`essay-${question.id}`}
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Câu trả lời của bạn:
             </label>
             <textarea
-              id={`essay-${question.questionId}`}
+              id={`essay-${question.id}`}
               value={textValue}
               onChange={handleTextChange}
               placeholder="Nhập câu trả lời của bạn ở đây. Hãy trình bày một cách logic và chi tiết..."
@@ -93,7 +93,7 @@ const OpenEndedQuestion: React.FC<OpenEndedQuestionProps> = ({
           {/* Gợi ý viết bài */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="text-sm font-medium text-blue-800 mb-2">
-              💡 Gợi ý trả lời hiệu quả:
+              Gợi ý trả lời hiệu quả:
             </h4>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Bắt đầu bằng việc nêu rõ quan điểm hoặc ý chính</li>

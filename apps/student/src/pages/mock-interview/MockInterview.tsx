@@ -4,6 +4,7 @@ import ExamList from './components/mock-interview/ExamList';
 import { useNavigate } from 'react-router-dom';
 import { examService } from '@abc-interview-support-frontend/services';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamFormData {
   field: string;
@@ -12,25 +13,9 @@ interface ExamFormData {
   questionTypes: string[];
   questionCount: number;
   duration: number;
-}
-
-interface Exam {
-  id: number;
-  examId?: string;
-  userId?: string | number;
-  examType: 'Virtual' | 'Recruiter';
-  title: string;
+  title?: string;
   position?: string;
-  topics: string;
-  questionTypes: string;
-  questionCount: number;
-  duration: number;
-  startTime?: Date;
-  endTime?: Date;
-  status: 'Active' | 'Inactive' | 'Completed' | 'DRAFT';
-  language: string;
-  createdAt: Date;
-  createdBy: string;
+  description?: string;
 }
 
 const MockInterview = () => {
@@ -42,7 +27,7 @@ const MockInterview = () => {
 
   const navigate = useNavigate();
   const { user } = useAuth();
- // console.log('Authenticated user:', JSON.stringify(user, null, 2));
+  // console.log('Authenticated user:', JSON.stringify(user, null, 2));
 
   const getUserExams = async () => {
     try {
@@ -79,29 +64,17 @@ const MockInterview = () => {
       return availableExams.filter((exam) => {
         // Simple filtering logic - in real app, this would be more sophisticated
         if (searchCriteria.field && searchCriteria.topic) {
-          try {
-            const examTopics = JSON.parse(exam.topics);
-            const hasMatchingTopic = examTopics.some((topic: string) =>
-              topic
-                .toLowerCase()
-                .includes(searchCriteria.topic?.toLowerCase() || '')
-            );
-            if (!hasMatchingTopic) return false;
-          } catch {
-            return false;
-          }
+          // Check if exam has the selected topic in topicIds array
+          const hasMatchingTopic = exam.topicIds?.includes(Number(searchCriteria.topic));
+          if (!hasMatchingTopic) return false;
         }
 
         if (searchCriteria.questionTypes?.length) {
-          try {
-            const examQuestionTypes = JSON.parse(exam.questionTypes);
-            const hasMatchingType = searchCriteria.questionTypes.some((type) =>
-              examQuestionTypes.includes(type)
-            );
-            if (!hasMatchingType) return false;
-          } catch {
-            return false;
-          }
+          // Check if exam has any of the selected question types in questionTypeIds array
+          const hasMatchingType = searchCriteria.questionTypes.some((type) =>
+            exam.questionTypeIds?.includes(Number(type))
+          );
+          if (!hasMatchingType) return false;
         }
 
         return true;
@@ -122,22 +95,18 @@ const MockInterview = () => {
         examType: "RECRUITER",
         title: examData.title || '',
         position: examData.position || '',
-        topics: [Number.parseInt(examData.topic)], // Convert to array of numbers
-        questionTypes: examData.questionTypes.map(type => Number.parseInt(type)), // Convert to array of numbers
+        topicIds: [Number.parseInt(examData.topic)], // Convert to array of numbers
+        questionTypeIds: examData.questionTypes.map(type => Number.parseInt(type)), // Convert to array of numbers
         questionCount: examData.questionCount,
         duration: examData.duration,
-        description: examData.description,
         userId: user?.userId // Add userId from auth
       };
       await examService.createExam(apiData);
-     // alert(`✅ Đã tạo bài kiểm tra thành công!\n\nTiêu đề: ${examData.title}\nVị trí: ${examData.position}\nSố câu hỏi: ${examData.questionCount}\nThời gian: ${examData.duration} phút`);
-
       // Refresh the exam lists
       getAllExams();
       getUserExams();
     } catch (error) {
       console.error('Error creating exam:', error);
-      // alert('❌ Có lỗi xảy ra khi tạo bài kiểm tra. Vui lòng thử lại.');
     }
   };
 
