@@ -93,7 +93,7 @@ const BaseExamManagement = () => {
       const res = await examService.getAllExams();
       console.log(res);
       let exams: Exam[] = (res.content as Exam[]) || [];
-      exams = exams.filter((exam) => exam?.examType === examTypes);
+      exams = exams.filter((exam) => exam?.examType === examTypes && exam?.status === 'PUBLISHED');
       console.log('All Exams:', exams);
       setDataList(exams);
     } catch (error) {

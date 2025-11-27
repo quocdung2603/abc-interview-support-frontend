@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Button, message, Radio, Table, Tag, Tooltip } from 'antd';
+import { Upload, Button, message, Radio, Table, Tag, Tooltip, Card, Typography } from 'antd';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
 import { FileTextOutlined, DatabaseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { UploadChangeParam, UploadFile } from 'antd/es/upload';
-import { Question, Field, Topic, Level, QuestionType, Exam } from '@abc-interview-support-frontend/types';
+import { Question, Field, Topic, Level, QuestionType, Exam, ExamQuestion } from '@abc-interview-support-frontend/types';
 import QuestionListDrawerForm from './QuestionListDrawerForm';
 
 // Extended interface to include UI-specific fields
@@ -15,7 +15,6 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: File | null; // File upload for CSV
-  selectedQuestions: number[]; // Add selected questions
 }
 
 interface ExamConfigStepProps {
@@ -27,6 +26,9 @@ interface ExamConfigStepProps {
   questionTypes: QuestionType[];
   onQuestionsSelected?: (questions: Question[]) => void;
   setValue?: (name: keyof CreateFormFields, value: any) => void;
+  isEdit?: boolean;
+  existingQuestions?: ExamQuestion[];
+  onUpdateQuestions?: (questions: ExamQuestion[]) => void;
 }
 
 const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
@@ -38,16 +40,19 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   questionTypes,
   onQuestionsSelected,
   setValue,
+  isEdit = false,
+  existingQuestions = [],
+  onUpdateQuestions,
 }) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [questionSource, setQuestionSource] = useState<'upload' | 'existing'>('upload');
   const [questionListDrawerVisible, setQuestionListDrawerVisible] = useState(false);
-  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [currentQuestions, setCurrentQuestions] = useState<ExamQuestion[]>(existingQuestions);
 
-  // Sync selectedQuestions with form value
+  // Update currentQuestions when existingQuestions changes
   useEffect(() => {
-    // This would need the form watch, but for now, we'll handle it differently
-  }, []);
+    setCurrentQuestions(existingQuestions);
+  }, [existingQuestions]);
 
   const handleFileChange = (info: UploadChangeParam) => {
     let fileList = [...info.fileList];
@@ -75,38 +80,41 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   };
 
   const handleQuestionsSelected = (selectedQuestion: Question) => {
-    // Check if question is already selected
-    const isAlreadySelected = selectedQuestions.some(q => q.id === selectedQuestion.id);
+    // Check if question is already in current questions
+    const isAlreadySelected = currentQuestions.some(q => q.id === selectedQuestion.id.toString());
 
     if (isAlreadySelected) {
       message.warning('Câu hỏi này đã được chọn');
       return;
     }
 
-    const newSelectedQuestions = [...selectedQuestions, selectedQuestion];
-    setSelectedQuestions(newSelectedQuestions);
+    // Convert Question to ExamQuestion
+    const examQuestion: ExamQuestion = {
+      id: selectedQuestion.id.toString(),
+      fieldId: selectedQuestion.fieldId || 0,
+      topicId: selectedQuestion.topicId || 0,
+      levelId: selectedQuestion.levelId || 0,
+      questionTypeId: selectedQuestion.questionTypeId || 0,
+      questionText: selectedQuestion.questionContent || '',
+      questionAnswer: selectedQuestion.questionAnswer || '',
+    };
 
-    // Update form value
-    if (setValue) {
-      setValue('selectedQuestions', newSelectedQuestions.map(q => q.id));
+    const newCurrentQuestions = [...currentQuestions, examQuestion];
+    setCurrentQuestions(newCurrentQuestions);
+
+    if (onUpdateQuestions) {
+      onUpdateQuestions(newCurrentQuestions);
     }
 
-    if (onQuestionsSelected) {
-      onQuestionsSelected(newSelectedQuestions);
-    }
+    message.success('Đã thêm câu hỏi vào danh sách');
   };
 
-  const handleRemoveQuestion = (questionId: number) => {
-    const newSelectedQuestions = selectedQuestions.filter(q => q.id !== questionId);
-    setSelectedQuestions(newSelectedQuestions);
+  const handleRemoveQuestion = (questionId: string) => {
+    const newCurrentQuestions = currentQuestions.filter(q => q.id !== questionId);
+    setCurrentQuestions(newCurrentQuestions);
 
-    // Update form value
-    if (setValue) {
-      setValue('selectedQuestions', newSelectedQuestions.map(q => q.id));
-    }
-
-    if (onQuestionsSelected) {
-      onQuestionsSelected(newSelectedQuestions);
+    if (onUpdateQuestions) {
+      onUpdateQuestions(newCurrentQuestions);
     }
 
     message.success('Đã xóa câu hỏi khỏi danh sách');
@@ -207,75 +215,77 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
         questionTypes={questionTypes}
       />
 
-      {selectedQuestions.length > 0 && (
+      {/* Display current questions list */}
+      {currentQuestions.length > 0 && (
         <div className="mt-6">
-          <div className="text-sm font-medium text-gray-700 mb-4">
-            Danh sách câu hỏi đã chọn ({selectedQuestions.length})
-          </div>
-          <Table
-            dataSource={selectedQuestions}
-            rowKey="id"
-            size="small"
-            pagination={false}
-            scroll={{ y: 300 }}
-            columns={[
-              {
-                title: 'Câu hỏi',
-                dataIndex: 'questionContent',
-                key: 'questionContent',
-                ellipsis: true,
-                width: 200,
-                render: (text: string, record: Question) => (
-                  <div>
-                    <div style={{ fontWeight: 500, marginBottom: 4 }}>{text}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
-                      ID: {record.id}
+          <Card title={`Danh sách câu hỏi (${currentQuestions.length})`} className="shadow-sm">
+            <Table
+              dataSource={currentQuestions}
+              rowKey="id"
+              size="small"
+              pagination={false}
+              scroll={{ y: 300 }}
+              columns={[
+                {
+                  title: 'STT',
+                  key: 'index',
+                  width: 60,
+                  render: (_, __, index) => index + 1,
+                },
+                {
+                  title: 'Câu hỏi',
+                  dataIndex: 'questionText',
+                  key: 'questionText',
+                  ellipsis: true,
+                  render: (text: string) => (
+                    <div style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {text}
                     </div>
-                  </div>
-                ),
-              },
-              {
-                title: 'Lĩnh vực',
-                key: 'field',
-                width: 100,
-                render: (_, record: Question) => (
-                  <Tag color="blue">{record.fieldName}</Tag>
-                ),
-              },
-              {
-                title: 'Chủ đề',
-                key: 'topic',
-                width: 80,
-                render: (_, record: Question) => (
-                  <Tag color="green">{record.topicName}</Tag>
-                ),
-              },
-              {
-                title: 'Độ khó',
-                key: 'level',
-                width: 80,
-                render: (_, record: Question) => (
-                  <Tag color="orange">{record.levelName}</Tag>
-                ),
-              },
-              {
-                title: 'Thao tác',
-                key: 'actions',
-                width: 50,
-                render: (_, record: Question) => (
-                  <Tooltip title="Xóa câu hỏi">
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      size="small"
-                      onClick={() => handleRemoveQuestion(record.id)}
-                    />
-                  </Tooltip>
-                ),
-              },
-            ]}
-          />
+                  ),
+                },
+                {
+                  title: 'Đáp án',
+                  dataIndex: 'questionAnswer',
+                  key: 'questionAnswer',
+                  ellipsis: true,
+                  render: (text: string) => (
+                    <div style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {text}
+                    </div>
+                  ),
+                },
+                {
+                  title: 'Metadata',
+                  key: 'metadata',
+                  width: 200,
+                  render: (_, record: ExamQuestion) => (
+                    <div className="flex flex-wrap gap-1">
+                      <Tag color="blue">Field: {record.fieldId}</Tag>
+                      <Tag color="green">Topic: {record.topicId}</Tag>
+                      <Tag color="orange">Level: {record.levelId}</Tag>
+                      <Tag color="purple">Type: {record.questionTypeId}</Tag>
+                    </div>
+                  ),
+                },
+                {
+                  title: 'Thao tác',
+                  key: 'actions',
+                  width: 80,
+                  render: (_, record: ExamQuestion) => (
+                    <Tooltip title="Xóa câu hỏi khỏi bài kiểm tra">
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        onClick={() => handleRemoveQuestion(record.id)}
+                      />
+                    </Tooltip>
+                  ),
+                },
+              ]}
+            />
+          </Card>
         </div>
       )}
     </div>

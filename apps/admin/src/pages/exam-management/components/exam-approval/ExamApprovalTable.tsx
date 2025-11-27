@@ -1,20 +1,16 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EyeOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { Exam } from '@abc-interview-support-frontend/types';
 
 interface ExamApprovalTableProps {
   data: Exam[];
   onView: (exam: Exam) => void;
-  onApprove: (exam: Exam) => void;
-  onReject: (exam: Exam) => void;
 }
 
 const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
   data,
   onView,
-  onApprove,
-  onReject,
 }) => {
   const getExamTypeText = (examType: string) => {
     switch (examType) {
@@ -128,24 +124,6 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onView(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Chấp nhận">
-            <Button
-              type="text"
-              icon={<CheckOutlined />}
-              size="small"
-              style={{ color: '#52c41a' }}
-              onClick={() => onApprove(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Từ chối">
-            <Button
-              type="text"
-              icon={<CloseOutlined />}
-              size="small"
-              style={{ color: '#ff4d4f' }}
-              onClick={() => onReject(record)}
             />
           </Tooltip>
         </Space>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Select } from 'antd';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
-import { Exam, QuestionType, Topic } from '@abc-interview-support-frontend/types';
+import { Exam, QuestionType, Topic, Field, Level, ExamQuestion } from '@abc-interview-support-frontend/types';
 
 const { Option } = Select;
 
@@ -14,7 +14,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: File | null; // File upload for CSV
-  selectedQuestions: number[]; // Add selected questions
+  questions?: ExamQuestion[]; // Current questions in the exam
 }
 
 interface BasicInfoStepProps {
@@ -22,9 +22,11 @@ interface BasicInfoStepProps {
   errors: FieldErrors<CreateFormFields>;
   questionTypes: QuestionType[];
   topics: Topic[];
+  fields: Field[];
+  levels: Level[];
 }
 
-const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, questionTypes, topics }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, questionTypes, topics, fields, levels }) => {
   return (
     <div className="space-y-6">
       <div>
@@ -68,6 +70,64 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 {...field}
                 className="rounded-lg"
               />
+            )}
+          />
+        </Form.Item>
+      </div>
+
+      <div>
+        <Form.Item
+          label="Lĩnh vực"
+          name="fieldId"
+          rules={[{ required: true, message: 'Vui lòng chọn lĩnh vực' }]}
+          className="mb-0"
+        >
+          <Controller
+            name="fieldId"
+            control={control}
+            rules={{ required: 'Vui lòng chọn lĩnh vực' }}
+            render={({ field }) => (
+              <Select
+                size="large"
+                placeholder="Chọn lĩnh vực"
+                {...field}
+                className="rounded-lg"
+              >
+                {fields.map((field) => (
+                  <Option key={field.id} value={field.id}>
+                    {field.name}
+                  </Option>
+                ))}
+              </Select>
+            )}
+          />
+        </Form.Item>
+      </div>
+
+      <div>
+        <Form.Item
+          label="Trình độ"
+          name="levelId"
+          rules={[{ required: true, message: 'Vui lòng chọn trình độ' }]}
+          className="mb-0"
+        >
+          <Controller
+            name="levelId"
+            control={control}
+            rules={{ required: 'Vui lòng chọn trình độ' }}
+            render={({ field }) => (
+              <Select
+                size="large"
+                placeholder="Chọn trình độ"
+                {...field}
+                className="rounded-lg"
+              >
+                {levels.map((level) => (
+                  <Option key={level.id} value={level.id}>
+                    {level.name}
+                  </Option>
+                ))}
+              </Select>
             )}
           />
         </Form.Item>

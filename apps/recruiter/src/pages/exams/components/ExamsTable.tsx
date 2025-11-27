@@ -93,31 +93,35 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
               onClick={() => onPreview(record)}
             />
           </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              size="small"
-              onClick={() => onEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa bài đăng này?"
-              onConfirm={() =>
-                onDelete
-                  ? onDelete(record.id)
-                  : message.success('Đã xóa bài đăng')
-              }
-            >
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                size="small"
-              />
-            </Popconfirm>
-          </Tooltip>
+          {record.status !== 'PUBLISHED' && (
+            <>
+              <Tooltip title="Chỉnh sửa">
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  size="small"
+                  onClick={() => onEdit(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Xóa">
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa bài đăng này?"
+                  onConfirm={() =>
+                    onDelete
+                      ? onDelete(record.id)
+                      : message.success('Đã xóa bài đăng')
+                  }
+                >
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    size="small"
+                  />
+                </Popconfirm>
+              </Tooltip>
+            </>
+          )}
         </Space>
       ),
     },

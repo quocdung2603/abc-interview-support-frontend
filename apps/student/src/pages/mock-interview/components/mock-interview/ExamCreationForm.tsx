@@ -12,6 +12,8 @@ interface ExamFormData {
   title?: string;
   position?: string;
   description?: string;
+  fieldId: number;
+  levelId: number;
 }
 
 interface ExamCreationFormProps {
@@ -35,14 +37,18 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
     questionTypes: [],
     questionCount: 10,
     duration: 30,
+    fieldId: 0,
+    levelId: 0,
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState<ExamFormData | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
 
   const handleFieldChange = (fieldId: string) => {
-    const updatedData = { ...formData, field: fieldId, topic: '' };
+    const fieldIdNum = Number.parseInt(fieldId);
+    const updatedData = { ...formData, field: fieldId, fieldId: fieldIdNum, topic: '' };
     setFormData(updatedData);
     onCriteriaChange(updatedData);
   };
@@ -54,7 +60,8 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
   };
 
   const handleLevelChange = (levelId: string) => {
-    const updatedData = { ...formData, level: levelId };
+    const levelIdNum = Number.parseInt(levelId);
+    const updatedData = { ...formData, level: levelId, levelId: levelIdNum };
     setFormData(updatedData);
     onCriteriaChange(updatedData);
   };
@@ -81,9 +88,9 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
-      formData.field &&
+      formData.fieldId > 0 &&
       formData.topic &&
-      formData.level &&
+      formData.levelId > 0 &&
       formData.questionTypes.length > 0
     ) {
       setModalData(formData);
@@ -100,6 +107,8 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
       questionTypes: [],
       questionCount: 10,
       duration: 30,
+      fieldId: 0,
+      levelId: 0,
     });
     setIsModalOpen(false);
     setModalData(null);
@@ -110,6 +119,10 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
     setModalData(null);
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   const handleReset = () => {
     const resetData = {
       field: '',
@@ -118,15 +131,17 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
       questionTypes: [],
       questionCount: 10,
       duration: 30,
+      fieldId: 0,
+      levelId: 0,
     };
     setFormData(resetData);
     onCriteriaChange(resetData);
   };
 
   const isFormValid =
-    formData.field &&
+    formData.fieldId > 0 &&
     formData.topic &&
-    formData.level &&
+    formData.levelId > 0 &&
     formData.questionTypes.length > 0;
 
   useEffect(() => {
@@ -178,309 +193,333 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
         }}
       />
 
-      <h2 className="text-base font-bold text-primary mb-2">
-        Tạo Bài Phỏng Vấn Giả Lập
-      </h2>
+      {/* Header with toggle */}
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-base font-bold text-primary">
+          Tạo Bài Phỏng Vấn Giả Lập
+        </h2>
+        <button
+          type="button"
+          onClick={toggleCollapse}
+          className="p-1 text-neutral-500 hover:text-primary transition-colors"
+          title={isCollapsed ? "Mở rộng form" : "Thu gọn form"}
+        >
+          {isCollapsed ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          )}
+        </button>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* Field Selection */}
-          <div className="space-y-1">
-            <label
-              htmlFor="field-select"
-              className="block text-xs font-medium text-neutral-600"
-            >
-              Lĩnh vực *
-            </label>
-            <select
-              id="field-select"
-              className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white"
-              value={formData.field}
-              onChange={(e) => handleFieldChange(e.target.value)}
-              required
-            >
-              <option value="">Chọn lĩnh vực</option>
-              {fieldData.map((field) => (
-                <option key={field.id} value={field.id}>
-                  {field.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Topic Selection */}
-          <div className="space-y-1">
-            <label
-              htmlFor="topic-select"
-              className="block text-xs font-medium text-neutral-600"
-            >
-              Chủ đề *
-            </label>
-            <select
-              id="topic-select"
-              className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white disabled:bg-neutral-50"
-              value={formData.topic}
-              onChange={(e) => handleTopicChange(e.target.value)}
-              disabled={!formData.field}
-              required
-            >
-              <option value="">Chọn chủ đề</option>
-              {formData.field &&
-                topicData
-                  .filter((topic) => topic.fieldId === Number(formData.field))
-                  .map((topic) => (
-                    <option key={topic.id} value={topic.id.toString()}>
-                      {topic.name}
+      {/* Form Content - only show when not collapsed */}
+      {!isCollapsed && (
+        <>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {/* Field Selection */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="field-select"
+                  className="block text-xs font-medium text-neutral-600"
+                >
+                  Lĩnh vực *
+                </label>
+                <select
+                  id="field-select"
+                  className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white"
+                  value={formData.field}
+                  onChange={(e) => handleFieldChange(e.target.value)}
+                  required
+                >
+                  <option value="">Chọn lĩnh vực</option>
+                  {fieldData.map((field) => (
+                    <option key={field.id} value={field.id}>
+                      {field.name}
                     </option>
                   ))}
-            </select>
-          </div>
+                </select>
+              </div>
 
-          {/* Level Selection */}
-          <div className="space-y-1">
-            <label
-              htmlFor="level-select"
-              className="block text-xs font-medium text-neutral-600"
-            >
-              Cấp độ *
-            </label>
-            <select
-              id="level-select"
-              className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white"
-              value={formData.level}
-              onChange={(e) => handleLevelChange(e.target.value)}
-              required
-            >
-              <option value="">Chọn cấp độ</option>
-              {levelData.map((level) => (
-                <option key={level.id} value={level.id}>
-                  {level.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Question Count & Duration in one row */}
-          <div className="md:col-span-2 lg:col-span-3">
-            <div className="grid grid-cols-2 gap-3">
+              {/* Topic Selection */}
               <div className="space-y-1">
                 <label
-                  htmlFor="question-count"
+                  htmlFor="topic-select"
                   className="block text-xs font-medium text-neutral-600"
                 >
-                  Số câu hỏi
+                  Chủ đề *
                 </label>
-                <input
-                  id="question-count"
-                  type="number"
-                  className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
-                  min="5"
-                  max="50"
-                  value={formData.questionCount}
-                  onChange={(e) =>
-                    handleNumberChange(
-                      'questionCount',
-                      parseInt(e.target.value) || 10
-                    )
-                  }
-                />
+                <select
+                  id="topic-select"
+                  className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white disabled:bg-neutral-50"
+                  value={formData.topic}
+                  onChange={(e) => handleTopicChange(e.target.value)}
+                  disabled={!formData.field}
+                  required
+                >
+                  <option value="">Chọn chủ đề</option>
+                  {formData.field &&
+                    topicData
+                      .filter((topic) => topic.fieldId === Number(formData.field))
+                      .map((topic) => (
+                        <option key={topic.id} value={topic.id.toString()}>
+                          {topic.name}
+                        </option>
+                      ))}
+                </select>
               </div>
 
+              {/* Level Selection */}
               <div className="space-y-1">
                 <label
-                  htmlFor="duration"
+                  htmlFor="level-select"
                   className="block text-xs font-medium text-neutral-600"
                 >
-                  Thời gian (phút)
+                  Cấp độ *
                 </label>
-                <input
-                  id="duration"
-                  type="number"
-                  className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
-                  min="10"
-                  max="180"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    handleNumberChange('duration', parseInt(e.target.value) || 30)
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Question Types */}
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-neutral-600">
-            Loại câu hỏi *
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-2 overflow-y-auto max-h-20">
-            {questionTypeData.map((type) => (
-              <label
-                key={type.id}
-                className={`flex items-center p-2 border rounded-md cursor-pointer transition-all text-xs ${formData.questionTypes.includes(type.id.toString())
-                    ? 'border-accent bg-accent-10'
-                    : 'border-neutral-200 hover:border-accent-light hover:bg-accent/5'
-                  }`}
-              >
-                <input
-                  type="checkbox"
-                  className="mr-2 w-3 h-3 text-accent bg-gray-100 border-gray-300 rounded focus:ring-accent"
-                  style={{
-                    accentColor: 'var(--color-accent)',
-                  }}
-                  checked={formData.questionTypes.includes(type.id.toString())}
-                  onChange={() => handleQuestionTypeChange(type.id.toString())}
-                />
-                <span className="text-xs font-medium truncate">{type.name}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 bg-neutral-200 text-neutral-700 hover:bg-neutral-300 hover:scale-105"
-          >
-            Reset
-          </button>
-          <button
-            type="submit"
-            disabled={!isFormValid}
-            className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 ${!isFormValid
-                ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
-                : 'bg-accent text-white hover:bg-accent-dark hover:scale-105'
-              }`}
-          >
-            Tạo Bài Phỏng Vấn
-          </button>
-        </div>
-      </form>
-
-      {/* Confirmation Modal */}
-      {isModalOpen && modalData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-bold text-primary mb-4">
-              Xác Nhận Tạo Bài Phỏng Vấn
-            </h3>
-
-            {/* Exam Details Summary */}
-            <div className="mb-6 p-4 bg-neutral-50 rounded-lg">
-              <h4 className="font-semibold text-sm text-neutral-700 mb-3">
-                Thông tin bài kiểm tra:
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="font-medium text-neutral-600">Lĩnh vực:</span>
-                  <p className="text-neutral-800">
-                    {fieldData.find(f => f.id.toString() === modalData.field)?.name || modalData.field}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-600">Chủ đề:</span>
-                  <p className="text-neutral-800">
-                    {topicData.find(t => t.id.toString() === modalData.topic)?.name || modalData.topic}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-600">Cấp độ:</span>
-                  <p className="text-neutral-800">
-                    {levelData.find(l => l.id.toString() === modalData.level)?.name || modalData.level}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-600">Số câu hỏi:</span>
-                  <p className="text-neutral-800">{modalData.questionCount}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-600">Thời gian:</span>
-                  <p className="text-neutral-800">{modalData.duration} phút</p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-600">Loại câu hỏi:</span>
-                  <p className="text-neutral-800">
-                    {modalData.questionTypes.map(typeId =>
-                      questionTypeData.find(q => q.id.toString() === typeId)?.name
-                    ).filter(Boolean).join(', ')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Information Form */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="modal-title" className="block text-sm font-medium text-neutral-600 mb-1">
-                  Tiêu đề bài kiểm tra *
-                </label>
-                <input
-                  id="modal-title"
-                  type="text"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
-                  placeholder="Ví dụ: Java Backend Developer Test"
-                  value={modalData.title || ''}
-                  onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                <select
+                  id="level-select"
+                  className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none bg-white"
+                  value={formData.level}
+                  onChange={(e) => handleLevelChange(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Chọn cấp độ</option>
+                  {levelData.map((level) => (
+                    <option key={level.id} value={level.id}>
+                      {level.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div>
-                <label htmlFor="modal-position" className="block text-sm font-medium text-neutral-600 mb-1">
-                  Vị trí công việc *
-                </label>
-                <input
-                  id="modal-position"
-                  type="text"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
-                  placeholder="Ví dụ: Backend Developer"
-                  value={modalData.position || ''}
-                  onChange={(e) => setModalData({ ...modalData, position: e.target.value })}
-                  required
-                />
-              </div>
+              {/* Question Count & Duration in one row */}
+              <div className="md:col-span-2 lg:col-span-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="question-count"
+                      className="block text-xs font-medium text-neutral-600"
+                    >
+                      Số câu hỏi
+                    </label>
+                    <input
+                      id="question-count"
+                      type="number"
+                      className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
+                      min="5"
+                      max="50"
+                      value={formData.questionCount}
+                      onChange={(e) =>
+                        handleNumberChange(
+                          'questionCount',
+                          Number(e.target.value) || 10
+                        )
+                      }
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="modal-description" className="block text-sm font-medium text-neutral-600 mb-1">
-                  Mô tả (tùy chọn)
-                </label>
-                <textarea
-                  id="modal-description"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none resize-none"
-                  rows={3}
-                  placeholder="Mô tả chi tiết về bài kiểm tra..."
-                  value={modalData.description || ''}
-                  onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
-                />
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="duration"
+                      className="block text-xs font-medium text-neutral-600"
+                    >
+                      Thời gian (phút)
+                    </label>
+                    <input
+                      id="duration"
+                      type="number"
+                      className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
+                      min="10"
+                      max="180"
+                      value={formData.duration}
+                      onChange={(e) =>
+                        handleNumberChange('duration', Number(e.target.value) || 30)
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex justify-end gap-3 mt-6">
+            {/* Question Types */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-neutral-600">
+                Loại câu hỏi *
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-2 overflow-y-auto max-h-20">
+                {questionTypeData.map((type) => (
+                  <label
+                    key={type.id}
+                    className={`flex items-center p-2 border rounded-md cursor-pointer transition-all text-xs ${formData.questionTypes.includes(type.id.toString())
+                      ? 'border-accent bg-accent-10'
+                      : 'border-neutral-200 hover:border-accent-light hover:bg-accent/5'
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-2 w-3 h-3 text-accent bg-gray-100 border-gray-300 rounded focus:ring-accent"
+                      style={{
+                        accentColor: 'var(--color-accent)',
+                      }}
+                      checked={formData.questionTypes.includes(type.id.toString())}
+                      onChange={() => handleQuestionTypeChange(type.id.toString())}
+                    />
+                    <span className="text-xs font-medium truncate">{type.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={handleCancelModal}
-                className="px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-200 rounded-md hover:bg-neutral-300 transition-colors"
+                onClick={handleReset}
+                className="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 bg-neutral-200 text-neutral-700 hover:bg-neutral-300 hover:scale-105"
               >
-                Hủy
+                Reset
               </button>
               <button
-                type="button"
-                onClick={() => handleConfirmCreate(modalData)}
-                disabled={!modalData.title || !modalData.position}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!modalData.title || !modalData.position
-                    ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
-                    : 'bg-accent text-white hover:bg-accent-dark'
+                type="submit"
+                disabled={!isFormValid}
+                className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 ${!isFormValid
+                  ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                  : 'bg-accent text-white hover:bg-accent-dark hover:scale-105'
                   }`}
               >
-                Xác Nhận Tạo
+                Tạo Bài Phỏng Vấn
               </button>
             </div>
-          </div>
-        </div>
+          </form>
+
+          {/* Confirmation Modal */}
+          {isModalOpen && modalData && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-base font-bold text-primary mb-4">
+                  Xác Nhận Tạo Bài Phỏng Vấn
+                </h3>
+
+                {/* Exam Details Summary */}
+                <div className="mb-6 p-4 bg-neutral-50 rounded-lg">
+                  <h4 className="font-semibold text-sm text-neutral-700 mb-3">
+                    Thông tin bài kiểm tra:
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium text-neutral-600">Lĩnh vực:</span>
+                      <p className="text-neutral-800">
+                        {fieldData.find(f => f.id === modalData.fieldId)?.name || `ID: ${modalData.fieldId}`}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-neutral-600">Chủ đề:</span>
+                      <p className="text-neutral-800">
+                        {topicData.find(t => t.id.toString() === modalData.topic)?.name || modalData.topic}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-neutral-600">Cấp độ:</span>
+                      <p className="text-neutral-800">
+                        {levelData.find(l => l.id === modalData.levelId)?.name || `ID: ${modalData.levelId}`}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-neutral-600">Số câu hỏi:</span>
+                      <p className="text-neutral-800">{modalData.questionCount}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-neutral-600">Thời gian:</span>
+                      <p className="text-neutral-800">{modalData.duration} phút</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-neutral-600">Loại câu hỏi:</span>
+                      <p className="text-neutral-800">
+                        {modalData.questionTypes.map(typeId =>
+                          questionTypeData.find(q => q.id.toString() === typeId)?.name
+                        ).filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Information Form */}
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="modal-title" className="block text-sm font-medium text-neutral-600 mb-1">
+                      Tiêu đề bài kiểm tra *
+                    </label>
+                    <input
+                      id="modal-title"
+                      type="text"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
+                      placeholder="Ví dụ: Java Backend Developer Test"
+                      value={modalData.title || ''}
+                      onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-position" className="block text-sm font-medium text-neutral-600 mb-1">
+                      Vị trí công việc *
+                    </label>
+                    <input
+                      id="modal-position"
+                      type="text"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
+                      placeholder="Ví dụ: Backend Developer"
+                      value={modalData.position || ''}
+                      onChange={(e) => setModalData({ ...modalData, position: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="modal-description" className="block text-sm font-medium text-neutral-600 mb-1">
+                      Mô tả (tùy chọn)
+                    </label>
+                    <textarea
+                      id="modal-description"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:border-accent focus:outline-none resize-none"
+                      rows={3}
+                      placeholder="Mô tả chi tiết về bài kiểm tra..."
+                      value={modalData.description || ''}
+                      onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleCancelModal}
+                    className="px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-200 rounded-md hover:bg-neutral-300 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleConfirmCreate(modalData)}
+                    disabled={!modalData.title || !modalData.position}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!modalData.title || !modalData.position
+                      ? 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                      : 'bg-accent text-white hover:bg-accent-dark'
+                      }`}
+                  >
+                    Xác Nhận Tạo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

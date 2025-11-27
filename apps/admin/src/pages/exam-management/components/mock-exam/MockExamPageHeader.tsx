@@ -22,7 +22,7 @@ const MockExamPageHeader: React.FC<MockExamPageHeaderProps> = ({ onCreate }) => 
             className="text-heading-2 text-gradient-primary"
             style={{ marginBottom: 'var(--spacing-sm)' }}
           >
-            📃 Quản lý bài phỏng vấn ảo
+            Quản lý bài phỏng vấn ảo
           </div>
           <div className="text-body text-neutral-600">
             Xem các bài phỏng vấn ảo được tạo bởi doanh nghiệp.

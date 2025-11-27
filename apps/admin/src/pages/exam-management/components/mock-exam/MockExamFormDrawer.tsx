@@ -4,11 +4,13 @@ import {
   Button,
   notification,
   Steps,
+  Tabs,
   Form,
 } from 'antd';
-import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Topic, Level, QuestionType, ExamQuestion } from '@abc-interview-support-frontend/types';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { BasicInfoStep, ExamConfigStep, ConfirmationStep } from './mock-exam-form-drawer';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 // Extended interface to include UI-specific fields
 interface CreateFormFields extends Exam {
@@ -19,7 +21,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: File | null; // File upload for CSV
-  selectedQuestions: number[]; // Add selected questions
+  questions?: ExamQuestion[]; // Current questions in the exam
 }
 
 interface ExamFormDrawerProps {
@@ -51,11 +53,24 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
   levels,
   questionTypes,
 }) => {
+  const { user } = useAuth();
   const isEdit = useMemo(() => Boolean(initForm?.id), [initForm]);
+  const [currentQuestions, setCurrentQuestions] = React.useState<ExamQuestion[]>(initForm?.questions || []);
+
+  // Update currentQuestions when initForm changes
+  React.useEffect(() => {
+    setCurrentQuestions(initForm?.questions || []);
+  }, [initForm?.questions]);
+
+  const handleUpdateQuestions = (questions: ExamQuestion[]) => {
+    setCurrentQuestions(questions);
+    // Update form value
+    setValue('questions', questions);
+  };
 
   const defaultFormValue: CreateFormFields = useMemo(() => ({
     id: 0,
-    userId: 0,
+    userId: user ? Number.parseInt(user.userId) : 0,
     examType: 'VIRTUAL',
     title: '',
     position: '',
@@ -75,8 +90,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     endTime: '',
     examPeriod: undefined,
     questionSource: 'upload',
-    selectedQuestions: [], // Initialize empty array
-  }), []);
+  }), [user]);
 
   const {
     control,
@@ -104,7 +118,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
@@ -137,7 +151,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     {
       title: 'Thông tin cơ bản',
       content: (
-        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} />
+        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} fields={fields} levels={levels} />
       ),
     },
     {
@@ -151,12 +165,50 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
           levels={levels}
           questionTypes={questionTypes}
           setValue={setValue}
+          isEdit={isEdit}
+          existingQuestions={currentQuestions}
+          onUpdateQuestions={handleUpdateQuestions}
         />
       ),
     },
     {
       title: 'Xác nhận',
       content: (
+        <ConfirmationStep watch={watch} />
+      ),
+    },
+  ];
+
+  const tabItems = [
+    {
+      key: 'basic-info',
+      label: 'Thông tin cơ bản',
+      children: (
+        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} fields={fields} levels={levels} />
+      ),
+    },
+    {
+      key: 'config',
+      label: 'Cấu hình đề thi',
+      children: (
+        <ExamConfigStep
+          control={control}
+          errors={errors}
+          fields={fields}
+          topics={topics}
+          levels={levels}
+          questionTypes={questionTypes}
+          setValue={setValue}
+          isEdit={isEdit}
+          existingQuestions={currentQuestions}
+          onUpdateQuestions={handleUpdateQuestions}
+        />
+      ),
+    },
+    {
+      key: 'confirmation',
+      label: 'Xác nhận',
+      children: (
         <ConfirmationStep watch={watch} />
       ),
     },
@@ -181,7 +233,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
           }}
         >
           <div>
-            {currentStep > 0 && (
+            {currentStep > 0 && !isEdit && (
               <Button style={{ marginRight: 8 }} onClick={onPrevStep}>
                 Quay lại
               </Button>
@@ -191,7 +243,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
             <Button onClick={onClose} style={{ marginRight: 8 }}>
               Đóng
             </Button>
-            {currentStep < steps.length - 1 ? (
+            {!isEdit && currentStep < steps.length - 1 ? (
               <Button
                 type="primary"
                 onClick={() =>
@@ -211,16 +263,21 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
         </div>
       }
     >
-      <div style={{ marginBottom: 24 }}>
-        <Steps current={currentStep} size="small">
-          {steps.map((step, index) => (
-            <Steps.Step key={step.title} title={step.title} />
-          ))}
-        </Steps>
-      </div>
-
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-        <div style={{ marginTop: 24 }}>{steps[currentStep].content}</div>
+        {isEdit ? (
+          <Tabs items={tabItems} />
+        ) : (
+          <>
+            <div style={{ marginBottom: 24 }}>
+              <Steps current={currentStep} size="small">
+                {steps.map((step, index) => (
+                  <Steps.Step key={step.title} title={step.title} />
+                ))}
+              </Steps>
+            </div>
+            <div style={{ marginTop: 24 }}>{steps[currentStep].content}</div>
+          </>
+        )}
       </Form>
     </Drawer>
   );

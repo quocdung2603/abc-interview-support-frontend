@@ -5,6 +5,7 @@ export enum RouterLink {
   MockInterview = 'mock-interview',
   MockInterviewDetail = 'mock-interview-detail/:id',
   MockInterviewResult = 'mock-interview-result/:id',
+  BaseInterview = 'base-interview',
   TrendNews = 'trend-news',
   TrendNewsDetail = 'trend-news-detail/:id',
   RecruitmentNews = 'recruitment-news',

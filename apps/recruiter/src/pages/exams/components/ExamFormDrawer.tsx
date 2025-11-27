@@ -6,7 +6,8 @@ import {
   Steps,
   Form,
 } from 'antd';
-import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Topic, Level, QuestionType, Question } from '@abc-interview-support-frontend/types';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { BasicInfoStep, ExamConfigStep, ConfirmationStep } from './exam-form-component';
 
@@ -20,6 +21,7 @@ interface CreateFormFields extends Exam {
   questionSource?: 'upload' | 'existing';
   questionBank?: any; // File upload for CSV
   selectedQuestions: number[]; // Add selected questions
+  selectedQuestionsData?: Question[]; // Add selected questions objects
   // Override to use correct field names
   topics?: number[];
   questionTypes?: number[];
@@ -54,6 +56,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
   levels,
   questionTypes,
 }) => {
+  const { user } = useAuth();
   const isEdit = useMemo(() => Boolean(initForm?.id), [initForm]);
 
   const defaultFormValue: CreateFormFields = useMemo(() => ({
@@ -104,13 +107,17 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     } else {
       reset(defaultFormValue);
     }
-  }, [visible, initForm, reset, defaultFormValue]);
+    // Set userId từ useAuth
+    if (user) {
+      setValue('userId', Number.parseInt(user.userId));
+    }
+  }, [visible, initForm, reset, defaultFormValue, user, setValue]);
 
   const validateCurrentStep = async (step: number): Promise<boolean> => {
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
@@ -143,7 +150,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     {
       title: 'Thông tin cơ bản',
       content: (
-        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} />
+        <BasicInfoStep control={control} errors={errors} questionTypes={questionTypes} topics={topics} fields={fields} levels={levels} />
       ),
     },
     {
@@ -157,6 +164,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
           levels={levels}
           questionTypes={questionTypes}
           setValue={setValue}
+          initSelectedQuestions={initForm?.selectedQuestionsData}
         />
       ),
     },

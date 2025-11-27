@@ -6,6 +6,7 @@ import {
   ExamApprovalToolbar,
 } from './components/exam-approval';
 import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { examService, questionService } from '@abc-interview-support-frontend/services';
 
 const ExamApproval = () => {
   const [formDrawerVisible, setFormDrawerVisible] = useState(false);
@@ -17,68 +18,30 @@ const ExamApproval = () => {
   const [levels, setLevels] = useState<Level[]>([]);
   const [questionTypes, setQuestionTypes] = useState<QuestionType[]>([]);
 
-  // Load exams and reference data
-  useEffect(() => {
-    // TODO: Replace with actual API calls
-    // Mock data for now
-    setFields([
-      { id: 1, name: 'Frontend' },
-      { id: 2, name: 'Backend' },
-      { id: 3, name: 'DevOps' },
-    ]);
-    setTopics([
-      { id: 1, fieldId: 1, fieldName: 'Frontend', name: 'React' },
-      { id: 2, fieldId: 1, fieldName: 'Frontend', name: 'Vue' },
-      { id: 3, fieldId: 2, fieldName: 'Backend', name: 'Node.js' },
-    ]);
-    setLevels([
-      { id: 1, name: 'Junior' },
-      { id: 2, name: 'Mid' },
-      { id: 3, name: 'Senior' },
-    ]);
-    setQuestionTypes([
-      { id: 1, name: 'Multiple Choice' },
-      { id: 2, name: 'Essay' },
-      { id: 3, name: 'Fill in the Blank' },
-    ]);
-
-    setExams([]);
-    setFilteredExams([]);
-  }, []);
-
   const handleViewExam = (exam: Exam) => {
     console.log('Opening approval form for exam:', exam);
     setSelectedExam(exam);
     setFormDrawerVisible(true);
   };
 
-  const handleApproveExam = (exam: Exam) => {
-    console.log('Approving exam:', exam);
-    setSelectedExam(exam);
-    setFormDrawerVisible(true);
+  const handleSubmitApprove = async (examId: number) => {
+    // Refresh data after approval
+    await getAllExams();
   };
 
-  const handleRejectExam = (exam: Exam) => {
-    console.log('Rejecting exam:', exam);
-    setSelectedExam(exam);
-    setFormDrawerVisible(true);
-  };
-
-  const handleSubmitApprove = (examId: number) => {
-    setExams((prev) => prev.filter((exam) => exam.id !== examId));
-    setFilteredExams((prev) => prev.filter((exam) => exam.id !== examId));
-  };
-
-  const handleSubmitReject = (examId: number, reason: string) => {
+  const handleSubmitReject = async (examId: number, reason: string) => {
     console.log('Rejecting exam:', examId, 'Reason:', reason);
-    setExams((prev) => prev.filter((exam) => exam.id !== examId));
-    setFilteredExams((prev) => prev.filter((exam) => exam.id !== examId));
+    // Refresh data after rejection
+    await getAllExams();
   };
 
   const handleFilterChange = (filters: {
     searchText?: string;
     examType?: string;
     status?: string;
+    fieldId?: number;
+    topicIds?: number[];
+    levelId?: number;
     dateRange?: [Date, Date];
   }) => {
     let filtered = exams;
@@ -98,6 +61,21 @@ const ExamApproval = () => {
       filtered = filtered.filter((exam) => exam.status === filters.status);
     }
 
+    if (filters.fieldId !== undefined) {
+      filtered = filtered.filter((exam) => exam.fieldId === filters.fieldId);
+    }
+
+    if (filters.topicIds && filters.topicIds.length > 0) {
+      const topicIds = filters.topicIds;
+      filtered = filtered.filter((exam) =>
+        topicIds.some(topicId => exam.topicIds.includes(topicId))
+      );
+    }
+
+    if (filters.levelId !== undefined) {
+      filtered = filtered.filter((exam) => exam.levelId === filters.levelId);
+    }
+
     if (filters.dateRange) {
       const [startDate, endDate] = filters.dateRange;
       filtered = filtered.filter((exam) => {
@@ -109,16 +87,58 @@ const ExamApproval = () => {
     setFilteredExams(filtered);
   };
 
+  const getAllExams = async () => {
+    try {
+      const res = await examService.getAllExams();
+      console.log(res);
+      let exams: Exam[] = (res.content as Exam[]) || [];
+      exams = exams.filter((exam) => exam?.status === 'DRAFT');
+      console.log('All Mock Exams:', exams);
+      setExams(exams);
+      setFilteredExams(exams);
+    } catch (error) {
+      console.error('Error fetching mock exams:', error);
+      setExams([]);
+      setFilteredExams([]);
+    }
+  }
+
+  const loadFilterData = async () => {
+    try {
+      const [fieldsRes, topicsRes, levelsRes, questionTypesRes] = await Promise.all([
+        questionService.getAllFields(),
+        questionService.getAllTopics(),
+        questionService.getAllLevels(),
+        questionService.getAllQuestionTypes()
+      ]);
+      setFields(fieldsRes.content || []);
+      setTopics(topicsRes.content || []);
+      setLevels(levelsRes.content || []);
+      setQuestionTypes(questionTypesRes.content || []);
+    } catch (error) {
+      console.error('Error loading filter data:', error);
+    }
+  }
+
+  useEffect(() => {
+    getAllExams();
+    loadFilterData();
+  }, [])
+
+
   return (
     <div className="container-center animate-fade-in-up">
       <ExamApprovalPageHeader />
       <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-        <ExamApprovalToolbar onFilterChange={handleFilterChange} />
+        <ExamApprovalToolbar
+          onFilterChange={handleFilterChange}
+          fields={fields}
+          topics={topics}
+          levels={levels}
+        />
         <ExamApprovalTable
           data={filteredExams}
           onView={handleViewExam}
-          onApprove={handleApproveExam}
-          onReject={handleRejectExam}
         />
       </div>
       <ExamApprovalFormDrawer

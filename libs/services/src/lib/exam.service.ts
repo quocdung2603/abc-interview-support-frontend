@@ -78,8 +78,40 @@ export class ExamService {
     return response.data;
   }
 
+  async removeQuestionFromExam(examId: string) {
+    const response = await this.apiClient.delete(`/exams/${examId}/questions`);
+    return response.data;
+  }
+
   async getExamResultByUserId(userId: string) {
     const response = await this.apiClient.get(`/exams/results/user/${userId}`, {
+      params: {
+        page: 0,
+        size: 1000,
+      },
+    });
+    return response.data;
+  }
+
+  async publishExam(examId: string) {
+    const response = await this.apiClient.post(
+      `/exams/${examId}/publish?userId=1`
+    );
+    return response.data;
+  }
+
+  async startExam(examId: string) {
+    const response = await this.apiClient.post(`/exams/${examId}/start`);
+    return response.data;
+  }
+
+  async completeExam(examId: string) {
+    const response = await this.apiClient.post(`/exams/${examId}/complete`);
+    return response.data;
+  }
+
+  async getAllAnswer() {
+    const response = await this.apiClient.get(`/exams/answers`, {
       params: {
         page: 0,
         size: 1000,

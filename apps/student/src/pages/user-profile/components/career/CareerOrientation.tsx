@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { CareerPreference } from '../../../../../../../libs/types/src/lib/career-types';
+import { CareerPreference } from '@abc-interview-support-frontend/types';
 import {
   Field,
   Topic,
-} from '../../../../../../../libs/types/src/lib/question-types';
+} from '@abc-interview-support-frontend/types';
 
 interface CareerOrientationProps {
   userCareerPreferences: CareerPreference[];

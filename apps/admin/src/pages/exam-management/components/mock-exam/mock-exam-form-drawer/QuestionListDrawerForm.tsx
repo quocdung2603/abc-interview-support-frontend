@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Drawer, Button, Table, Tag, Input, Select, Space } from 'antd';
 import { Question, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { questionService } from '@abc-interview-support-frontend/services';
 
 const { Option } = Select;
 
@@ -23,57 +24,13 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
   levels,
   questionTypes,
 }) => {
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [questionList, setQuestionList] = useState<Question[]>([]); // This would be fetched from an API in a real app
   const [selectedField, setSelectedField] = useState<number | undefined>();
   const [selectedTopic, setSelectedTopic] = useState<number | undefined>();
   const [selectedLevel, setSelectedLevel] = useState<number | undefined>();
 
-  // Mock data for questions
-  const mockQuestions: Question[] = [
-    {
-      id: 1,
-      userId: 1,
-      topicId: 1,
-      fieldId: 1,
-      levelId: 1,
-      questionTypeId: 1,
-      status: 'APPROVED',
-      questionContent: 'React Hook useEffect được sử dụng để làm gì?',
-      questionAnswer: 'Đáp án mẫu',
-      language: 'vi',
-      similarityScore: 0,
-      usefulVote: 15,
-      unusefulVote: 2,
-      createdAt: new Date().toISOString(),
-      fieldName: 'Frontend',
-      levelName: 'Junior',
-      topicName: 'React',
-      questionTypeName: 'Multiple Choice',
-    },
-    {
-      id: 2,
-      userId: 1,
-      topicId: 2,
-      fieldId: 1,
-      levelId: 2,
-      questionTypeId: 2,
-      status: 'APPROVED',
-      questionContent: 'RESTful API là gì?',
-      questionAnswer: 'Đáp án mẫu',
-      language: 'vi',
-      similarityScore: 0,
-      usefulVote: 20,
-      unusefulVote: 1,
-      createdAt: new Date().toISOString(),
-      fieldName: 'Backend',
-      levelName: 'Mid',
-      topicName: 'API',
-      questionTypeName: 'Essay',
-    },
-  ];
-
-  const filteredQuestions = mockQuestions.filter(question => {
+  const filteredQuestions = questionList.filter(question => {
     const matchesSearch = question.questionContent.toLowerCase().includes(searchText.toLowerCase());
     const matchesField = !selectedField || question.fieldId === selectedField;
     const matchesTopic = !selectedTopic || question.topicId === selectedTopic;
@@ -81,6 +38,20 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
 
     return matchesSearch && matchesField && matchesTopic && matchesLevel;
   });
+
+  const getAllQuestion = async () => {
+    try {
+      const res = await questionService.getAllQuestions();
+      setQuestionList(res.content || []);
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      setQuestionList([]);
+    }
+  }
+
+  useEffect(() => {
+    getAllQuestion();
+  }, [])
 
   const columns = [
     {
@@ -121,36 +92,30 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
         </div>
       ),
     },
+    {
+      title: 'Hành động',
+      key: 'action',
+      render: (record: Question) => (
+        <Button type="primary" onClick={() => onConfirm(record)}>
+          Chọn
+        </Button>
+      ),
+    },
   ];
-
-  const handleSelectQuestion = (question: Question) => {
-    setSelectedQuestion(question);
-  };
-
-  const handleConfirm = () => {
-    if (selectedQuestion) {
-      onConfirm(selectedQuestion);
-      onClose();
-      setSelectedQuestion(null);
-    }
-  };
 
   return (
     <Drawer
       title="Chọn câu hỏi từ ngân hàng"
       width={900}
+      placement='left'
+      push={false}
+      mask={false}
+      zIndex={1002}
       open={visible}
       onClose={onClose}
       footer={
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button onClick={onClose}>Hủy</Button>
-          <Button
-            type="primary"
-            onClick={handleConfirm}
-            disabled={!selectedQuestion}
-          >
-            Chọn câu hỏi
-          </Button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button onClick={onClose}>Đóng</Button>
         </div>
       }
     >
@@ -202,17 +167,6 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
         columns={columns}
         dataSource={filteredQuestions}
         rowKey="id"
-        rowSelection={{
-          type: 'radio',
-          selectedRowKeys: selectedQuestion ? [selectedQuestion.id] : [],
-          onChange: (_, selectedRows) => {
-            if (selectedRows.length > 0) {
-              handleSelectQuestion(selectedRows[0]);
-            } else {
-              setSelectedQuestion(null);
-            }
-          },
-        }}
         pagination={{
           pageSize: 10,
           showSizeChanger: true,

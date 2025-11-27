@@ -1,17 +1,21 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, EditOutlined } from '@ant-design/icons';
 import { Exam } from '@abc-interview-support-frontend/types';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 interface MockExamTableProps {
   data: Exam[];
   onView: (exam: Exam) => void;
+  onEdit: (exam: Exam) => void;
 }
 
 const MockExamTable: React.FC<MockExamTableProps> = ({
   data,
   onView,
+  onEdit,
 }) => {
+  const { user } = useAuth();
   const getStatusText = (status: string) => {
     switch (status) {
       case 'DRAFT':
@@ -56,11 +60,10 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
       title: 'Tiêu đề bài kiểm tra',
       dataIndex: 'title',
       key: 'title',
-      width: '30%',
       render: (title: string) => (
         <div
           style={{
-            maxWidth: '300px',
+            maxWidth: '200px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -115,6 +118,16 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
               onClick={() => onView(record)}
             />
           </Tooltip>
+          {user && record.userId === Number.parseInt(user.userId) && (
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                size="small"
+                onClick={() => onEdit(record)}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },

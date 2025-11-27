@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
 import SingleChoiceQuestion from './components/mock-interview-detail/SingleChoiceQuestion';
 import MultipleChoiceQuestion from './components/mock-interview-detail/MultipleChoiceQuestion';
@@ -8,13 +8,19 @@ import OpenEndedQuestion from './components/mock-interview-detail/OpenEndedQuest
 import QuestionNavigator from './components/mock-interview-detail/QuestionNavigator';
 import ExamTimer from './components/mock-interview-detail/ExamTimer';
 import QuestionControls from './components/mock-interview-detail/QuestionControls';
+import { examService } from '@abc-interview-support-frontend/services';
 
 interface UserAnswers {
   [questionId: string]: string; // Tất cả đáp án đều lưu dưới dạng string
 }
 
-const MockInterviewDetail = () => {
-  const { examId } = useParams<{ examId: string }>();
+interface MockInterviewDetailProps {
+  examId?: string;
+  onBack?: () => void;
+}
+
+const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propExamId, onBack }) => {
+  const propsExamId = propExamId;
   const navigate = useNavigate();
 
   // State management
@@ -29,353 +35,45 @@ const MockInterviewDetail = () => {
   const [isExamActive, setIsExamActive] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for development
-  const mockExam: Exam = {
-    id: 1,
-    userId: 1,
-    examType: 'RECRUITER',
-    title: 'Bài kiểm tra React Developer - Level Junior',
-    position: 'React Developer',
-    fieldId: 1,
-    levelId: 1,
-    topicIds: [1, 2, 3], // React, JavaScript, HTML/CSS
-    questionTypeIds: [1, 2, 3, 4], // SingleChoice, MultipleChoice, FillInTheBlank, OpenEnded
-    questionCount: 10,
-    duration: 60, // 60 minutes
-    status: 'ACTIVE',
-    language: 'Vietnamese',
-    createdAt: new Date().toISOString(),
-    createdBy: '1',
-  };
+  const getExamById = async (examId: string) => {
+    try {
+      const res = await examService.getExamById(examId);
+      const exam = res || null;
+      setExam(exam);
+      setQuestions(exam.questions || []);
+    } catch (error) {
+      console.error('Error fetching exam:', error);
+      setExam(null);
+    }
+  }
 
-  const mockQuestions: Question[] = [
-    {
-      questionId: '1',
-      userId: 'system',
-      topicId: 'react',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'SingleChoice',
-      questionContent: 'React là gì?',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '2',
-      userId: 'system',
-      topicId: 'react',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'MultipleChoice',
-      questionContent:
-        'Những Hook nào được built-in trong React? (Chọn tất cả đáp án đúng)',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '3',
-      userId: 'system',
-      topicId: 'javascript',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'FillInTheBlank',
-      questionContent:
-        'Để khai báo một biến const trong JavaScript, ta sử dụng từ khóa _____ và để khai báo function, ta sử dụng từ khóa _____.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '4',
-      userId: 'system',
-      topicId: 'react',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'OpenEnded',
-      questionContent:
-        'Hãy giải thích sự khác biệt giữa state và props trong React. Đưa ra ví dụ cụ thể.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '5',
-      userId: 'system',
-      topicId: 'javascript',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'FillInTheBlank',
-      questionContent:
-        'Trong JavaScript, để lặp qua một mảng, ta có thể sử dụng vòng lặp _____ hoặc phương thức _____ hoặc _____.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-  ];
-
-  const mockAnswers: Record<string, Answer[]> = {
-    '1': [
-      {
-        answerId: 'a1-1',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent:
-          'Một thư viện JavaScript để xây dựng giao diện người dùng',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-2',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một framework backend cho Node.js',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-3',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một cơ sở dữ liệu',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-4',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một ngôn ngữ lập trình',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '2': [
-      {
-        answerId: 'a2-1',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useState',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-2',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useEffect',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-3',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useContext',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-4',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useCustomHook',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '3': [
-      {
-        answerId: 'a3-1',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'const',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-2',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'function',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-3',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'let',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-4',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'var',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-5',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'arrow',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-6',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'method',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '5': [
-      {
-        answerId: 'a5-1',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'for',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-2',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'forEach',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-3',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'map',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-4',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'while',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-5',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'filter',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-6',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'reduce',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-  };
+  const getAllAnswers = async () => {
+    try {
+      const res = await examService.getAllAnswer();
+      const answersArray: Answer[] = res.content || [];
+      const answersMap: Record<string, Answer[]> = {};
+      answersArray.forEach((answer) => {
+        if (!answersMap[answer.questionId]) {
+          answersMap[answer.questionId] = [];
+        }
+        answersMap[answer.questionId].push(answer);
+      });
+      setAnswers(answersMap);
+    } catch (error) {
+      console.error('Error fetching answers:', error);
+      setAnswers({});
+    }
+  }
 
   // Initialize mock data
   useEffect(() => {
     const initializeExam = async () => {
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        setExam(mockExam);
-        setQuestions(mockQuestions);
-        setAnswers(mockAnswers);
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to load exam:', error);
-        setLoading(false);
-      }
+      getExamById(propsExamId || '');
+      getAllAnswers().finally(() => setLoading(false));
     };
 
     initializeExam();
-  }, [examId]);
+  }, [propsExamId]);
 
   // Handle answer changes
   const handleAnswerChange = useCallback(
@@ -425,7 +123,7 @@ const MockInterviewDetail = () => {
     if (currentQuestion) {
       setUserAnswers((prev) => {
         const newAnswers = { ...prev };
-        delete newAnswers[currentQuestion.questionId];
+        delete newAnswers[currentQuestion.id];
         return newAnswers;
       });
     }
@@ -433,7 +131,7 @@ const MockInterviewDetail = () => {
 
   // Submit exam
   const handleSubmitExam = useCallback(() => {
-    const confirmSubmit = window.confirm(
+    const confirmSubmit = globalThis.window.confirm(
       'Bạn có chắc chắn muốn nộp bài? Sau khi nộp bài, bạn không thể thay đổi đáp án.'
     );
 
@@ -444,19 +142,19 @@ const MockInterviewDetail = () => {
 
       // Store results in localStorage for the result page
       const examResult = {
-        exam: mockExam,
-        questions: mockQuestions,
-        answers: mockAnswers,
+        exam: exam,
+        questions: questions,
+        answers: answers,
         userAnswers: userAnswers,
-        timeSpent: mockExam.duration * 60 - 120, // Simulate time spent
+        timeSpent: (exam?.duration ?? 0) * 60 - 120, // Simulate time spent
         completedAt: new Date().toISOString(),
       };
-      localStorage.setItem(`examResult_${examId}`, JSON.stringify(examResult));
+      localStorage.setItem(`examResult_${propsExamId}`, JSON.stringify(examResult));
 
       // Navigate to results page
-      navigate(`/mock-interview-result/${examId}`);
+      navigate(`/mock-interview-result/${propsExamId}`);
     }
-  }, [userAnswers, examId, navigate]);
+  }, [userAnswers, propsExamId, navigate, exam, questions, answers]);
 
   // Auto-submit when time is up
   const handleTimeUp = useCallback(() => {
@@ -479,8 +177,8 @@ const MockInterviewDetail = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    globalThis.window.addEventListener('keydown', handleKeyPress);
+    return () => globalThis.window.removeEventListener('keydown', handleKeyPress);
   }, [isExamActive, goToPrevious, goToNext]);
 
   // Prevent page refresh/close
@@ -505,23 +203,62 @@ const MockInterviewDetail = () => {
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return null;
 
-    const currentAnswers = answers[currentQuestion.questionId] || [];
-    const userAnswer = userAnswers[currentQuestion.questionId];
+    console.log('Current question:', currentQuestion);
+    console.log('Current answers:', currentAnswers);
+    if (currentAnswers.length === 0 && currentQuestion.questionAnswer) {
+      console.warn(`Question ${currentQuestion.id} has type ${currentQuestion.questionTypeId} but no answers. Showing explanation.`);
+      return (
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg p-6 shadow-md border border-neutral-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              {currentQuestion.questionText}
+            </h3>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-yellow-800">
+                <span className="font-medium">Lưu ý:</span> Câu hỏi này chưa có đáp án lựa chọn. Vui lòng trả lời dựa trên kiến thức của bạn.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700 mb-2 block">
+                  Câu trả lời của bạn:
+                </span>
+                <textarea
+                  value={typeof userAnswer === 'string' ? userAnswer : ''}
+                  onChange={(e) => handleAnswerChange(currentQuestion.id.toString(), e.target.value)}
+                  placeholder="Nhập câu trả lời của bạn..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical min-h-[120px]"
+                  rows={5}
+                />
+              </label>
+            </div>
+            {currentQuestion.questionAnswer && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Gợi ý đáp án:</span><br />
+                  {currentQuestion.questionAnswer}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
 
     switch (currentQuestion.questionTypeId) {
-      case 'SingleChoice':
+      case 1: // SingleChoice
         return (
           <SingleChoiceQuestion
             question={currentQuestion}
             answers={currentAnswers}
             selectedAnswer={typeof userAnswer === 'string' ? userAnswer : null}
             onAnswerChange={(answerId) =>
-              handleAnswerChange(currentQuestion.questionId, answerId || '')
+              handleAnswerChange(currentQuestion.id.toString(), answerId || '')
             }
           />
         );
 
-      case 'MultipleChoice':
+      case 2: // MultipleChoice
         return (
           <MultipleChoiceQuestion
             question={currentQuestion}
@@ -533,32 +270,32 @@ const MockInterviewDetail = () => {
             }
             onAnswerChange={(answerIds) =>
               handleAnswerChange(
-                currentQuestion.questionId,
+                currentQuestion.id.toString(),
                 answerIds.join('|')
               )
             }
           />
         );
 
-      case 'FillInTheBlank':
+      case 3: // FillInTheBlank
         return (
           <FillInTheBlankQuestion
             question={currentQuestion}
             answers={currentAnswers}
             userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
             onAnswerChange={(answer) =>
-              handleAnswerChange(currentQuestion.questionId, answer)
+              handleAnswerChange(currentQuestion.id.toString(), answer)
             }
           />
         );
 
-      case 'OpenEnded':
+      case 4: // OpenEnded
         return (
           <OpenEndedQuestion
             question={currentQuestion}
             userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
             onAnswerChange={(answer) =>
-              handleAnswerChange(currentQuestion.questionId, answer)
+              handleAnswerChange(currentQuestion.id.toString(), answer)
             }
           />
         );
@@ -598,8 +335,8 @@ const MockInterviewDetail = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const hasCurrentAnswer =
     currentQuestion &&
-    userAnswers[currentQuestion.questionId] !== undefined &&
-    userAnswers[currentQuestion.questionId] !== '';
+    userAnswers[currentQuestion.id] !== undefined &&
+    userAnswers[currentQuestion.id] !== '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -607,12 +344,26 @@ const MockInterviewDetail = () => {
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-bold text-gray-800">{exam.title}</h1>
-              <p className="text-sm text-gray-600">
-                {exam.position} • {questions.length} câu hỏi • {exam.duration}{' '}
-                phút
-              </p>
+            <div className="flex items-center space-x-4">
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                  title="Quay lại danh sách bài kiểm tra"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Quay lại</span>
+                </button>
+              )}
+              <div>
+                <h1 className="text-lg font-bold text-gray-800">{exam.title}</h1>
+                <p className="text-sm text-gray-600">
+                  {exam.position} • {questions.length} câu hỏi • {exam.duration}{' '}
+                  phút
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
@@ -635,10 +386,10 @@ const MockInterviewDetail = () => {
             <QuestionControls
               currentQuestionIndex={currentQuestionIndex}
               totalQuestions={questions.length}
-              currentQuestionId={currentQuestion?.questionId || ''}
+              currentQuestionId={currentQuestion?.id.toString() || ''}
               isMarked={
                 currentQuestion
-                  ? markedQuestions.has(currentQuestion.questionId)
+                  ? markedQuestions.has(currentQuestion.id.toString())
                   : false
               }
               hasAnswer={hasCurrentAnswer}
@@ -646,7 +397,7 @@ const MockInterviewDetail = () => {
               onNext={goToNext}
               onToggleMark={() =>
                 currentQuestion &&
-                toggleMarkQuestion(currentQuestion.questionId)
+                toggleMarkQuestion(currentQuestion.id.toString())
               }
               onClearAnswer={clearCurrentAnswer}
               onSubmitExam={handleSubmitExam}

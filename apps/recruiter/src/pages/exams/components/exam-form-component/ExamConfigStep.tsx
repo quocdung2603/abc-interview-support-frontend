@@ -27,6 +27,7 @@ interface ExamConfigStepProps {
   questionTypes: QuestionType[];
   onQuestionsSelected?: (questions: Question[]) => void;
   setValue?: (name: keyof CreateFormFields, value: any) => void;
+  initSelectedQuestions?: Question[];
 }
 
 const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
@@ -38,16 +39,19 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   questionTypes,
   onQuestionsSelected,
   setValue,
+  initSelectedQuestions = [],
 }) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [questionSource, setQuestionSource] = useState<'upload' | 'existing'>('upload');
   const [questionListDrawerVisible, setQuestionListDrawerVisible] = useState(false);
-  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>(initSelectedQuestions || []);
 
-  // Sync selectedQuestions with form value
+  // Update selectedQuestions when initSelectedQuestions changes
   useEffect(() => {
-    // This would need the form watch, but for now, we'll handle it differently
-  }, []);
+    if (initSelectedQuestions) {
+      setSelectedQuestions(initSelectedQuestions);
+    }
+  }, [initSelectedQuestions]);
 
   const handleFileChange = (info: UploadChangeParam) => {
     let fileList = [...info.fileList];
@@ -213,8 +217,12 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
             Danh sách câu hỏi đã chọn ({selectedQuestions.length})
           </div>
           <Table
-            dataSource={selectedQuestions}
-            rowKey="id"
+            dataSource={(() => {
+              const filtered = selectedQuestions.filter(q => q?.id);
+              console.log('Filtered questions for table:', filtered);
+              return filtered;
+            })()} // Filter out undefined or invalid questions
+            rowKey={(record) => record.id.toString()} // Ensure unique key
             size="small"
             pagination={false}
             scroll={{ y: 300 }}
@@ -227,9 +235,9 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
                 width: 200,
                 render: (text: string, record: Question) => (
                   <div>
-                    <div style={{ fontWeight: 500, marginBottom: 4 }}>{text}</div>
+                    <div style={{ fontWeight: 500, marginBottom: 4 }}>{text || 'Nội dung câu hỏi không có'}</div>
                     <div style={{ fontSize: '12px', color: '#666' }}>
-                      ID: {record.id}
+                      ID: {record?.id || 'N/A'}
                     </div>
                   </div>
                 ),
@@ -239,7 +247,7 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
                 key: 'field',
                 width: 100,
                 render: (_, record: Question) => (
-                  <Tag color="blue">{record.fieldName}</Tag>
+                  <Tag color="blue">{record?.fieldName || 'N/A'}</Tag>
                 ),
               },
               {
@@ -247,7 +255,7 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
                 key: 'topic',
                 width: 80,
                 render: (_, record: Question) => (
-                  <Tag color="green">{record.topicName}</Tag>
+                  <Tag color="green">{record?.topicName || 'N/A'}</Tag>
                 ),
               },
               {
@@ -255,7 +263,7 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
                 key: 'level',
                 width: 80,
                 render: (_, record: Question) => (
-                  <Tag color="orange">{record.levelName}</Tag>
+                  <Tag color="orange">{record?.levelName || 'N/A'}</Tag>
                 ),
               },
               {
@@ -269,7 +277,7 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
                       danger
                       icon={<DeleteOutlined />}
                       size="small"
-                      onClick={() => handleRemoveQuestion(record.id)}
+                      onClick={() => record?.id && handleRemoveQuestion(record.id)}
                     />
                   </Tooltip>
                 ),

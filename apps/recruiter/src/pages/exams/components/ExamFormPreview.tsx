@@ -4,34 +4,6 @@ import { EyeOutlined } from '@ant-design/icons';
 import { Exam, QuestionType } from '@abc-interview-support-frontend/types';
 import { examService } from '@abc-interview-support-frontend/services';
 
-// Interface for exam detail with questions from API response
-interface ExamDetail {
-  id: number;
-  userId: number;
-  examType: 'VIRTUAL' | 'RECRUITER';
-  title: string;
-  position: string;
-  fieldId: number;
-  levelId: number;
-  topicIds: number[];
-  questionTypeIds: number[];
-  questionCount: number;
-  duration: number;
-  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
-  language: string;
-  createdAt: string;
-  createdBy: number;
-  questions: Array<{
-    id: number;
-    field: string;
-    topicId: number;
-    level: string;
-    questionTypeId: number;
-    questionText: string;
-    questionAnswer: string;
-  }>;
-}
-
 interface ExamFormPreviewProps {
   visible: boolean;
   onClose: () => void;
@@ -45,7 +17,7 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
   exam,
   questionTypes,
 }) => {
-  const [examDetail, setExamDetail] = useState<ExamDetail | null>(null);
+  const [examDetail, setExamDetail] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -103,6 +75,7 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
       dataIndex: 'id',
       key: 'id',
       width: 60,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: 'Câu hỏi',
@@ -116,8 +89,18 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     },
     {
       title: 'Lĩnh vực',
-      dataIndex: 'field',
-      key: 'field',
+      dataIndex: 'fieldId',
+      key: 'fieldId',
+      render: (fieldId: number) => {
+        const fieldMap: Record<number, string> = {
+          1: 'Frontend',
+          2: 'Backend',
+          3: 'DevOps',
+          4: 'Mobile',
+          5: 'Data Science',
+        };
+        return <Tag color="blue">{fieldMap[fieldId] || `Field ${fieldId}`}</Tag>;
+      },
     },
     {
       title: 'Chủ đề',
@@ -131,13 +114,21 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
           4: 'Database',
           5: 'Algorithms',
         };
-        return <Tag color="blue">{topicMap[topicId] || `Topic ${topicId}`}</Tag>;
+        return <Tag color="green">{topicMap[topicId] || `Topic ${topicId}`}</Tag>;
       },
     },
     {
       title: 'Mức độ',
-      dataIndex: 'level',
-      key: 'level',
+      dataIndex: 'levelId',
+      key: 'levelId',
+      render: (levelId: number) => {
+        const levelMap: Record<number, string> = {
+          1: 'Beginner',
+          2: 'Intermediate',
+          3: 'Advanced',
+        };
+        return <Tag color="orange">{levelMap[levelId] || `Level ${levelId}`}</Tag>;
+      },
     },
     {
       title: 'Loại',
@@ -201,6 +192,30 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
                 <strong>Vị trí:</strong> {examDetail.position}
               </div>
               <div>
+                <strong>Lĩnh vực:</strong>{' '}
+                {(() => {
+                  const fieldMap: Record<number, string> = {
+                    1: 'Frontend',
+                    2: 'Backend',
+                    3: 'DevOps',
+                    4: 'Mobile',
+                    5: 'Data Science',
+                  };
+                  return <Tag color="purple">{fieldMap[examDetail.fieldId] || `Field ${examDetail.fieldId}`}</Tag>;
+                })()}
+              </div>
+              <div>
+                <strong>Mức độ:</strong>{' '}
+                {(() => {
+                  const levelMap: Record<number, string> = {
+                    1: 'Beginner',
+                    2: 'Intermediate',
+                    3: 'Advanced',
+                  };
+                  return <Tag color="orange">{levelMap[examDetail.levelId] || `Level ${examDetail.levelId}`}</Tag>;
+                })()}
+              </div>
+              <div>
                 <strong>Thời lượng:</strong> {examDetail.duration} phút
               </div>
               <div>
@@ -208,9 +223,9 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
               </div>
               <div>
                 <strong>Chủ đề:</strong>{' '}
-                {examDetail.questions && examDetail.questions.length > 0 ? (
+                {examDetail.topicIds && examDetail.topicIds.length > 0 ? (
                   <div>
-                    {Array.from(new Set(examDetail.questions.map(q => q.topicId))).map((topicId) => {
+                    {examDetail.topicIds.map((topicId) => {
                       const topicMap: Record<number, string> = {
                         1: 'JavaScript',
                         2: 'React',
@@ -231,9 +246,9 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
               </div>
               <div>
                 <strong>Loại câu hỏi:</strong>{' '}
-                {examDetail.questions && examDetail.questions.length > 0 ? (
+                {examDetail.questionTypeIds && examDetail.questionTypeIds.length > 0 ? (
                   <div>
-                    {Array.from(new Set(examDetail.questions.map(q => q.questionTypeId))).map((typeId) => {
+                    {examDetail.questionTypeIds.map((typeId) => {
                       const questionType = questionTypes.find(qt => qt.id === typeId);
                       return (
                         <Tag key={typeId} color="green">
@@ -253,7 +268,7 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
             </div>
           </div>
 
-          {examDetail.status === 'ACTIVE' && (
+          {examDetail.status === 'PUBLISHED' && (
             <div
               className="stats-card"
               style={{ background: 'var(--color-success)', color: 'white', padding: '16px', borderRadius: '8px', marginTop: '16px' }}

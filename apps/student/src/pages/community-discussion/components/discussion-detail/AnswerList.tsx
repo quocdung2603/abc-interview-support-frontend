@@ -46,7 +46,7 @@ const AnswerList: React.FC<AnswerListProps> = ({
     const pages = [];
     const maxVisible = 5;
     let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
+    const end = Math.min(totalPages, start + maxVisible - 1);
 
     if (end - start < maxVisible - 1) {
       start = Math.max(1, end - maxVisible + 1);
@@ -124,9 +124,8 @@ const AnswerList: React.FC<AnswerListProps> = ({
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            className={`btn-outline btn-sm inline-flex items-center gap-1 ${
-              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`btn-outline btn-sm inline-flex items-center gap-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
           >
             <LeftOutlined />
             Trước
@@ -137,11 +136,10 @@ const AnswerList: React.FC<AnswerListProps> = ({
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
-                  page === currentPage
+                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${page === currentPage
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -151,9 +149,8 @@ const AnswerList: React.FC<AnswerListProps> = ({
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className={`btn-outline btn-sm inline-flex items-center gap-1 ${
-              currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`btn-outline btn-sm inline-flex items-center gap-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
           >
             Sau
             <RightOutlined />

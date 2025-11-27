@@ -29,6 +29,18 @@ const menuItems: MenuItem[] = [
     key: '2',
     label: 'Phỏng vấn ảo',
     path: `${RouterLink.MockInterview}`,
+    children: [
+      {
+        key: '2-1',
+        label: 'Đánh giá năng lực',
+        path: `${RouterLink.MockInterview}`,
+      },
+      {
+        key: '2-2',
+        label: 'Kiểm tra doanh nghiệp',
+        path: `${RouterLink.BaseInterview}`,
+      },
+    ]
   },
   {
     key: '3',
@@ -80,11 +92,10 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
+      className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg'
           : 'bg-white/90 backdrop-blur-sm shadow-md'
-      }`}
+        }`}
     >
       <div className="container-center">
         <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
@@ -114,11 +125,10 @@ const Header: React.FC = () => {
                     <Link
                       to={item.path}
                       aria-haspopup={hasSub ? 'menu' : undefined}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        active
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
                           ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-                      }`}
+                        }`}
                     >
                       {item.label}
                     </Link>
@@ -184,11 +194,10 @@ const Header: React.FC = () => {
                   {item.path ? (
                     <Link
                       to={item.path}
-                      className={`flex-1 px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
-                        active
+                      className={`flex-1 px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${active
                           ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-                      }`}
+                        }`}
                     >
                       {item.label}
                     </Link>
@@ -214,9 +223,8 @@ const Header: React.FC = () => {
                 {hasSub && (
                   <div
                     id={`sub-${item.key}`}
-                    className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
-                      opened ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                    }`}
+                    className={`overflow-hidden transition-[max-height,opacity] duration-200 ${opened ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
                   >
                     <ul className="pl-3 py-1">
                       {item.children!.map((sub) => (

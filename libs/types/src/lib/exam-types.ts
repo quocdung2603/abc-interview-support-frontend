@@ -3,7 +3,7 @@
 export interface Exam {
   id: number;
   userId: number;
-  examType: 'VIRTUAL' | 'RECRUITER';
+  examType: 'VIRTUAL' | 'RECRUITER' | 'PRACTICE';
   title: string;
   position: string;
   fieldId: number;
@@ -12,7 +12,7 @@ export interface Exam {
   questionTypeIds: number[]; // Array of question type IDs
   questionCount: number;
   duration: number;
-  status: 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
+  status: 'DRAFT' | 'PUBLISHED' | 'ONGOING' | 'COMPLETED';
   language: string;
   createdAt: string;
   createdBy: number;
@@ -62,8 +62,10 @@ export interface CreateExamData {
   examType: string;
   title: string;
   position: string;
-  topics: number[];
-  questionTypes: number[];
+  fieldId: number;
+  levelId: number;
+  topicIds: number[];
+  questionTypeIds: number[];
   questionCount: number;
   duration: number;
   userId: number;
@@ -74,9 +76,14 @@ export interface UpdateExamData {
   examType: string;
   title: string;
   position: string;
+  fieldId: number;
+  topicId: number;
+  levelId: number;
   topics: number[];
   questionTypes: number[];
   questionCount: number;
   duration: number;
   language: string;
 }
+
+// export interface CreateExamWithRandomQuestion {}

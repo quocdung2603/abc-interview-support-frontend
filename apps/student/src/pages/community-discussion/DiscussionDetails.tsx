@@ -244,7 +244,9 @@ const DiscussionDetails: React.FC = () => {
       ?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleOnBack = () => {};
+  const handleOnBack = () => {
+    window.history.back();
+  };
 
   const handleFloatButtonClick = () => {
     setIsOpenFloatButton(!isOpenFloatButton);

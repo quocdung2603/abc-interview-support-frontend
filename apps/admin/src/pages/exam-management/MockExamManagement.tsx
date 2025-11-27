@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { notification } from 'antd';
 import {
   MockExamPageHeader,
   MockExamPreviewDrawer,
@@ -42,20 +43,51 @@ const MockExamManagement = () => {
     setFormDrawerVisible(true);
   };
 
-  const handleEditExam = (exam: Exam) => {
-    setSelectedExam(exam);
-    setCurrentStep(0);
-    setFormDrawerVisible(true);
+  const handleEditExam = async (exam: Exam) => {
+    try {
+      // Fetch full exam details including questions
+      const examDetails = await examService.getExamById(exam.id.toString());
+      setSelectedExam(examDetails);
+      setCurrentStep(0);
+      setFormDrawerVisible(true);
+    } catch (error) {
+      console.error('Error fetching exam details:', error);
+      notification.error({
+        message: 'Lỗi khi tải thông tin bài kiểm tra',
+        description: 'Không thể tải chi tiết bài kiểm tra. Vui lòng thử lại.',
+      });
+    }
   };
 
   const handleSaveExam = async (data: any, mode: 'create' | 'update') => {
     try {
       if (mode === 'create') {
-        await examService.createExam(data);
-        console.log('Created exam:', data);
+        const response = await examService.createExam(data);
+        const examId = response.id;
+        console.log('Created exam:', response);
+
+        // Add questions to the exam
+        if (data.questions && data.questions.length > 0) {
+          for (let i = 0; i < data.questions.length; i++) {
+            await examService.addQuestionToExam(examId.toString(), data.questions[i].id, i + 1);
+          }
+        }
       } else {
+        // Update mode: update exam -> remove all questions -> add new questions
         await examService.updateExam(data.id, data);
         console.log('Updated exam:', data);
+
+        // Remove all existing questions
+        if (selectedExam?.questions && selectedExam.questions.length > 0) {
+          await examService.removeQuestionFromExam(data.id.toString());
+        }
+
+        // Add new questions
+        if (data.questions && data.questions.length > 0) {
+          for (let i = 0; i < data.questions.length; i++) {
+            await examService.addQuestionToExam(data.id.toString(), data.questions[i].id, i + 1);
+          }
+        }
       }
       // Refresh data
       getAllExams("VIRTUAL");
@@ -140,7 +172,7 @@ const MockExamManagement = () => {
       const res = await examService.getAllExams();
       console.log(res);
       let exams: Exam[] = (res.content as Exam[]) || [];
-      exams = exams.filter((exam) => exam?.examType === examTypes);
+      exams = exams.filter((exam) => exam?.examType === examTypes && exam?.status === 'PUBLISHED');
       console.log('All Mock Exams:', exams);
       setDataList(exams);
     } catch (error) {
@@ -181,7 +213,7 @@ const MockExamManagement = () => {
           topics={topics}
           levels={levels}
         />
-        <MockExamTable data={filteredExams} onView={handleViewExam} />
+        <MockExamTable data={filteredExams} onView={handleViewExam} onEdit={handleEditExam} />
       </div>
       <MockExamPreviewDrawer
         visible={previewDrawerVisible}
@@ -202,7 +234,6 @@ const MockExamManagement = () => {
           startTime: '',
           endTime: '',
           questionSource: 'upload',
-          selectedQuestions: []
         } : undefined}
         onSave={handleSaveExam}
         onNextStep={handleNextStep}

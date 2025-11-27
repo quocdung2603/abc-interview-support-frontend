@@ -2,33 +2,34 @@ import React, { useState } from 'react';
 import { Select, DatePicker, Input } from 'antd';
 import { Dayjs } from 'dayjs';
 import { Field, Level, Topic } from '@abc-interview-support-frontend/types';
+
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-interface ExamApprovalToolbarProps {
+interface ExamToolbarProps {
   onFilterChange: (filters: {
     searchText?: string;
-    examType?: string;
     status?: string;
+    position?: string;
     fieldId?: number;
     topicIds?: number[];
     levelId?: number;
-    dateRange?: [Date, Date];
+    dateRange?: [Dayjs, Dayjs];
   }) => void;
   fields: Field[];
   topics: Topic[];
   levels: Level[];
 }
 
-const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
+const ExamToolbar: React.FC<ExamToolbarProps> = ({
   onFilterChange,
   fields,
   topics,
   levels,
 }) => {
   const [searchText, setSearchText] = useState<string>('');
-  const [examTypeFilter, setExamTypeFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [positionFilter, setPositionFilter] = useState<string>('all');
   const [fieldFilter, setFieldFilter] = useState<number | undefined>(undefined);
   const [topicFilter, setTopicFilter] = useState<number[]>([]);
   const [levelFilter, setLevelFilter] = useState<number | undefined>(undefined);
@@ -38,44 +39,38 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
     setSearchText(value);
     onFilterChange({
       searchText: value || undefined,
-      examType: examTypeFilter || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: fieldFilter,
       topicIds: topicFilter.length > 0 ? topicFilter : undefined,
       levelId: levelFilter,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
-  const handleExamTypeChange = (value: string) => {
-    setExamTypeFilter(value);
-    onFilterChange({
-      searchText: searchText || undefined,
-      examType: value || undefined,
-      status: statusFilter || undefined,
-      fieldId: fieldFilter,
-      topicIds: topicFilter.length > 0 ? topicFilter : undefined,
-      levelId: levelFilter,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
-    });
-  };
-
-  const handleStatusChange = (value: string) => {
+  const handleStatusChange = (value = 'all') => {
     setStatusFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      examType: examTypeFilter || undefined,
-      status: value || undefined,
+      status: value === 'all' ? undefined : value,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: fieldFilter,
       topicIds: topicFilter.length > 0 ? topicFilter : undefined,
       levelId: levelFilter,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
+    });
+  };
+
+  const handlePositionChange = (value = 'all') => {
+    setPositionFilter(value);
+    onFilterChange({
+      searchText: searchText || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: value === 'all' ? undefined : value,
+      fieldId: fieldFilter,
+      topicIds: topicFilter.length > 0 ? topicFilter : undefined,
+      levelId: levelFilter,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -83,14 +78,12 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
     setFieldFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      examType: examTypeFilter || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: value,
       topicIds: topicFilter.length > 0 ? topicFilter : undefined,
       levelId: levelFilter,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -98,14 +91,12 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
     setTopicFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      examType: examTypeFilter || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: fieldFilter,
       topicIds: value.length > 0 ? value : undefined,
       levelId: levelFilter,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -113,14 +104,12 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
     setLevelFilter(value);
     onFilterChange({
       searchText: searchText || undefined,
-      examType: examTypeFilter || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: fieldFilter,
       topicIds: topicFilter.length > 0 ? topicFilter : undefined,
       levelId: value,
-      dateRange: dateRange
-        ? [dateRange[0].toDate(), dateRange[1].toDate()]
-        : undefined,
+      dateRange: dateRange || undefined,
     });
   };
 
@@ -136,14 +125,12 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
     setDateRange(validDates);
     onFilterChange({
       searchText: searchText || undefined,
-      examType: examTypeFilter || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter === 'all' ? undefined : statusFilter,
+      position: positionFilter === 'all' ? undefined : positionFilter,
       fieldId: fieldFilter,
       topicIds: topicFilter.length > 0 ? topicFilter : undefined,
       levelId: levelFilter,
-      dateRange: validDates
-        ? [validDates[0].toDate(), validDates[1].toDate()]
-        : undefined,
+      dateRange: validDates || undefined,
     });
   };
 
@@ -155,6 +142,9 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
         gap: 'var(--spacing-md)',
         marginBottom: 'var(--spacing-lg)',
         alignItems: 'end',
+        backgroundColor: '#fff',
+        padding: '16px',
+        borderRadius: '8px',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -171,22 +161,6 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
-          Loại bài kiểm tra
-        </span>
-        <Select
-          placeholder="Tất cả"
-          allowClear
-          value={examTypeFilter}
-          onChange={handleExamTypeChange}
-          style={{ minWidth: '140px' }}
-        >
-          <Option value="VIRTUAL">Bài kiểm tra ảo</Option>
-          <Option value="RECRUITER">Bài kiểm tra nhà tuyển dụng</Option>
-        </Select>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
           Trạng thái
         </span>
         <Select
@@ -196,8 +170,36 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
           onChange={handleStatusChange}
           style={{ minWidth: '120px' }}
         >
+          <Option value="all">Tất cả</Option>
           <Option value="DRAFT">Bản nháp</Option>
-          <Option value="PUBLISHED">Đã xuất bản</Option>
+          <Option value="ACTIVE">Đang hoạt động</Option>
+          <Option value="INACTIVE">Không hoạt động</Option>
+          <Option value="COMPLETED">Đã hoàn thành</Option>
+        </Select>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
+          Vị trí
+        </span>
+        <Select
+          placeholder="Tất cả"
+          allowClear
+          value={positionFilter}
+          onChange={handlePositionChange}
+          style={{ minWidth: '140px' }}
+        >
+          <Option value="all">Tất cả</Option>
+          <Option value="Frontend Developer">Frontend Developer</Option>
+          <Option value="Backend Developer">Backend Developer</Option>
+          <Option value="Fullstack Developer">Fullstack Developer</Option>
+          <Option value="DevOps Engineer">DevOps Engineer</Option>
+          <Option value="Mobile Developer">Mobile Developer</Option>
+          <Option value="Data Analyst">Data Analyst</Option>
+          <Option value="QA Engineer">QA Engineer</Option>
+          <Option value="Product Manager">Product Manager</Option>
+          <Option value="Business Analyst">Business Analyst</Option>
+          <Option value="UI/UX Designer">UI/UX Designer</Option>
         </Select>
       </div>
 
@@ -276,4 +278,4 @@ const ExamApprovalToolbar: React.FC<ExamApprovalToolbarProps> = ({
   );
 };
 
-export default ExamApprovalToolbar;
+export default ExamToolbar;

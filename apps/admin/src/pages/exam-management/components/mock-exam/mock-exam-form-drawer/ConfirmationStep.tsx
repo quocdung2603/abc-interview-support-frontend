@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Descriptions, Tag } from 'antd';
 import { UseFormWatch } from 'react-hook-form';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, ExamQuestion } from '@abc-interview-support-frontend/types';
 
 // Extended interface to include UI-specific fields
 interface CreateFormFields extends Exam {
@@ -12,7 +12,7 @@ interface CreateFormFields extends Exam {
   examPeriod?: [string, string];
   questionSource?: 'upload' | 'existing';
   questionBank?: File | null; // File upload for CSV
-  selectedQuestions: number[]; // Add selected questions
+  questions?: ExamQuestion[]; // Current questions in the exam
 }
 
 interface ConfirmationStepProps {
