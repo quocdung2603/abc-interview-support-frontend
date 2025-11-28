@@ -11,6 +11,10 @@ import QuestionApproval from '../pages/question-management/QuestionApproval';
 import MockExamManagement from '../pages/exam-management/MockExamManagement';
 import BaseExamManagement from '../pages/exam-management/BaseExamManagement';
 import ExamApproval from '../pages/exam-management/ExamApproval';
+import FieldManagement from '../pages/question-management/FieldManagement';
+import TopicManagement from '../pages/question-management/TopicManagement';
+import LevelManagement from '../pages/question-management/LevelManagement';
+import QuestionTypeManagement from '../pages/question-management/QuestionTypeManagement';
 
 export const Routing = [
   {
@@ -40,6 +44,22 @@ export const Routing = [
   {
     path: RouterLink.NewsApproval,
     element: NewsApproval,
+  },
+  {
+    path: RouterLink.FieldManagement,
+    element: FieldManagement,
+  },
+  {
+    path: RouterLink.TopicManagement,
+    element: TopicManagement,
+  },
+  {
+    path: RouterLink.LevelManagement,
+    element: LevelManagement,
+  },
+  {
+    path: RouterLink.QuestionTypeManagement,
+    element: QuestionTypeManagement,
   },
   {
     path: RouterLink.QuestionBank,

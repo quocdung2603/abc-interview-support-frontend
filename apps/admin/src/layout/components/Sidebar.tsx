@@ -88,6 +88,30 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       label: 'Quản lý câu hỏi',
       children: [
         {
+          key: RouterLink.FieldManagement,
+          icon: null,
+          label: 'Lĩnh vực',
+          onClick: () => navigate(`/${RouterLink.FieldManagement}`),
+        },
+        {
+          key: RouterLink.TopicManagement,
+          icon: null,
+          label: 'Chủ đề',
+          onClick: () => navigate(`/${RouterLink.TopicManagement}`),
+        },
+        {
+          key: RouterLink.LevelManagement,
+          icon: null,
+          label: 'Cấp độ',
+          onClick: () => navigate(`/${RouterLink.LevelManagement}`),
+        },
+        {
+          key: RouterLink.QuestionTypeManagement,
+          icon: null,
+          label: 'Loại câu hỏi',
+          onClick: () => navigate(`/${RouterLink.QuestionTypeManagement}`),
+        },
+        {
           key: RouterLink.QuestionBank,
           icon: null,
           label: 'Ngân hàng câu hỏi',

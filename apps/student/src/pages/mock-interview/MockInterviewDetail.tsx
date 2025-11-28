@@ -203,15 +203,18 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return null;
 
+    const currentAnswers = answers[currentQuestion.id.toString()] || [];
+    const userAnswer = userAnswers[currentQuestion.id.toString()];
+
     console.log('Current question:', currentQuestion);
-    console.log('Current answers:', currentAnswers);
+    // console.log('Current answers:', currentAnswers);
     if (currentAnswers.length === 0 && currentQuestion.questionAnswer) {
       console.warn(`Question ${currentQuestion.id} has type ${currentQuestion.questionTypeId} but no answers. Showing explanation.`);
       return (
         <div className="space-y-4">
           <div className="bg-white rounded-lg p-6 shadow-md border border-neutral-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {currentQuestion.questionText}
+              {currentQuestion.questionContent}
             </h3>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-yellow-800">

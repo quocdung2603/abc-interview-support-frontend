@@ -1,0 +1,127 @@
+import React from 'react';
+import { Table, Button, Space, Tooltip, Tag } from 'antd';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  Topic,
+} from '@abc-interview-support-frontend/types';
+
+interface TableProps {
+  dataList: Topic[];
+  onPreview: (data: Topic) => void;
+  onEdit: (data: Topic) => void;
+  onDelete: (topicId: number) => void;
+}
+
+const TopicTable: React.FC<TableProps> = ({
+  dataList,
+  onPreview,
+  onEdit,
+  onDelete,
+}) => {
+
+  const columns = [
+    {
+      title: 'Lĩnh vực',
+      dataIndex: 'fieldName',
+      key: 'fieldName',
+      render: (fieldName: string) => (
+        <div style={{ maxWidth: '150px' }}>
+          <div
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {fieldName}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Chủ đề',
+      dataIndex: 'name',
+      key: 'name',
+      render: (_: any, record: Topic) => (
+        <div style={{ maxWidth: '150px' }}>
+          <div
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            #{record.id}: {record.name}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Mô tả',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => (
+        <div
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {description}
+        </div>
+      ),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (record: Topic) => (
+        <Space size="small">
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => onPreview(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              size="small"
+              onClick={() => onEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Xóa chủ đề">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={() => onDelete(record.id)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      dataSource={dataList}
+      rowKey="id"
+      pagination={{
+        total: dataList.length,
+        pageSize: 10,
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} của ${total} chủ đề`,
+      }}
+    />
+  );
+};
+
+export default TopicTable;
