@@ -8,3 +8,5 @@ export * from './lib/exam.service.js';
 export * from './lib/question.service.js';
 export * from './lib/news.service.js';
 export * from './lib/career.service.js';
+export * from './lib/community.service.js';
+

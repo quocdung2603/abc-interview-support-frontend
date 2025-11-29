@@ -150,6 +150,19 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         },
       ],
     },
+     {
+      key: 'community-group',
+      icon: <FileTextOutlined />,
+      label: 'Quản lý cộng đồng',
+      children: [
+        {
+          key: RouterLink.CommunityManagement,
+          icon: null,
+          label: 'Quản lý cộng đồng',
+          onClick: () => navigate(`/${RouterLink.CommunityManagement}`),
+        },
+      ],
+    },
     {
       key: RouterLink.Setting,
       icon: <SettingOutlined />,
@@ -173,11 +186,16 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       [RouterLink.TrendNews]: 'news-group',
       [RouterLink.RecruitmentNews]: 'news-group',
       [RouterLink.NewsApproval]: 'news-group',
+      [RouterLink.FieldManagement]: 'questions-group',
+      [RouterLink.TopicManagement]: 'questions-group',
+      [RouterLink.LevelManagement]: 'questions-group',
+      [RouterLink.QuestionTypeManagement]: 'questions-group',
       [RouterLink.QuestionBank]: 'questions-group',
       [RouterLink.QuestionApproval]: 'questions-group',
       [RouterLink.MockExam]: 'exams-group',
       [RouterLink.BaseExam]: 'exams-group',
       [RouterLink.ExamApproval]: 'exams-group',
+      [RouterLink.CommunityManagement]: 'community-group',
     };
 
     // Nếu path thuộc một group, mở group đó

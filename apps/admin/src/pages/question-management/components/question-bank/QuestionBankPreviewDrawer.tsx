@@ -157,6 +157,17 @@ const QuestionBankPreviewDrawer: React.FC<PreviewDrawerProps> = ({
         </div>
       ) : null,
     },
+    {
+      key: '3',
+      label: 'Đáp án câu hỏi',
+      children: data ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Card title="Giải thích câu hỏi" size="small">
+            <Text></Text>
+          </Card>
+        </div>
+      ) : null,
+    },
   ];
 
   return (

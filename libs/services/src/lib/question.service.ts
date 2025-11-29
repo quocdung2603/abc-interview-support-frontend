@@ -391,6 +391,22 @@ export class QuestionService {
     );
     return response.data;
   }
+
+  /*
+  ANSWER METHODS
+*/
+  async getAnswerByQuestion(questionId: number) {
+    const response = await this.apiClient.get(
+      `/questions/${questionId}/answers`,
+      {
+        params: {
+          page: 0,
+          size: 100,
+        },
+      }
+    );
+    return response.data;
+  }
 }
 
 /**

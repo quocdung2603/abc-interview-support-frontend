@@ -15,5 +15,6 @@ export enum RouterLink {
   MockExam = 'mock-exam-management',
   BaseExam = 'base-exam-management',
   ExamApproval = 'exam-approval',
+  CommunityManagement = 'community-management',
   Setting = 'setting',
 }

@@ -37,7 +37,7 @@ const menuItems: MenuItem[] = [
       },
       {
         key: '2-2',
-        label: 'Kiểm tra doanh nghiệp',
+        label: 'Kiểm tra tuyển dụng',
         path: `${RouterLink.BaseInterview}`,
       },
     ]
@@ -93,8 +93,8 @@ const Header: React.FC = () => {
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg'
-          : 'bg-white/90 backdrop-blur-sm shadow-md'
+        ? 'bg-white/95 backdrop-blur-md shadow-lg'
+        : 'bg-white/90 backdrop-blur-sm shadow-md'
         }`}
     >
       <div className="container-center">
@@ -126,8 +126,8 @@ const Header: React.FC = () => {
                       to={item.path}
                       aria-haspopup={hasSub ? 'menu' : undefined}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                         }`}
                     >
                       {item.label}
@@ -195,8 +195,8 @@ const Header: React.FC = () => {
                     <Link
                       to={item.path}
                       className={`flex-1 px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${active
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                         }`}
                     >
                       {item.label}

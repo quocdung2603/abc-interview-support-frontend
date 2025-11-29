@@ -5,6 +5,14 @@ import {
   UpdateExamData,
 } from '@abc-interview-support-frontend/types';
 
+interface Storage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+declare const sessionStorage: Storage | undefined;
+
 export class ExamService {
   private readonly apiClient: AxiosInstance;
 
@@ -17,6 +25,16 @@ export class ExamService {
         import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
       );
     }
+  }
+
+  private getToken(): string | null {
+    // Check for tokens in order of priority: student, recruiter, admin
+    return (
+      sessionStorage?.getItem('student_accessToken') ||
+      sessionStorage?.getItem('recruiter_accessToken') ||
+      sessionStorage?.getItem('admin_accessToken') ||
+      null
+    );
   }
 
   async getAllExams() {
@@ -117,6 +135,56 @@ export class ExamService {
         size: 1000,
       },
     });
+    return response.data;
+  }
+
+  async getRegistrationByExam(examId: string) {
+    const response = await this.apiClient.get(
+      `/exams/${examId}/registrations`,
+      {
+        params: {
+          page: 0,
+          size: 1000,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async getRegistrationByUser(userId: string) {
+    const response = await this.apiClient.get(
+      `/exams/registrations/user/${userId}`,
+      {
+        params: {
+          page: 0,
+          size: 1000,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async registerForExam(examId: string, userId: string) {
+    const response = await this.apiClient.post(`/exams/registrations`, {
+      examId: Number.parseInt(examId),
+      userId: Number.parseInt(userId),
+    });
+    return response.data;
+  }
+
+  async CancelRegistration(examId: string) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No authentication token found.');
+    }
+    const response = await this.apiClient.delete(
+      `/exams/registrations/${examId}/cancel`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   }
 }

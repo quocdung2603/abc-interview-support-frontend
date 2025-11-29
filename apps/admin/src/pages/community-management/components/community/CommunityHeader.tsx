@@ -1,4 +1,11 @@
-const UserPageHeader = () => {
+import { Button } from "antd";
+import { PlusOutlined } from '@ant-design/icons';
+
+interface PageHeaderProps {
+  onCreate: () => void;
+}
+
+const CommunityHeader: React.FC<PageHeaderProps> = ({ onCreate }) => {
   return (
     <div style={{ marginBottom: 'var(--spacing-xl)' }}>
       <div
@@ -20,9 +27,24 @@ const UserPageHeader = () => {
             Xem, chỉnh sửa và quản lý các tài khoản người dùng.
           </div>
         </div>
+        <Button
+          type="primary"
+          size="large"
+          icon={<PlusOutlined />}
+          onClick={onCreate}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+            border: 'none',
+            minWidth: '140px',
+          }}
+        >
+          Tạo lĩnh vực mới
+        </Button>
       </div>
+
     </div>
   );
 };
 
-export default UserPageHeader;
+export default CommunityHeader;

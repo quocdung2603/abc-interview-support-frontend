@@ -1,21 +1,32 @@
 import { useState } from 'react';
-import ExamCard from './ExamCard';
+
 import { Exam } from '@abc-interview-support-frontend/types';
+import BaseExamCard from './BaseExamCard';
 
 interface ExamListProps {
   title: string;
   exams: Exam[];
   emptyMessage?: string;
   onStartExam?: (examId: string) => void;
+  onRegister?: (examId: string) => void;
+  onUnregister?: (examId: string) => void;
   showCreatedBadge?: boolean;
+  isRegistered?: boolean;
+  registerLoading?: Set<string>;
+  unregisterLoading?: Set<string>;
 }
 
-const ExamList: React.FC<ExamListProps> = ({
+const BaseExamList: React.FC<ExamListProps> = ({
   title,
   exams,
   emptyMessage = 'Không có bài kiểm tra nào.',
   onStartExam,
+  onRegister,
+  onUnregister,
   showCreatedBadge = false,
+  isRegistered = false,
+  registerLoading = new Set(),
+  unregisterLoading = new Set(),
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -71,10 +82,15 @@ const ExamList: React.FC<ExamListProps> = ({
                 key={`${exam.id}-${index}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <ExamCard
+                <BaseExamCard
                   exam={exam}
                   onStartExam={onStartExam}
+                  onRegister={onRegister}
+                  onUnregister={onUnregister}
                   isCreated={showCreatedBadge}
+                  isRegistered={isRegistered}
+                  registerLoading={registerLoading.has(exam.id.toString())}
+                  unregisterLoading={unregisterLoading.has(exam.id.toString())}
                 />
               </div>
             ))}
@@ -202,4 +218,4 @@ const ExamList: React.FC<ExamListProps> = ({
   );
 };
 
-export default ExamList;
+export default BaseExamList;
