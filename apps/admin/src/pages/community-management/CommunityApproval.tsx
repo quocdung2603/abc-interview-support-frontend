@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
-import { CommunityHeader, CommunityTable, CommunityToolbar, CommunityPreviewDrawer, CommunityFormDrawer } from './components/community';
 import { Field, Level, Post, Topic } from '@abc-interview-support-frontend/types';
 import { questionService } from '@abc-interview-support-frontend/services';
+import { CommunityApprovalFormDrawer, CommunityApprovalHeader, CommunityApprovalTable, CommunityApprovalToolbar } from './components/approval';
 
 // Mock data for testing
 const mockPosts: Post[] = [
@@ -147,7 +147,7 @@ const mockPosts: Post[] = [
   }
 ];
 
-const CommunityManagement = () => {
+const CommunityApproval = () => {
   const [searchText, setSearchText] = useState('');
   const [fieldFilter, setFieldFilter] = useState<string>('all');
   const [topicFilter, setTopicFilter] = useState<string>('all');
@@ -249,18 +249,32 @@ const CommunityManagement = () => {
     setSelectedPost(null);
   };
 
-  const handleFormSuccess = () => {
-    // Refresh data after form submission
-    // For now, just close the form
-    setFormVisible(false);
-    setSelectedPost(null);
+  const handleApprove = async (postId: number, decision: 'approve' | 'reject', comment?: string) => {
+    try {
+      // TODO: Implement actual API call for approval
+      console.log('Approving post:', postId, 'Decision:', decision, 'Comment:', comment);
+
+      // Update local state for mock purposes
+      setDataList(prev => prev.map(post =>
+        post.id === postId
+          ? { ...post, status: decision === 'approve' ? 'PUBLISHED' : 'LOCKED' as any }
+          : post
+      ));
+
+      // Close preview drawer if open
+      setPreviewDrawerOpen(false);
+      setSelectedPost(null);
+    } catch (error) {
+      console.error('Error approving post:', error);
+      throw error;
+    }
   };
 
   return (
     <div className="container-center animate-fade-in-up">
-      <CommunityHeader onCreate={handleCreate} />
+      <CommunityApprovalHeader onCreate={handleCreate} />
       <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-        <CommunityToolbar
+        <CommunityApprovalToolbar
           searchText={searchText}
           onSearchChange={setSearchText}
           fieldFilter={fieldFilter}
@@ -280,7 +294,7 @@ const CommunityManagement = () => {
           questionTypes={[]} // TODO: Add question types data
         />
 
-        <CommunityTable
+        <CommunityApprovalTable
           dataList={filteredData}
           onPreview={handlePreview}
           onEdit={handleEdit}
@@ -291,26 +305,17 @@ const CommunityManagement = () => {
         />
       </div>
 
-      <CommunityPreviewDrawer
-        open={previewDrawerOpen}
-        onClose={handlePreviewDrawerClose}
+      <CommunityApprovalFormDrawer
+        open={formVisible}
+        onClose={handleFormClose}
         post={selectedPost}
         fields={fieldData}
         topics={topicData}
         levels={levelData}
-      />
-
-      <CommunityFormDrawer
-        open={formVisible}
-        onClose={handleFormClose}
-        data={selectedPost}
-        onSuccess={handleFormSuccess}
-        fields={fieldData}
-        topics={topicData}
-        levels={levelData}
+        onApprove={handleApprove}
       />
     </div >
   );
 };
 
-export default CommunityManagement;
+export default CommunityApproval;

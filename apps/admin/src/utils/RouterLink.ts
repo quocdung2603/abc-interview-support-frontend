@@ -16,5 +16,6 @@ export enum RouterLink {
   BaseExam = 'base-exam-management',
   ExamApproval = 'exam-approval',
   CommunityManagement = 'community-management',
+  CommunityApproval = 'community-approval',
   Setting = 'setting',
 }

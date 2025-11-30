@@ -16,6 +16,7 @@ import TopicManagement from '../pages/question-management/TopicManagement';
 import LevelManagement from '../pages/question-management/LevelManagement';
 import QuestionTypeManagement from '../pages/question-management/QuestionTypeManagement';
 import CommunityManagement from '../pages/community-management/CommunityManagement';
+import CommunityApproval from '../pages/community-management/CommunityApproval';
 
 export const Routing = [
   {
@@ -85,5 +86,9 @@ export const Routing = [
   {
     path: RouterLink.CommunityManagement,
     element: CommunityManagement,
+  },
+  {
+    path: RouterLink.CommunityApproval,
+    element: CommunityApproval,
   },
 ];

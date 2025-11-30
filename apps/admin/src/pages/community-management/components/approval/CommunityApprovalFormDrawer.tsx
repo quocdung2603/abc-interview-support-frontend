@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Drawer, Tabs, Card, Descriptions, Spin, Alert, Tag } from 'antd';
-import { LockOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Drawer, Tabs, Card, Descriptions, Spin, Alert, Tag, Select, Button, Input, message } from 'antd';
+import { LockOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { userService } from '@abc-interview-support-frontend/services';
 import { User, Post, Field, Topic, Level } from '@abc-interview-support-frontend/types';
 
@@ -11,6 +11,7 @@ interface CommunityPreviewDrawerProps {
   fields: Field[];
   topics: Topic[];
   levels: Level[];
+  onApprove?: (postId: number, decision: 'approve' | 'reject', comment?: string) => void;
 }
 
 const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
@@ -20,11 +21,15 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
   fields,
   topics,
   levels,
+  onApprove,
 }) => {
-  const [activeTab, setActiveTab] = useState<'creator' | 'discussion'>('creator');
+  const [activeTab, setActiveTab] = useState<'creator' | 'discussion' | 'approval'>('creator');
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [approvalDecision, setApprovalDecision] = useState<'approve' | 'reject' | null>(null);
+  const [approvalComment, setApprovalComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchUserData = useCallback(async () => {
     if (!post?.userId) return;
@@ -48,6 +53,22 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
       fetchUserData();
     }
   }, [open, post?.userId, fetchUserData]);
+
+  useEffect(() => {
+    if (!open) {
+      // Reset approval state when drawer closes
+      setApprovalDecision(null);
+      setApprovalComment('');
+      setActiveTab('creator');
+    }
+  }, [open]);
+
+  // Clear comment when switching to reject
+  useEffect(() => {
+    if (approvalDecision === 'reject') {
+      setApprovalComment('');
+    }
+  }, [approvalDecision]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('vi-VN');
@@ -79,6 +100,33 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
         return 'red';
       default:
         return 'default';
+    }
+  };
+
+  const handleApproval = async () => {
+    if (!post || !approvalDecision) {
+      message.warning('Vui lòng chọn quyết định xác nhận');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      if (onApprove) {
+        // Only pass comment if decision is approve
+        const comment = approvalDecision === 'approve' ? (approvalComment.trim() || undefined) : undefined;
+        await onApprove(post.id, approvalDecision, comment);
+        message.success(
+          approvalDecision === 'approve'
+            ? 'Đã xác nhận bài viết thành công'
+            : 'Đã từ chối bài viết thành công'
+        );
+        onClose();
+      }
+    } catch (error) {
+      console.error('Approval error:', error);
+      message.error('Có lỗi xảy ra khi xử lý quyết định. Vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -226,6 +274,51 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
         </div>
       ),
     },
+    {
+      key: 'approval',
+      label: 'Xác nhận kiểm duyệt',
+      children: (
+        <div className="space-y-6">
+          <Card title="Quyết định kiểm duyệt" style={{ border: 'none' }}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Chọn quyết định:
+                </label>
+                <Select
+                  value={approvalDecision}
+                  onChange={(value) => setApprovalDecision(value)}
+                  placeholder="Chọn quyết định kiểm duyệt"
+                  className="w-full"
+                  options={[
+                    {
+                      value: 'approve',
+                      label: (
+                        <div className="flex items-center space-x-2">
+                          <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                          <span className="font-medium text-green-600">Xác nhận</span>
+                          <span className="text-gray-500">- Cho phép bài viết được xuất bản</span>
+                        </div>
+                      ),
+                    },
+                    {
+                      value: 'reject',
+                      label: (
+                        <div className="flex items-center space-x-2">
+                          <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                          <span className="font-medium text-red-600">Từ chối</span>
+                          <span className="text-gray-500">- Không cho phép bài viết được xuất bản</span>
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -235,10 +328,29 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
       onClose={onClose}
       open={open}
       width={900}
+      footer={
+        activeTab === 'approval' ? (
+          <div className="flex justify-end space-x-2">
+            <Button onClick={onClose}>
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              danger={approvalDecision === 'reject'}
+              loading={submitting}
+              onClick={handleApproval}
+              disabled={!approvalDecision}
+              icon={approvalDecision === 'approve' ? <CheckCircleOutlined /> : approvalDecision === 'reject' ? <CloseCircleOutlined /> : undefined}
+            >
+              Xác nhận
+            </Button>
+          </div>
+        ) : null
+      }
     >
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as 'creator' | 'discussion')}
+        onChange={(key) => setActiveTab(key as 'creator' | 'discussion' | 'approval')}
         items={tabItems}
       />
     </Drawer>

@@ -26,7 +26,7 @@ interface ToolbarProps {
   questionTypes: QuestionType[];
 }
 
-const CommunityToolbar: React.FC<ToolbarProps> = ({
+const CommunityApprovalToolbar: React.FC<ToolbarProps> = ({
   searchText,
   onSearchChange,
   fieldFilter,
@@ -159,4 +159,4 @@ const CommunityToolbar: React.FC<ToolbarProps> = ({
   );
 };
 
-export default CommunityToolbar;
+export default CommunityApprovalToolbar;

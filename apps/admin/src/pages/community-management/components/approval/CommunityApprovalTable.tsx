@@ -30,7 +30,7 @@ const FormattedDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('vi-VN', options);
 };
 
-const CommunityTable: React.FC<TableProps> = ({
+const CommunityApprovalTable: React.FC<TableProps> = ({
   dataList,
   onPreview,
   onEdit,
@@ -147,26 +147,9 @@ const CommunityTable: React.FC<TableProps> = ({
           <Tooltip title="Xem chi tiết">
             <Button
               type="text"
-              icon={<EyeOutlined />}
-              size="small"
-              onClick={() => onPreview(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
               icon={<EditOutlined />}
               size="small"
               onClick={() => onEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa cuộc thảo luận">
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={() => onDelete(record.id)}
             />
           </Tooltip>
         </Space>
@@ -191,4 +174,4 @@ const CommunityTable: React.FC<TableProps> = ({
   );
 };
 
-export default CommunityTable;
+export default CommunityApprovalTable;

@@ -150,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         },
       ],
     },
-     {
+    {
       key: 'community-group',
       icon: <FileTextOutlined />,
       label: 'Quản lý cộng đồng',
@@ -160,6 +160,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           icon: null,
           label: 'Quản lý cộng đồng',
           onClick: () => navigate(`/${RouterLink.CommunityManagement}`),
+        },
+        {
+          key: RouterLink.CommunityApproval,
+          icon: null,
+          label: 'Kiểm duyệt cộng đồng',
+          onClick: () => navigate(`/${RouterLink.CommunityApproval}`),
         },
       ],
     },
@@ -196,6 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       [RouterLink.BaseExam]: 'exams-group',
       [RouterLink.ExamApproval]: 'exams-group',
       [RouterLink.CommunityManagement]: 'community-group',
+      [RouterLink.CommunityApproval]: 'community-group',
     };
 
     // Nếu path thuộc một group, mở group đó
