@@ -1,17 +1,9 @@
 import React from 'react';
 import { TrophyOutlined } from '@ant-design/icons';
+import { DiscussionAnswer } from '@abc-interview-support-frontend/types';
 
 interface BestAnswerResultProps {
-  answer: {
-    id: string;
-    content: string;
-    author: string;
-    authorAvatar: string;
-    createdAt: string;
-    upvotes: number;
-    downvotes: number;
-    score: number; // Net score (upvotes - downvotes)
-  };
+  answer: DiscussionAnswer & { score: number };
   questionTitle: string;
 }
 
@@ -19,13 +11,24 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
   answer,
   questionTitle,
 }) => {
+  // Mock author info based on userId
+  const getAuthorInfo = (userId: number) => {
+    const authors = {
+      456: { name: 'Nguyễn Văn A', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face' },
+      789: { name: 'Trần Thị B', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face' },
+      101: { name: 'Lê Văn C', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
+      999: { name: 'Bạn', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face' },
+    };
+    return authors[userId as keyof typeof authors] || { name: `User ${userId}`, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' };
+  };
+
+  const authorInfo = getAuthorInfo(answer.userId);
+
   const {
     content,
-    author,
-    authorAvatar,
     createdAt,
-    upvotes,
-    downvotes,
+    upVotes,
+    downVotes,
     score,
   } = answer;
 
@@ -53,13 +56,13 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img
-            src={authorAvatar}
-            alt={author}
+            src={authorInfo.avatar}
+            alt={authorInfo.name}
             className="w-10 h-10 rounded-full border-2 border-yellow-300"
           />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-800">{author}</span>
+              <span className="font-semibold text-gray-800">{authorInfo.name}</span>
             </div>
             <span className="text-sm text-gray-600">{createdAt}</span>
           </div>
@@ -70,11 +73,11 @@ const BestAnswerResult: React.FC<BestAnswerResultProps> = ({
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              {upvotes} Hữu ích
+              {upVotes} Hữu ích
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-              {downvotes} Không hữu ích
+              {downVotes} Không hữu ích
             </span>
           </div>
         </div>

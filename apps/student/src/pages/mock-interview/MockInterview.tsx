@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import ExamCreationForm from './components/mock-interview/ExamCreationForm';
-import ExamList from './components/mock-interview/ExamList';
 import { examService } from '@abc-interview-support-frontend/services';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import { Exam } from '@abc-interview-support-frontend/types';
 import MockInterviewDetail from './MockInterviewDetail';
+import { ExamCreationForm, ExamList, MockInterviewHeader } from './components/mock-interview';
 
 interface ExamFormData {
   field: string;
@@ -137,27 +136,13 @@ const MockInterview = () => {
 
   return (
     <div
-      className="min-h-screen"
-      style={{
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      }}
-    >
+      className="min-h-screen bg-neutral-50">
+      <MockInterviewHeader />
       {selectedExamId ? (
         <MockInterviewDetail examId={selectedExamId} onBack={handleBackToList} />
       ) : (
         <div className="container-center py-8 px-4">
           <div className="max-w-5xl mx-auto">
-            {/* Page Header */}
-            <div className="text-center mb-6 animate-fade-in-up">
-              <h1 className="text-2xl font-bold text-gradient-primary mb-3">
-                Phỏng Vấn Giả Lập
-              </h1>
-              <p className="text-sm text-neutral-600 max-w-xl mx-auto">
-                Tạo và thực hiện các bài kiểm tra phỏng vấn để chuẩn bị tốt nhất
-                cho cuộc phỏng vấn thực tế của bạn
-              </p>
-            </div>
-
             {/* Exam Creation Form */}
             <div className="animate-fade-in">
               <ExamCreationForm

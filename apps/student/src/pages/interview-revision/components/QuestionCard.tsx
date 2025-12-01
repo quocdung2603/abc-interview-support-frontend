@@ -61,14 +61,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden transition-all duration-300 hover:shadow-md">
-      {/* Question Header - Clickable */}
-      <div className="p-6 pb-4">
-        <div className="flex items-start justify-between gap-4 mb-4">
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+      {/* Question Header - Compact */}
+      <div className="p-4 pb-3">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="badge-primary text-xs">{field.name}</span>
-              <span className="badge-secondary text-xs">{topic.name}</span>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="badge-primary text-xs px-2 py-1">{field.name}</span>
+              <span className="badge-secondary text-xs px-2 py-1">{topic.name}</span>
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(
                   level.name
@@ -83,20 +83,20 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
             {/* Clickable Question Title */}
             <button
-              className="text-heading-3 text-neutral-900 mb-2 cursor-pointer hover:text-primary transition-colors text-left w-full"
+              className="text-base font-semibold text-neutral-900 mb-1 cursor-pointer hover:text-primary transition-colors text-left w-full"
               onClick={handleQuestionClick}
             >
               #{question.id}: {question.questionContent}
             </button>
           </div>
 
-          {/* Question Vote */}
-          <div className="flex flex-col items-center gap-1 min-w-[60px]">
+          {/* Question Vote - Compact */}
+          <div className="flex flex-col items-center gap-1 min-w-[50px]">
             <button
               onClick={() => onVote(question.id, 'useful')}
               className="p-1 rounded hover:bg-green-50 text-neutral-400 hover:text-green-600 transition-colors"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
               </svg>
             </button>
@@ -108,7 +108,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               className="p-1 rounded hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-colors"
             >
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 style={{ transform: 'rotate(180deg)' }}
@@ -119,11 +119,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </div>
         </div>
 
-        {/* Quick Preview Button */}
+        {/* Quick Preview Button - Compact */}
         <div className="flex justify-center">
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${showPreview
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${showPreview
               ? 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               : 'bg-primary text-white hover:bg-primary-dark'
               }`}
@@ -131,7 +131,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             {showPreview ? (
               <>
                 <svg
-                  className="w-4 h-4 mr-2 inline"
+                  className="w-4 h-4 mr-1 inline"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -148,7 +148,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             ) : (
               <>
                 <svg
-                  className="w-4 h-4 mr-2 inline"
+                  className="w-4 h-4 mr-1 inline"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -173,11 +173,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
       </div>
 
-      {/* Preview Mode - Hiển thị 1 phần câu trả lời */}
+      {/* Preview Mode - Compact */}
       {showPreview && (
         <div className="border-t border-neutral-200 overflow-hidden transition-all duration-300 ease-out transform">
-          <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 animate-fadeIn">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-2">
               <svg
                 className="w-4 h-4 text-yellow-600"
                 fill="currentColor"
@@ -194,34 +194,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               </span>
             </div>
 
-            <div className="bg-white rounded-lg p-4 relative overflow-hidden">
-              <div className="prose prose-sm max-w-none text-neutral-700">
-                {truncateText(answerContent, 200)}
+            <div className="bg-white rounded-lg p-3 relative overflow-hidden">
+              <div className="prose prose-sm max-w-none text-neutral-700 text-sm">
+                {truncateText(answerContent, 100)}
               </div>
 
-              {answerContent.length > 200 && (
-                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent rounded-b-lg" />
+              {answerContent.length > 150 && (
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent rounded-b-lg" />
               )}
-            </div>
-
-            <div className="flex items-center justify-between mt-3">
-              <div className="flex items-center gap-3">
-                {/* Bỏ vote cho answer vì không có answers riêng */}
-              </div>
-
-              <span className="text-xs text-neutral-500">
-                {formatDate(question.createdAt)}
-              </span>
-            </div>
-
-            {/* Call to Action */}
-            <div className="mt-4 pt-3 border-t border-yellow-200">
-              <button
-                onClick={handleQuestionClick}
-                className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-medium py-2 px-4 rounded-lg hover:shadow-md transition-all duration-200"
-              >
-                Xem chi tiết câu hỏi và tất cả câu trả lời →
-              </button>
             </div>
           </div>
         </div>

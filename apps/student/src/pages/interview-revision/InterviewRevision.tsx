@@ -9,6 +9,7 @@ import {
   Topic,
 } from '@abc-interview-support-frontend/types';
 import { questionService } from '@abc-interview-support-frontend/services';
+import InterviewRevisionHeader from './components/InterviewRevisionHeader';
 
 /**
  * TRANG ÔN TẬP PHỎNG VẤN
@@ -151,7 +152,8 @@ const InterviewRevision: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container-center section-padding">
+      <InterviewRevisionHeader />
+      <div className="container-center pt-6">
         {/* Filter Section */}
         <InterviewRevisionFilter
           selectedField={selectedField}

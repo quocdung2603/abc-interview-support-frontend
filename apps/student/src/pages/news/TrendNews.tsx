@@ -80,7 +80,7 @@ export const TrendNews: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header Section */}
-      <TrendNewsHeader newsCount={news.length} />
+      <TrendNewsHeader/>
 
       {/* Main Content */}
       <div className="container-center section-padding">

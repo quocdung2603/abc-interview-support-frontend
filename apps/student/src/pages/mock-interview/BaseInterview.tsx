@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { examService, questionService } from '@abc-interview-support-frontend/services';
 import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 import MockInterviewDetail from './MockInterviewDetail';
-import { BaseExamList, ExamFilterForm } from './components/base-interview';
+import { BaseExamList, BaseInterviewHeader, ExamFilterForm } from './components/base-interview';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 interface ExamFormData {
@@ -200,27 +200,13 @@ const BaseInterview = () => {
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      }}
-    >
+    <div className="min-h-screen bg-neutral-50">
+      <BaseInterviewHeader />
       {selectedExamId ? (
         <MockInterviewDetail examId={selectedExamId} onBack={handleBackToList} />
       ) : (
         <div className="container-center py-8 px-4">
           <div className="max-w-5xl mx-auto">
-            {/* Page Header */}
-            <div className="text-center mb-6 animate-fade-in-up">
-              <h1 className="text-2xl font-bold text-gradient-primary mb-3">
-                Bài Kiểm Tra Tuyển Dụng
-              </h1>
-              <p className="text-sm text-neutral-600 max-w-xl mx-auto">
-                Tìm kiếm và thực hành các bài kiểm tra tuyển dụng từ doanh nghiệp
-              </p>
-            </div>
-
             {/* Tabs */}
             <div className="mb-6 animate-fade-in">
               <div className="flex border-b border-neutral-200">

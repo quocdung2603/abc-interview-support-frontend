@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Post, Field, Level, Topic, DiscussionAnswer } from '@abc-interview-support-frontend/types';
+import { questionService, userService } from '@abc-interview-support-frontend/services';
 import DiscussionTimer from './components/discussion-detail/DiscussionTimer';
 import DiscussionQuestion from './components/discussion-detail/DiscussionQuestion';
 import VoteRemaining from './components/discussion-detail/VoteRemaining';
@@ -8,113 +10,159 @@ import AnswerForm from './components/discussion-detail/AnswerForm';
 import AnswerFloatButton from './components/discussion-detail/AnswerFloatButton';
 import BestAnswerResult from './components/discussion-detail/BestAnswerResult';
 
-interface Answer {
-  id: string;
-  content: string;
-  author: string;
-  authorAvatar: string;
-  createdAt: string;
-  upvotes: number;
-  downvotes: number;
-  userVote: 'up' | 'down' | null;
-}
-
-// Mock data for demonstration
-const mockDiscussion = {
-  id: '1',
-  title: 'Làm thế nào để chuẩn bị tốt cho phỏng vấn React Developer?',
-  author: 'Admin ABC Interview',
-  authorAvatar:
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-  createdAt: '2 giờ trước',
-  field: 'Frontend',
-  level: 'Junior',
-  tags: ['React', 'Interview', 'JavaScript', 'Hooks'],
-  views: 156,
-  replies: 12,
-  likes: 24,
-  endDate: '2025-08-14T23:59:59', // Discussion ended yesterday (for testing)
+// Mock data
+const mockPost: Post = {
+  id: 1,
+  userId: 123,
+  fieldId: 1,
+  topicId: 1,
+  levelId: 2,
+  postType: 'DISCUSSION',
+  status: 'PUBLISHED',
+  title: 'Cách chuẩn bị cho buổi phỏng vấn Frontend Developer?',
+  content: 'Tôi sắp có buổi phỏng vấn vị trí Frontend Developer. Các bạn có kinh nghiệm gì để chia sẻ không? Tôi cần chuẩn bị những gì?',
+  lockTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+  createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+  updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
 };
 
-const mockAnswers: Answer[] = [
-  {
-    id: '1',
-    content: `Dựa trên kinh nghiệm phỏng vấn React Developer, mình chia sẻ một số câu hỏi thường gặp:
-
-**Câu hỏi cơ bản:**
-- Sự khác biệt giữa Class component và Functional component
-- Lifecycle methods và useEffect
-- Virtual DOM là gì và hoạt động như thế nào
-
-**Câu hỏi nâng cao:**
-- Khi nào sử dụng useMemo và useCallback
-- State management: Redux vs Context API
-- Code splitting và lazy loading
-
-**Tips chuẩn bị:**
-1. Làm một project nhỏ showcase skills
-2. Đọc React docs mới nhất
-3. Practice coding interview trên LeetCode
-
-Chúc bạn thành công!`,
-    author: 'Trần Thị B',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face',
-    createdAt: '1 giờ trước',
-    upvotes: 15,
-    downvotes: 2,
-    userVote: null,
-  },
-  {
-    id: '2',
-    content: `Bổ sung thêm một số điểm quan trọng:
-
-**Performance Optimization:**
-- React.memo cho functional components
-- Sử dụng React DevTools Profiler
-- Bundle analysis với webpack-bundle-analyzer
-
-**Testing:**
-- Unit test với Jest
-- Component testing với React Testing Library
-- E2E testing với Cypress
-
-**Soft skills cũng quan trọng:**
-- Cách communicate technical concepts
-- Problem-solving approach
-- Teamwork experience
-
-Đừng quên prepare câu hỏi để hỏi interviewer nhé!`,
-    author: 'Lê Minh C',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-    createdAt: '45 phút trước',
-    upvotes: 8,
-    downvotes: 0,
-    userVote: null,
-  },
-  {
-    id: '3',
-    content: `Từ góc độ người phỏng vấn, mình thấy candidates thường yếu ở những điểm sau:
-
-1. **State management**: Không hiểu khi nào dùng Redux vs Context
-2. **Performance**: Không biết optimize re-render
-3. **Architecture**: Không biết organize code structure
-4. **Error handling**: Thiếu Error Boundaries
-
-Suggestion: Focus vào understanding concepts thay vì memorize syntax.`,
-    author: 'Phạm Thị D',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1494790108755-2616b79e217c?w=40&h=40&fit=crop&crop=face',
-    createdAt: '30 phút trước',
-    upvotes: 12,
-    downvotes: 1,
-    userVote: null,
-  },
+const mockFields: Field[] = [
+  { id: 1, name: 'Frontend Development', description: 'Lập trình frontend' },
+  { id: 2, name: 'Backend Development', description: 'Lập trình backend' },
+  { id: 3, name: 'DevOps', description: 'Vận hành và triển khai' },
 ];
 
-const DiscussionDetails: React.FC = () => {
-  const [answers, setAnswers] = useState<Answer[]>(mockAnswers);
+const mockTopics: Topic[] = [
+  { id: 1, fieldId: 1, fieldName: 'Frontend Development', name: 'React', description: 'Framework React' },
+  { id: 2, fieldId: 1, fieldName: 'Frontend Development', name: 'Vue.js', description: 'Framework Vue.js' },
+  { id: 3, fieldId: 1, fieldName: 'Frontend Development', name: 'Angular', description: 'Framework Angular' },
+  { id: 4, fieldId: 2, fieldName: 'Backend Development', name: 'Node.js', description: 'Runtime Node.js' },
+];
+
+const mockLevels: Level[] = [
+  { id: 1, name: 'Junior', description: 'Mới vào nghề' },
+  { id: 2, name: 'Mid-level', description: 'Có kinh nghiệm 2-3 năm' },
+  { id: 3, name: 'Senior', description: 'Có kinh nghiệm 5+ năm' },
+];
+
+const mockAnswers: DiscussionAnswer[] = [
+  {
+    id: 1,
+    postId: 1,
+    userId: 456,
+    content: 'Đầu tiên bạn cần nắm vững HTML, CSS, JavaScript. Sau đó học một framework như React, Vue hoặc Angular. Chuẩn bị portfolio và luyện tập các câu hỏi thuật toán.',
+    upVotes: 15,
+    downVotes: 2,
+    createdAt: '2 giờ trước',
+    updatedAt: '2 giờ trước',
+  },
+  {
+    id: 2,
+    postId: 1,
+    userId: 789,
+    content: 'Tôi khuyên bạn nên ôn tập các khái niệm cơ bản như closure, prototype, async/await. Ngoài ra, chuẩn bị tâm lý và tìm hiểu về công ty trước khi phỏng vấn.',
+    upVotes: 8,
+    downVotes: 0,
+    createdAt: '5 giờ trước',
+    updatedAt: '5 giờ trước',
+  },
+  {
+    id: 3,
+    postId: 1,
+    userId: 101,
+    content: 'Đừng quên luyện tập code trên LeetCode hoặc HackerRank. Các công ty thường có bài test coding trong vòng phỏng vấn đầu tiên.',
+    upVotes: 12,
+    downVotes: 1,
+    createdAt: '1 ngày trước',
+    updatedAt: '1 ngày trước',
+  },
+  {
+    id: 4,
+    postId: 1,
+    userId: 102,
+    content: 'Hãy chắc chắn rằng bạn hiểu về responsive design và có thể làm việc với các công cụ như Git, Webpack.',
+    upVotes: 5,
+    downVotes: 0,
+    createdAt: '1 ngày trước',
+    updatedAt: '1 ngày trước',
+  },  
+  {
+    id: 5,
+    postId: 1,
+    userId: 103,
+    content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
+    upVotes: 7,
+    downVotes: 1,   
+    createdAt: '2 ngày trước',
+    updatedAt: '2 ngày trước',
+  },
+  {
+    id: 6,
+    postId: 1,
+    userId: 102,
+    content: 'Hãy chắc chắn rằng bạn hiểu về responsive design và có thể làm việc với các công cụ như Git, Webpack.',
+    upVotes: 5,
+    downVotes: 0,
+    createdAt: '1 ngày trước',
+    updatedAt: '1 ngày trước',
+  },  
+  {
+    id: 7,
+    postId: 1,
+    userId: 103,
+    content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
+    upVotes: 7,
+    downVotes: 1,   
+    createdAt: '2 ngày trước',
+    updatedAt: '2 ngày trước',
+  },
+    {
+    id: 8,
+    postId: 1,
+    userId: 103,
+    content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
+    upVotes: 7,
+    downVotes: 1,   
+    createdAt: '2 ngày trước',
+    updatedAt: '2 ngày trước',
+  },
+  {
+    id: 9,
+    postId: 1,
+    userId: 102,
+    content: 'Hãy chắc chắn rằng bạn hiểu về responsive design và có thể làm việc với các công cụ như Git, Webpack.',
+    upVotes: 5,
+    downVotes: 0,
+    createdAt: '1 ngày trước',
+    updatedAt: '1 ngày trước',
+  },  
+  {
+    id: 10,
+    postId: 1,
+    userId: 103,
+    content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
+    upVotes: 7,
+    downVotes: 1,   
+    createdAt: '2 ngày trước',
+    updatedAt: '2 ngày trước',
+  },
+
+];
+
+interface DiscusionDetailProps {
+  post?: Post;
+  fields?: Field[];
+  topics?: Topic[];
+  levels?: Level[];
+}
+
+const DiscussionDetails: React.FC<DiscusionDetailProps> = ({
+  post = mockPost,
+  fields = mockFields,
+  topics = mockTopics,
+  levels = mockLevels
+}) => {
+  const [answers, setAnswers] = useState<DiscussionAnswer[]>(mockAnswers);
   const [currentPage, setCurrentPage] = useState(1);
   const [remainingVotes, setRemainingVotes] = useState(3);
   const [loading, setLoading] = useState(false);
@@ -128,64 +176,45 @@ const DiscussionDetails: React.FC = () => {
   );
 
   // Check if discussion has ended
-  const isDiscussionEnded = new Date() > new Date(mockDiscussion.endDate);
+  const isDiscussionEnded = post ? new Date() > new Date(post.lockTime || '') : false;
 
   // Find best answer (highest score)
   const getBestAnswer = () => {
     if (!isDiscussionEnded || answers.length === 0) return null;
 
     return answers.reduce((best, current) => {
-      const currentScore = current.upvotes - current.downvotes;
-      const bestScore = best.upvotes - best.downvotes;
+      const currentScore = current.upVotes - current.downVotes;
+      const bestScore = best.upVotes - best.downVotes;
       return currentScore > bestScore ? current : best;
     }, answers[0]); // Provide initial value
   };
 
   const bestAnswer = getBestAnswer();
 
-  const updateAnswer = (answer: Answer, voteType: 'up' | 'down') => {
-    const prevVote = answer.userVote;
-    let newUpvotes = answer.upvotes;
-    let newDownvotes = answer.downvotes;
-    let newUserVote: 'up' | 'down' | null = null;
+  const updateAnswer = (answer: DiscussionAnswer, voteType: 'up' | 'down') => {
+    // Note: DiscussionAnswer doesn't have userVote, so we can't track individual votes
+    // This is a simplified version
+    let newUpvotes = answer.upVotes;
+    let newDownvotes = answer.downVotes;
 
-    // Remove previous vote if exists
-    if (prevVote === 'up') {
-      newUpvotes -= 1;
-    } else if (prevVote === 'down') {
-      newDownvotes -= 1;
-    }
-
-    // Add new vote if different from previous
-    if (voteType !== prevVote) {
-      if (voteType === 'up') {
-        newUpvotes += 1;
-        newUserVote = 'up';
-      } else {
-        newDownvotes += 1;
-        newUserVote = 'down';
-      }
+    if (voteType === 'up') {
+      newUpvotes += 1;
+    } else {
+      newDownvotes += 1;
     }
 
     return {
       ...answer,
-      upvotes: newUpvotes,
-      downvotes: newDownvotes,
-      userVote: newUserVote,
-      voteChanged: {
-        shouldDecrease: newUserVote && !prevVote,
-        shouldIncrease: !newUserVote && prevVote,
-      },
+      upVotes: newUpvotes,
+      downVotes: newDownvotes,
     };
   };
 
-  const handleVote = (answerId: string, voteType: 'up' | 'down') => {
+  const handleVote = (answerId: number, voteType: 'up' | 'down') => {
     if (remainingVotes <= 0) {
       alert('Bạn đã hết lượt đánh giá!');
       return;
     }
-
-    let voteChange = { shouldDecrease: false, shouldIncrease: false };
 
     setAnswers((prev) =>
       prev.map((answer) => {
@@ -194,20 +223,12 @@ const DiscussionDetails: React.FC = () => {
         }
 
         const updatedAnswer = updateAnswer(answer, voteType);
-        voteChange = updatedAnswer.voteChanged as any;
-
-        // Remove the voteChanged property before returning
-        const { voteChanged, ...cleanAnswer } = updatedAnswer;
-        return cleanAnswer as Answer;
+        return updatedAnswer;
       })
     );
 
     // Update remaining votes count
-    if (voteChange.shouldDecrease) {
-      setRemainingVotes((prev) => prev - 1);
-    } else if (voteChange.shouldIncrease) {
-      setRemainingVotes((prev) => prev + 1);
-    }
+    setRemainingVotes((prev) => prev - 1);
   };
 
   const handleSubmitAnswer = async (content: string) => {
@@ -220,16 +241,15 @@ const DiscussionDetails: React.FC = () => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const newAnswer: Answer = {
-      id: Date.now().toString(),
+    const newAnswer: DiscussionAnswer = {
+      id: Date.now(),
+      postId: post.id,
+      userId: 999, // Current user ID
       content,
-      author: 'Bạn',
-      authorAvatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face',
+      upVotes: 0,
+      downVotes: 0,
       createdAt: 'Vừa xong',
-      upvotes: 0,
-      downvotes: 0,
-      userVote: null,
+      updatedAt: 'Vừa xong',
     };
 
     setAnswers((prev) => [newAnswer, ...prev]);
@@ -245,12 +265,23 @@ const DiscussionDetails: React.FC = () => {
   };
 
   const handleOnBack = () => {
-    window.history.back();
+    globalThis.window.history.back();
   };
 
   const handleFloatButtonClick = () => {
     setIsOpenFloatButton(!isOpenFloatButton);
   };
+
+  if (!post) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -274,21 +305,11 @@ const DiscussionDetails: React.FC = () => {
           {/* Left Column - Question and Answers */}
           <div className="lg:col-span-2 space-y-4">
             {/* Question */}
-            <DiscussionQuestion
-              title={mockDiscussion.title}
-              author={mockDiscussion.author}
-              authorAvatar={mockDiscussion.authorAvatar}
-              createdAt={mockDiscussion.createdAt}
-              field={mockDiscussion.field}
-              level={mockDiscussion.level}
-              tags={mockDiscussion.tags}
-              views={mockDiscussion.views}
-              replies={mockDiscussion.replies}
-            />
+            <DiscussionQuestion post={post} fields={fields} topics={topics} levels={levels} />
           </div>
 
           <div className="lg:col-span-1 space-y-3">
-            <DiscussionTimer endDate={mockDiscussion.endDate} />
+            <DiscussionTimer post={post} />
             <VoteRemaining remainingVotes={remainingVotes} maxVotes={3} />
           </div>
         </div>
@@ -301,9 +322,9 @@ const DiscussionDetails: React.FC = () => {
               <BestAnswerResult
                 answer={{
                   ...bestAnswer,
-                  score: bestAnswer.upvotes - bestAnswer.downvotes,
+                  score: bestAnswer.upVotes - bestAnswer.downVotes,
                 }}
-                questionTitle={mockDiscussion.title}
+                questionTitle={post.title}
               />
             </div>
           )}
@@ -332,6 +353,7 @@ const DiscussionDetails: React.FC = () => {
                 : 'Chia sẻ kinh nghiệm, gợi ý hoặc giải pháp của bạn...'
             }
             handleAnswerClick={handleFloatButtonClick}
+            postType={post.postType}
           />
         </div>
       )}

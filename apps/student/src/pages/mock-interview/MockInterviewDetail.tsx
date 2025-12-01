@@ -1,14 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
-import SingleChoiceQuestion from './components/mock-interview-detail/SingleChoiceQuestion';
-import MultipleChoiceQuestion from './components/mock-interview-detail/MultipleChoiceQuestion';
-import FillInTheBlankQuestion from './components/mock-interview-detail/FillInTheBlankQuestion';
-import OpenEndedQuestion from './components/mock-interview-detail/OpenEndedQuestion';
-import QuestionNavigator from './components/mock-interview-detail/QuestionNavigator';
-import ExamTimer from './components/mock-interview-detail/ExamTimer';
-import QuestionControls from './components/mock-interview-detail/QuestionControls';
 import { examService } from '@abc-interview-support-frontend/services';
+import { ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
 
 interface UserAnswers {
   [questionId: string]: string; // Tất cả đáp án đều lưu dưới dạng string

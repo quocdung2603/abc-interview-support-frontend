@@ -1,208 +1,197 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CommunityHero from './components/discussion/CommunityHero';
 import SearchAndFilters from './components/discussion/SearchAndFilters';
-import CommunityStats from './components/discussion/CommunityStats';
 import PostsList from './components/discussion/PostsList';
 import { useNavigate } from 'react-router-dom';
+import { Field, Level, Post, Topic } from '@abc-interview-support-frontend/types';
+import { questionService, userService } from '@abc-interview-support-frontend/services';
 
-interface Field {
-  fieldId: string;
-  name: string;
-  description?: string;
-}
-
-interface Level {
-  levelId: string;
-  name: 'Fresher' | 'Junior' | 'Senior' | 'Middle';
-  description?: string;
-}
-
-interface DiscussionPost {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  authorAvatar: string;
-  createdAt: string;
-  likes: number;
-  replies: number;
-  field: string;
-  level: string;
-  tags: string[];
-  isLiked: boolean;
-  isBookmarked: boolean;
-  isAdminQuestion?: boolean;
-}
-
-// Mock data
-const mockFields: Field[] = [
+const mockPosts: Post[] = [
   {
-    fieldId: 'frontend',
-    name: 'Frontend',
-    description: 'React, Angular, Vue.js',
-  },
-  {
-    fieldId: 'backend',
-    name: 'Backend',
-    description: 'Node.js, Java, Python',
-  },
-  {
-    fieldId: 'fullstack',
-    name: 'Fullstack',
-    description: 'Full-stack development',
-  },
-  {
-    fieldId: 'mobile',
-    name: 'Mobile',
-    description: 'React Native, Flutter, iOS, Android',
-  },
-  {
-    fieldId: 'devops',
-    name: 'DevOps',
-    description: 'CI/CD, Docker, Kubernetes',
-  },
-  {
-    fieldId: 'tester',
-    name: 'Tester',
-    description: 'Manual & Automation Testing',
-  },
-  {
-    fieldId: 'ba',
-    name: 'Business Analyst',
-    description: 'Requirements Analysis',
-  },
-  {
-    fieldId: 'bridge',
-    name: 'Bridge Engineer',
-    description: 'Communication & Technical Bridge',
-  },
-];
-
-const mockLevels: Level[] = [
-  {
-    levelId: 'fresher',
-    name: 'Fresher',
-    description: '0-1 year experience',
-  },
-  {
-    levelId: 'junior',
-    name: 'Junior',
-    description: '1-3 years experience',
-  },
-  {
-    levelId: 'middle',
-    name: 'Middle',
-    description: '3-5 years experience',
-  },
-  {
-    levelId: 'senior',
-    name: 'Senior',
-    description: '5+ years experience',
-  },
-];
-
-const mockPosts: DiscussionPost[] = [
-  {
-    id: '1',
+    id: 1,
+    userId: 1,
+    fieldId: 1,
+    topicId: 1,
+    levelId: 1,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
     title: 'Làm thế nào để chuẩn bị tốt cho phỏng vấn React Developer?',
     content:
       'Câu hỏi này dành cho các bạn đang chuẩn bị phỏng vấn React Developer. Hãy chia sẻ kinh nghiệm, tips và những câu hỏi thường gặp để giúp đỡ cộng đồng.',
-    author: 'Admin ABC Interview',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-    createdAt: '2 giờ trước',
-    likes: 24,
-    replies: 12,
-    field: 'Frontend',
-    level: 'Junior',
-    tags: ['React', 'Interview', 'JavaScript', 'Hooks'],
-    isLiked: false,
-    isBookmarked: true,
-    isAdminQuestion: true,
+    lockTime: null,
+    createdAt: '2025-11-30T10:30:00.000000',
+    updatedAt: '2025-11-30T10:30:00.000000',
   },
   {
-    id: '2',
+    id: 2,
+    userId: 2,
+    fieldId: 2,
+    topicId: 2,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
     title: 'Backend Developer cần những kỹ năng gì để phỏng vấn thành công?',
     content:
       'Phỏng vấn Backend Developer thường tập trung vào những kỹ năng nào? System Design, Database, API Design hay Microservices? Các bạn hãy chia sẻ kinh nghiệm của mình.',
-    author: 'Admin ABC Interview',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-    createdAt: '4 giờ trước',
-    likes: 56,
-    replies: 28,
-    field: 'Backend',
-    level: 'Middle',
-    tags: ['Backend', 'System Design', 'Database', 'Microservices'],
-    isLiked: true,
-    isBookmarked: false,
-    isAdminQuestion: true,
+    lockTime: null,
+    createdAt: '2025-11-30T08:30:00.000000',
+    updatedAt: '2025-11-30T08:30:00.000000',
   },
   {
-    id: '3',
+    id: 3,
+    userId: 3,
+    fieldId: 3,
+    topicId: 3,
+    levelId: 1,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
     title: 'Những sai lầm thường gặp trong phỏng vấn mà Fresher cần tránh',
     content:
       'Fresher thường mắc những sai lầm gì trong quá trình phỏng vấn? Cách chuẩn bị tâm lý, kỹ năng mềm và technical skills như thế nào? Mọi người hãy chia sẻ để giúp các bạn mới.',
-    author: 'Admin ABC Interview',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-    createdAt: '6 giờ trước',
-    likes: 89,
-    replies: 45,
-    field: 'Career',
-    level: 'Fresher',
-    tags: ['Tips', 'Fresher', 'Soft Skills', 'Communication'],
-    isLiked: false,
-    isBookmarked: true,
+    lockTime: null,
+    createdAt: '2025-11-30T06:30:00.000000',
+    updatedAt: '2025-11-30T06:30:00.000000',
   },
   {
-    id: '4',
+    id: 4,
+    userId: 4,
+    fieldId: 4,
+    topicId: 4,
+    levelId: 1,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
     title: 'Roadmap học Flutter cho người mới bắt đầu',
     content:
       'Mình đang muốn chuyển sang Mobile Development với Flutter. Các senior có thể suggest roadmap học và các resources hay không?',
-    author: 'Phạm Thị D',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1494790108755-2616b79e217c?w=40&h=40&fit=crop&crop=face',
-    createdAt: '8 giờ trước',
-    likes: 32,
-    replies: 18,
-    field: 'Mobile',
-    level: 'Fresher',
-    tags: ['Flutter', 'Mobile', 'Learning', 'Roadmap'],
-    isLiked: false,
-    isBookmarked: false,
+    lockTime: null,
+    createdAt: '2025-11-30T04:30:00.000000',
+    updatedAt: '2025-11-30T04:30:00.000000',
   },
   {
-    id: '5',
+    id: 5,
+    userId: 5,
+    fieldId: 5,
+    topicId: 5,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
     title: 'DevOps Engineer cần skill gì để advance career?',
     content:
       'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
-    author: 'Hoàng Văn E',
-    authorAvatar:
-      'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=40&h=40&fit=crop&crop=face',
-    createdAt: '1 ngày trước',
-    likes: 67,
-    replies: 34,
-    field: 'DevOps',
-    level: 'Middle',
-    tags: ['DevOps', 'Kubernetes', 'Career', 'Skills'],
-    isLiked: true,
-    isBookmarked: true,
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
+  },
+  {
+    id: 6,
+    userId: 6,
+    fieldId: 6,
+    topicId: 6,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
+    title: 'DevOps Engineer cần skill gì để advance career?',
+    content:
+      'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
+  },
+  {
+    id: 7,
+    userId: 5,
+    fieldId: 5,
+    topicId: 5,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
+    title: 'DevOps Engineer cần skill gì để advance career?',
+    content:
+      'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
+  },
+  {
+    id: 8,
+    userId: 5,
+    fieldId: 5,
+    topicId: 5,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
+    title: 'DevOps Engineer cần skill gì để advance career?',
+    content:
+      'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
+  },
+  {
+    id: 9,
+    userId: 5,
+    fieldId: 5,
+    topicId: 5,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
+    title: 'DevOps Engineer cần skill gì để advance career?',
+    content:
+      'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
+  },
+  {
+    id: 10,
+    userId: 5,
+    fieldId: 5,
+    topicId: 5,
+    levelId: 2,
+    postType: 'DISCUSSION',
+    status: 'PUBLISHED',
+    title: 'DevOps Engineer cần skill gì để advance career?',
+    content:
+      'Mình đang làm DevOps được 3 năm, chủ yếu với Docker và Jenkins. Muốn advance lên Senior thì cần học thêm gì? Kubernetes có quan trọng không?',
+    lockTime: null,
+    createdAt: '2025-11-29T10:30:00.000000',
+    updatedAt: '2025-11-29T10:30:00.000000',
   },
 ];
 
 const CommunityDiscussion: React.FC = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<DiscussionPost[]>(mockPosts);
-  const [filteredPosts, setFilteredPosts] =
-    useState<DiscussionPost[]>(mockPosts);
+  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [fieldData, setFieldData] = useState<Field[]>([]);
+  const [topicData, setTopicData] = useState<Topic[]>([]);
+  const [levelData, setLevelData] = useState<Level[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedField, setSelectedField] = useState('all');
+  const [selectedTopic, setSelectedTopic] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [selectedPostType, setSelectedPostType] = useState('all');
+  const [userData, setUserData] = useState<Record<number, any>>({});
 
-  // Filter posts based on search and filters
-  useEffect(() => {
+  // Convert Post to enriched Post format for UI components
+  const enrichPostsForUI = (posts: Post[]): Post[] => {
+    return posts.map(post => ({
+      ...post,
+      // UI-specific fields
+      author: userData[post.userId]?.fullName || 'User',
+      authorAvatar: userData[post.userId]?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
+      likes: Math.floor(Math.random() * 100), // Mock data
+      replies: Math.floor(Math.random() * 50), // Mock data
+      field: (fieldData || []).find(f => f.id === post.fieldId)?.name || 'Unknown',
+      level: (levelData || []).find(l => l.id === post.levelId)?.name || 'Unknown',
+      tags: [], // TODO: Generate from topic or other logic
+      isLiked: false,
+      isBookmarked: false,
+      isAdminQuestion: post.userId === 1, // Mock admin check
+    }));
+  };
+
+  // Filter posts based on search and filters using useMemo for performance
+  const filteredPosts = useMemo(() => {
     let filtered = posts;
 
     // Search filter
@@ -210,137 +199,122 @@ const CommunityDiscussion: React.FC = () => {
       filtered = filtered.filter(
         (post) =>
           post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.tags.some((tag) =>
-            tag.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+          post.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Field filter
     if (selectedField !== 'all') {
-      const fieldName = mockFields.find(
-        (f) => f.fieldId === selectedField
-      )?.name;
-      if (fieldName) {
-        filtered = filtered.filter((post) => post.field === fieldName);
-      }
+      const fieldId = Number(selectedField);
+      filtered = filtered.filter((post) => post.fieldId === fieldId);
+    }
+
+    // Topic filter
+    if (selectedTopic !== 'all') {
+      const topicId = Number(selectedTopic);
+      filtered = filtered.filter((post) => post.topicId === topicId);
     }
 
     // Level filter
     if (selectedLevel !== 'all') {
-      const levelName = mockLevels.find(
-        (l) => l.levelId === selectedLevel
-      )?.name;
-      if (levelName) {
-        filtered = filtered.filter((post) => post.level === levelName);
-      }
+      const levelId = Number(selectedLevel);
+      filtered = filtered.filter((post) => post.levelId === levelId);
     }
 
-    setFilteredPosts(filtered);
-  }, [posts, searchQuery, selectedField, selectedLevel]);
+    // Post Type filter
+    if (selectedPostType !== 'all') {
+      filtered = filtered.filter((post) => post.postType === selectedPostType);
+    }
 
-  const handleLike = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-            ...post,
-            isLiked: !post.isLiked,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-          }
-          : post
-      )
-    );
-  };
+    return filtered;
+  }, [posts, searchQuery, selectedField, selectedTopic, selectedLevel, selectedPostType]);
 
-  const handleBookmark = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? { ...post, isBookmarked: !post.isBookmarked }
-          : post
-      )
-    );
-  };
+  // Create enriched posts for UI with memoization
+  const enrichedFilteredPosts = useMemo(() => {
+    return enrichPostsForUI(filteredPosts);
+  }, [filteredPosts, fieldData, levelData, userData]);
 
-  const handlePostClick = (postId: string) => {
+  const handlePostClick = (postId: number) => {
     console.log('Navigate to post:', postId);
     navigate(`/community-discussion-details/${postId}`);
   };
 
-  const handleLoadMore = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
+  useEffect(() => {
+    const LoadData = async () => {
+      try {
+        const [resFields, resTopics, resLevels] = await Promise.all([
+          questionService.getAllFields(),
+          questionService.getAllTopics(),
+          questionService.getAllLevels()
+        ]);
+
+        setFieldData(resFields?.content || []);
+        setTopicData(resTopics?.content || []);
+        setLevelData(resLevels?.content || []);
+
+        // Fetch user data for all unique userIds in posts
+        const uniqueUserIds = [...new Set(posts.map(post => post.userId))];
+        const userPromises = uniqueUserIds.map(userId =>
+          userService.getUserById(userId.toString()).catch(() => null)
+        );
+
+        const userResults = await Promise.all(userPromises);
+        const userMap: Record<number, any> = {};
+
+        uniqueUserIds.forEach((userId, index) => {
+          if (userResults[index]) {
+            userMap[userId] = userResults[index].data || userResults[index];
+          }
+        });
+
+        setUserData(userMap);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Set empty arrays as fallback
+        setFieldData([]);
+        setTopicData([]);
+        setLevelData([]);
+        setUserData({});
+      }
+    };
+    LoadData();
+  }, [posts]);
 
   return (
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
-      <CommunityHero totalQuestions={1234} activeParticipants={567} />
+      <CommunityHero />
 
       {/* Main Content */}
-      <div className="section-padding">
-        <div className="container-center">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
-            {/* Sidebar */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="sticky top-24 space-y-4">
-                {/* Search and Filters */}
-                <SearchAndFilters
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  selectedField={selectedField}
-                  onFieldChange={setSelectedField}
-                  selectedLevel={selectedLevel}
-                  onLevelChange={setSelectedLevel}
-                  fields={mockFields}
-                  levels={mockLevels}
-                />
+      <div className="container-center">
+        {/* Search and Filters - Above Posts */}
+        <div className="my-6">
+          <SearchAndFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedField={selectedField}
+            onFieldChange={setSelectedField}
+            selectedTopic={selectedTopic}
+            onTopicChange={setSelectedTopic}
+            selectedLevel={selectedLevel}
+            onLevelChange={setSelectedLevel}
+            selectedPostType={selectedPostType}
+            onPostTypeChange={setSelectedPostType}
+            fields={fieldData}
+            topics={topicData}
+            levels={levelData}
+          />
+        </div>
 
-                {/* Community Stats */}
-                <CommunityStats
-                  totalQuestions={1234}
-                  activeParticipants={567}
-                  questionsToday={filteredPosts.length}
-                />
-              </div>
-            </div>
-
-            {/* Posts List */}
-            <div className="lg:col-span-3 order-1 lg:order-2">
-              <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-2">
-                  Thảo luận gần đây
-                </h2>
-                <p className="text-gray-600">
-                  {filteredPosts.length} bài viết
-                  {searchQuery && ` phù hợp với "${searchQuery}"`}
-                  {selectedField !== 'all' &&
-                    ` trong lĩnh vực ${mockFields.find((f) => f.fieldId === selectedField)
-                      ?.name
-                    }`}
-                  {selectedLevel !== 'all' &&
-                    ` cấp độ ${mockLevels.find((l) => l.levelId === selectedLevel)
-                      ?.name
-                    }`}
-                </p>
-              </div>
-
-              <PostsList
-                posts={filteredPosts}
-                loading={loading}
-                onLike={handleLike}
-                onBookmark={handleBookmark}
-                onPostClick={handlePostClick}
-                onLoadMore={handleLoadMore}
-                hasMore={true}
-              />
-            </div>
-          </div>
+        {/* Posts List */}
+        <div>
+          <PostsList
+            posts={enrichedFilteredPosts}
+            onPostClick={handlePostClick}
+            fields={fieldData}
+            topics={topicData}
+            levels={levelData}
+          />
         </div>
       </div>
     </div>

@@ -10,8 +10,8 @@ const Banner: React.FC = () => {
         <div className="hero-grid">
           {/* Left side: Title, description, search bar */}
           <div className="hero-content text-white animate-slide-in-left">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight mb-4">
-              Rèn luyện hơn <span className="text-emphasis">5,423+</span> câu
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4">
+              Rèn luyện hơn <span className="text-emphasis font-bold">5,423+</span> câu
               trắc nghiệm dành riêng cho bạn
             </h1>
 
@@ -20,29 +20,6 @@ const Banner: React.FC = () => {
               lập trình, khoa học, sư phạm, kinh tế. Cùng ABC Quiz: Luyện tập -
               Thi thử - Kiểm tra nguồn kiến thức!
             </p>
-
-            {/* Professional search bar */}
-            <div className="search-container p-3 max-w-4xl">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  className="input-field flex-grow"
-                  placeholder="Tìm đề, chủ đề..."
-                />
-
-                <div className="flex-shrink-0 w-full sm:w-40">
-                  <select className="select-field">
-                    <option value="">Chọn danh mục</option>
-                    <option value="cntt">Công nghệ thông tin</option>
-                    <option value="kinh-te">Kinh tế</option>
-                    <option value="su-pham">Sư phạm</option>
-                  </select>
-                </div>
-
-                <button className="btn-accent whitespace-nowrap px-4">
-                  Tìm kiếm
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Right side: Professional image layout */}
@@ -83,11 +60,11 @@ const Banner: React.FC = () => {
 
               {/* Professional statistics indicators */}
               <div className="stats-card-accent absolute top-32 md:top-40 right-0 z-40 text-xs md:text-sm font-semibold animate-pulse-soft">
-                🎉 Hoàn thành! Được 150/50 câu
+                Hoàn thành! Được 150/50 câu
               </div>
 
               <div className="stats-card absolute -bottom-1 md:-bottom-2 right-1/2 transform translate-x-1/2 z-40 text-xs md:text-sm font-medium text-gray-700 animate-fade-in-up">
-                📊 66% tham gia giải đề này
+                66% tham gia giải đề này
               </div>
             </div>
           </div>

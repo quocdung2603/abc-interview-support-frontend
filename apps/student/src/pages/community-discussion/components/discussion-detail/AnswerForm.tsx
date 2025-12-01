@@ -10,6 +10,7 @@ interface AnswerFormProps {
   disabled?: boolean;
   placeholder?: string;
   handleAnswerClick: () => void;
+  postType: 'DISCUSSION' | 'QUESTION';
 }
 
 const AnswerForm: React.FC<AnswerFormProps> = ({
@@ -17,6 +18,7 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
   disabled = false,
   placeholder = 'Nhập câu trả lời của bạn...',
   handleAnswerClick,
+  postType,
 }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +27,8 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!content.trim() || isSubmitting || disabled || counterSend >= 1) {
+    const maxAnswers = postType === 'DISCUSSION' ? Infinity : 1;
+    if (!content.trim() || isSubmitting || disabled || counterSend >= maxAnswers) {
       return;
     }
 
@@ -48,9 +51,18 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
     }
   };
 
-  const getCounterSendColor = (counterSend: number) => {
+  const getCounterSendColor = (counterSend: number, postType: string) => {
+    if (postType === 'DISCUSSION') return 'text-blue-600';
     if (counterSend === 0) return 'text-green-600';
     return 'text-red-600';
+  };
+
+  const getRemainingAnswersText = (counterSend: number, postType: string) => {
+    if (postType === 'DISCUSSION') {
+      return `Đã trả lời ${counterSend} lần`;
+    }
+    const remaining = Math.max(0, 1 - counterSend);
+    return `Còn ${remaining}/1 lượt trả lời`;
   };
 
   const isDisabled = disabled || isSubmitting || !content.trim();
@@ -60,10 +72,11 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
       <div className=" w-full flex justify-between items-center">
         <h3
           className={`text-lg font-semibold  ${getCounterSendColor(
-            counterSend
+            counterSend,
+            postType
           )} mb-3`}
         >
-          Còn {1 - counterSend}/1 lượt trả lời
+          {getRemainingAnswersText(counterSend, postType)}
         </h3>
         <button onClick={handleAnswerClick}>
           <CloseOutlined className="text-lg text-red-500" />
@@ -79,12 +92,11 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
             placeholder={placeholder}
             rows={6}
             disabled={disabled || isSubmitting}
-            className={`input-field resize-none ${
-              disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-            }`}
+            className={`input-field resize-none ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+              }`}
             maxLength={2000}
           />
-            <div className="flex justify-between items-center mt-1">
+          <div className="flex justify-between items-center mt-1">
             <div className="text-sm text-gray-500">
               {content.length}/2000 ký tự
               {!disabled && (
@@ -114,9 +126,8 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
           <button
             type="submit"
             disabled={isDisabled}
-            className={`btn-primary inline-flex items-center gap-2 ${
-              isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`btn-primary inline-flex items-center gap-2 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
           >
             {isSubmitting ? (
               <>

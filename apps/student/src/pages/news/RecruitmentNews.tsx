@@ -148,7 +148,7 @@ export const RecruitmentNews: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header Section */}
-      <RecruitmentNewsHeader newsCount={news.length} />
+      <RecruitmentNewsHeader/>
 
       {/* Main Content */}
       <div className="container-center section-padding">

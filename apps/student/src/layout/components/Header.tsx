@@ -172,8 +172,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button className="btn-accent btn-sm">Thi nhanh</button>
+          <div className="flex items-center gap-3"> 
             <UserDropdown
               username={user?.fullName || user?.email}
               onLogout={handleLogout}

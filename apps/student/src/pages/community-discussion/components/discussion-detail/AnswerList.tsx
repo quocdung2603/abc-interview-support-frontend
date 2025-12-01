@@ -1,21 +1,16 @@
-import React from 'react';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
 import AnswerItem from './AnswerItem';
+import { DiscussionAnswer } from '@abc-interview-support-frontend/types';
+import { userService } from '@abc-interview-support-frontend/services';
 
-interface Answer {
-  id: string;
-  content: string;
-  author: string;
-  authorAvatar: string;
-  createdAt: string;
-  upvotes: number;
-  downvotes: number;
-  userVote: 'up' | 'down' | null;
+interface AuthorInfo {
+  name: string;
+  avatar: string;
 }
 
 interface AnswerListProps {
-  answers: Answer[];
-  onVote: (answerId: string, voteType: 'up' | 'down') => void;
+  answers: DiscussionAnswer[];
+  onVote: (answerId: number, voteType: 'up' | 'down') => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -30,6 +25,39 @@ const AnswerList: React.FC<AnswerListProps> = ({
   onPageChange,
   loading = false,
 }) => {
+  const [authors, setAuthors] = useState<Record<number, AuthorInfo>>({});
+
+  // Fetch author info for answers
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      const authorPromises = answers.map(async (answer) => {
+        if (authors[answer.userId]) return; // Already fetched
+
+        try {
+          const user = await userService.getUserById(answer.userId.toString());
+          const authorInfo: AuthorInfo = {
+            name: user.fullName || `User ${answer.userId}`,
+            avatar: user.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
+          };
+          setAuthors(prev => ({ ...prev, [answer.userId]: authorInfo }));
+        } catch (error) {
+          console.error(`Error fetching user ${answer.userId}:`, error);
+          // Fallback author info
+          const fallbackAuthor: AuthorInfo = {
+            name: `User ${answer.userId}`,
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
+          };
+          setAuthors(prev => ({ ...prev, [answer.userId]: fallbackAuthor }));
+        }
+      });
+
+      await Promise.all(authorPromises);
+    };
+
+    if (answers.length > 0) {
+      fetchAuthors();
+    }
+  }, [answers, authors]);
   const handlePrevPage = () => {
     if (currentPage > 1) {
       onPageChange(currentPage - 1);
@@ -40,22 +68,6 @@ const AnswerList: React.FC<AnswerListProps> = ({
     if (currentPage < totalPages) {
       onPageChange(currentPage + 1);
     }
-  };
-
-  const getVisiblePages = () => {
-    const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    const end = Math.min(totalPages, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
   };
 
   if (loading) {
@@ -103,58 +115,140 @@ const AnswerList: React.FC<AnswerListProps> = ({
 
   return (
     <div>
-      {/* Answers Header */}
-      <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">
+      {/* Answers Header - Compact */}
+      <div className="mb-3 flex items-center gap-3">
+        <h2 className="text-base font-semibold text-gray-800">
           {answers.length} Câu trả lời
         </h2>
-        <div className="w-12 h-1 bg-blue-600 rounded"></div>
+        <div className="flex-1 h-px bg-gray-300"></div>
       </div>
 
-      {/* Answers List */}
-      <div className="space-y-3 mb-6">
+      {/* Answers List - Tighter spacing */}
+      <div className="space-y-2 mb-4">
         {answers.map((answer) => (
-          <AnswerItem key={answer.id} answer={answer} onVote={onVote} />
+          <AnswerItem
+            key={answer.id}
+            answer={answer}
+            author={authors[answer.userId] || { name: `User ${answer.userId}`, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' }}
+            onVote={onVote}
+          />
         ))}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Similar to PostsList */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1 py-4">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className={`btn-outline btn-sm inline-flex items-center gap-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-          >
-            <LeftOutlined />
-            Trước
-          </button>
-
-          <div className="flex items-center gap-1 mx-3">
-            {getVisiblePages().map((page) => (
-              <button
-                key={page}
-                onClick={() => onPageChange(page)}
-                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-              >
-                {page}
-              </button>
-            ))}
+        <div className="mt-6 space-y-3">
+          {/* Page Info */}
+          <div className="text-center text-sm text-gray-600">
+            Trang {currentPage} của {totalPages} ({answers.length} câu trả lời)
           </div>
 
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`btn-outline btn-sm inline-flex items-center gap-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-          >
-            Sau
-            <RightOutlined />
-          </button>
+          {/* Pagination Controls */}
+          <div className="flex justify-center items-center space-x-2">
+            <button
+              onClick={() => onPageChange(1)}
+              disabled={currentPage === 1}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-2"
+            >
+              Đầu
+            </button>
+
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-2"
+            >
+              ← Trước
+            </button>
+
+            <div className="flex space-x-1">
+              {(() => {
+                const pages = [];
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Adjust startPage if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                // Add first page and ellipsis if needed
+                if (startPage > 1) {
+                  pages.push(
+                    <button
+                      key={1}
+                      onClick={() => onPageChange(1)}
+                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                      1
+                    </button>
+                  );
+                  if (startPage > 2) {
+                    pages.push(
+                      <span key="start-ellipsis" className="px-2 py-2 text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                }
+
+                // Add visible pages
+                for (let page = startPage; page <= endPage; page++) {
+                  pages.push(
+                    <button
+                      key={page}
+                      onClick={() => onPageChange(page)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                }
+
+                // Add last page and ellipsis if needed
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pages.push(
+                      <span key="end-ellipsis" className="px-2 py-2 text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                  pages.push(
+                    <button
+                      key={totalPages}
+                      onClick={() => onPageChange(totalPages)}
+                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                      {totalPages}
+                    </button>
+                  );
+                }
+
+                return pages;
+              })()}
+            </div>
+
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-2"
+            >
+              Sau →
+            </button>
+
+            <button
+              onClick={() => onPageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed text-sm px-3 py-2"
+            >
+              Cuối
+            </button>
+          </div>
         </div>
       )}
     </div>

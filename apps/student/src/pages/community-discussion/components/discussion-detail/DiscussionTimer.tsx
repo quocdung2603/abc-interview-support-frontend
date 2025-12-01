@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ClockCircleOutlined } from '@ant-design/icons';
+import { Post } from '@abc-interview-support-frontend/types';
 
 interface DiscussionTimerProps {
-  endDate: string;
+  post: Post;
 }
 
 interface TimeRemaining {
@@ -13,7 +14,7 @@ interface TimeRemaining {
   isExpired: boolean;
 }
 
-const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
+const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
@@ -23,9 +24,11 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
   });
 
   useEffect(() => {
+    if (!post.lockTime) return;
+
     const calculateTimeRemaining = () => {
       const now = new Date().getTime();
-      const end = new Date(endDate).getTime();
+      const end = new Date(post.lockTime!).getTime();
       const difference = end - now;
 
       if (difference <= 0) {
@@ -59,7 +62,12 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [endDate]);
+  }, [post.lockTime]);
+
+  // Don't show timer if no lockTime
+  if (!post.lockTime) {
+    return null;
+  }
 
   if (timeRemaining.isExpired) {
     return (
@@ -91,9 +99,9 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ endDate }) => {
             {timeRemaining.days > 0 && (
               <div className="text-center">
                 <div className="text-lg font-bold text-blue-700">
-                  {timeRemaining.seconds}
+                  {timeRemaining.days}
                 </div>
-                <div className="text-xs text-blue-600">Giây</div>
+                <div className="text-xs text-blue-600">Ngày</div>
               </div>
             )}
             <div className="text-center">

@@ -1,4 +1,4 @@
-const CommunityHero = () => {
+const BaseInterviewHeader = () => {
   return (
     <div className="news-header animate-fade-in">
       {/* Background Pattern */}
@@ -14,11 +14,10 @@ const CommunityHero = () => {
       <div className="relative container-center">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-display text-white mb-4 animate-fade-in-up">
-            Thảo luận <span className="text-accent">cộng đồng</span>
+            Bài kiểm tra <span className="text-accent">tuyển dụng</span>
           </h1>
           <p className="text-body-large text-white-90 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
-            Tham gia thảo luận, đặt câu hỏi và chia sẻ kiến thức với cộng đồng học
-            viên. Cùng nhau học hỏi và phát triển kỹ năng của bạn!
+            Tham gia các bài kiểm tra phỏng vấn tuyển dụng thực tế từ doanh nghiệp để nâng cao kỹ năng và tự tin hơn trong các buổi phỏng vấn trực tiếp.
           </p>
         </div>
       </div>
@@ -26,4 +25,4 @@ const CommunityHero = () => {
   );
 };
 
-export default CommunityHero;
+export default BaseInterviewHeader;

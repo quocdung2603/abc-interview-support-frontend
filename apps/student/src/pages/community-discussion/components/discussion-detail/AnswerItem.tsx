@@ -5,26 +5,22 @@ import {
   CaretUpOutlined,
   CaretDownOutlined,
 } from '@ant-design/icons';
+import { DiscussionAnswer } from '@abc-interview-support-frontend/types';
 
-interface Answer {
-  id: string;
-  content: string;
-  author: string;
-  authorAvatar: string;
-  createdAt: string;
-  upvotes: number;
-  downvotes: number;
-  userVote: 'up' | 'down' | null;
+interface AuthorInfo {
+  name: string;
+  avatar: string;
 }
 
 interface AnswerItemProps {
-  answer: Answer;
-  onVote: (answerId: string, voteType: 'up' | 'down') => void;
+  answer: DiscussionAnswer;
+  author: AuthorInfo;
+  onVote: (answerId: number, voteType: 'up' | 'down') => void;
 }
 
 const COLLAPSED_MAX_HEIGHT = 150; // px
 
-const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
+const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -77,36 +73,28 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
       <div className="flex gap-3">
         {/* Voting section */}
         <div className="flex flex-col items-center gap-1 min-w-[48px] border-r border-r-gray-300">
-          <span className="font-bold text-md text-green-600">
-            {answer.upvotes}
+          <span className="font-bold text-xs text-green-600">
+            {answer.upVotes}
           </span>
 
           <button
             onClick={handleUpvote}
-            className={`p-2 rounded-lg transition-colors ${
-              answer.userVote === 'up'
-                ? 'bg-green-100 text-green-600 border border-green-300'
-                : 'bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600'
-            }`}
+            className="p-2 rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600"
             title="Hữu ích"
           >
-            <CaretUpOutlined className="text-lg" />
+            <CaretUpOutlined className="text-sm" />
           </button>
 
           <button
             onClick={handleDownvote}
-            className={`p-2 rounded-lg transition-colors ${
-              answer.userVote === 'down'
-                ? 'bg-red-100 text-red-600 border border-red-300'
-                : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'
-            }`}
+            className="p-2 rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600"
             title="Không hữu ích"
           >
-            <CaretDownOutlined className="text-lg" />
+            <CaretDownOutlined className="text-sm" />
           </button>
 
-          <span className="font-bold text-md text-red-600">
-            {answer.downvotes}
+          <span className="font-bold text-xs text-red-600">
+            {answer.downVotes}
           </span>
         </div>
 
@@ -115,14 +103,14 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, onVote }) => {
           {/* Author info */}
           <div className="flex items-center gap-3 mb-2">
             <img
-              src={answer.authorAvatar}
-              alt={answer.author}
+              src={author.avatar}
+              alt={author.name}
               className="w-9 h-9 rounded-full object-cover"
             />
             <div className="flex flex-col items-center text-sm text-gray-500">
               <span className="flex items-center gap-2 font-medium text-gray-700">
                 <UserOutlined />
-                {answer.author}
+                {author.name}
               </span>
               <span className="flex items-center gap-1">
                 <CalendarOutlined />
