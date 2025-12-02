@@ -42,64 +42,43 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return { backgroundColor: 'var(--color-success)', color: 'white' };
+        return 'bg-green-100 text-green-800';
       case 'PENDING':
-        return { backgroundColor: 'var(--color-warning)', color: 'white' };
+        return 'bg-yellow-100 text-yellow-800';
       case 'LOCKED':
-        return { backgroundColor: 'var(--color-danger)', color: 'white' };
+        return 'bg-red-100 text-red-800';
       default:
-        return { backgroundColor: 'var(--color-neutral-400)', color: 'white' };
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div
-      className="card-elevated"
-      style={{
-        padding: 'var(--spacing-lg)',
-        marginBottom: 'var(--spacing-lg)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-md)',
-        }}
-      >
-        <h2
-          className="text-heading-1"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Thông tin cá nhân
-        </h2>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-sm)',
-          }}
-        >
-          <span
-            className="badge-primary"
-            style={getStatusBadgeStyle(user.status)}
-          >
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900">Thông tin cá nhân</h2>
+        <div className="flex items-center gap-3">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeStyle(user.status)}`}>
             {user.status}
           </span>
           {!isEditing ? (
             <button
-              className="btn-accent btn-sm"
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
               onClick={() => setIsEditing(true)}
             >
               Chỉnh sửa
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
-              <button className="btn-primary btn-sm" onClick={handleSave}>
+            <div className="flex gap-2">
+              <button
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                onClick={handleSave}
+              >
                 Lưu
               </button>
-              <button className="btn-outline btn-sm" onClick={handleCancel}>
+              <button
+                className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition-colors"
+                onClick={handleCancel}
+              >
                 Hủy
               </button>
             </div>
@@ -107,28 +86,15 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 'var(--spacing-md)',
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Họ và tên
-          </div>
+          </label>
           {isEditing ? (
             <input
               type="text"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={editForm.fullName}
               onChange={(e) =>
                 setEditForm({ ...editForm, fullName: e.target.value })
@@ -136,33 +102,20 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
               placeholder="Nhập họ và tên"
             />
           ) : (
-            <p
-              style={{
-                margin: 0,
-                padding: '0.75rem 0',
-                color: 'var(--color-neutral-800)',
-              }}
-            >
+            <p className="text-base text-gray-900 py-2">
               {user.fullName || 'Chưa cập nhật'}
             </p>
           )}
         </div>
 
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Email
-          </div>
+          </label>
           {isEditing ? (
             <input
               type="email"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={editForm.email}
               onChange={(e) =>
                 setEditForm({ ...editForm, email: e.target.value })
@@ -170,46 +123,27 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
               placeholder="Nhập email"
             />
           ) : (
-            <p
-              style={{
-                margin: 0,
-                padding: '0.75rem 0',
-                color: 'var(--color-neutral-800)',
-              }}
-            >
+            <p className="text-base text-gray-900 py-2">
               {user.email}
             </p>
           )}
         </div>
 
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Ngày sinh
-          </div>
+          </label>
           {isEditing ? (
             <input
               type="date"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={editForm.dateOfBirth}
               onChange={(e) =>
                 setEditForm({ ...editForm, dateOfBirth: e.target.value })
               }
             />
           ) : (
-            <p
-              style={{
-                margin: 0,
-                padding: '0.75rem 0',
-                color: 'var(--color-neutral-800)',
-              }}
-            >
+            <p className="text-base text-gray-900 py-2">
               {user.dateOfBirth
                 ? new Date(user.dateOfBirth).toLocaleDateString('vi-VN')
                 : 'Chưa cập nhật'}
@@ -217,21 +151,14 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
           )}
         </div>
 
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Địa chỉ
-          </div>
+          </label>
           {isEditing ? (
             <input
               type="text"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={editForm.address}
               onChange={(e) =>
                 setEditForm({ ...editForm, address: e.target.value })
@@ -239,58 +166,26 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ user, onUpdateUser }) => {
               placeholder="Nhập địa chỉ"
             />
           ) : (
-            <p
-              style={{
-                margin: 0,
-                padding: '0.75rem 0',
-                color: 'var(--color-neutral-800)',
-              }}
-            >
+            <p className="text-base text-gray-900 py-2">
               {user.address || 'Chưa cập nhật'}
             </p>
           )}
         </div>
 
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Trạng thái học tập
-          </div>
-          <p
-            style={{
-              margin: 0,
-              padding: '0.75rem 0',
-              color: 'var(--color-neutral-800)',
-            }}
-          >
+          </label>
+          <p className="text-base text-gray-900 py-2">
             {user.isStudying ? 'Đang học' : 'Đã tốt nghiệp'}
           </p>
         </div>
 
-        <div>
-          <div
-            style={{
-              display: 'block',
-              marginBottom: 'var(--spacing-xs)',
-              fontWeight: '600',
-              color: 'var(--color-neutral-700)',
-            }}
-          >
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
             Ngày tạo tài khoản
-          </div>
-          <p
-            style={{
-              margin: 0,
-              padding: '0.75rem 0',
-              color: 'var(--color-neutral-800)',
-            }}
-          >
+          </label>
+          <p className="text-base text-gray-900 py-2">
             {new Date(user.createdAt).toLocaleDateString('vi-VN')}
           </p>
         </div>

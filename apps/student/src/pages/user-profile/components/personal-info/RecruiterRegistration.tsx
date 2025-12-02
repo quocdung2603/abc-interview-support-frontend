@@ -64,13 +64,13 @@ const RecruiterRegistration = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'var(--color-warning)';
+        return 'bg-yellow-100 text-yellow-800';
       case 'approved':
-        return 'var(--color-success)';
+        return 'bg-green-100 text-green-800';
       case 'rejected':
-        return 'var(--color-danger)';
+        return 'bg-red-100 text-red-800';
       default:
-        return 'var(--color-neutral-600)';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -90,65 +90,22 @@ const RecruiterRegistration = () => {
   if (registrations.length === 0) {
     return (
       <>
-        <div
-          className="card-elevated"
-          style={{
-            padding: 'var(--spacing-lg)',
-            marginBottom: 'var(--spacing-lg)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 'var(--spacing-md)',
-            }}
-          >
-            <h2
-              className="text-heading-1"
-              style={{ color: 'var(--color-primary)', margin: 0 }}
-            >
-              Đăng ký nhà tuyển dụng
-            </h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Đăng ký nhà tuyển dụng</h2>
             <button
-              className="btn-accent"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
               onClick={handleCreateRegistration}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-xs)',
-              }}
             >
               <PlusOutlined />
               Tạo đơn đăng ký
             </button>
           </div>
 
-          <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-            <div
-              style={{
-                fontSize: '2.5rem',
-                marginBottom: 'var(--spacing-sm)',
-                opacity: 0.3,
-                color: 'var(--color-neutral-400)',
-                fontWeight: 'bold',
-              }}
-            >
-              [Danh sách trống]
-            </div>
-            <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-              Chưa có phiếu đăng ký nào
-            </p>
-            <p
-              style={{
-                color: 'var(--color-neutral-400)',
-                fontSize: '0.875rem',
-                margin: 'var(--spacing-xs) 0 0 0',
-              }}
-            >
-              Tạo phiếu đăng ký đầu tiên để bắt đầu
-            </p>
+          <div className="text-center py-12">
+            <div className="text-4xl mb-4 opacity-30">[Danh sách trống]</div>
+            <p className="text-gray-500">Chưa có phiếu đăng ký nào</p>
+            <p className="text-gray-400 text-sm">Tạo phiếu đăng ký đầu tiên để bắt đầu</p>
           </div>
         </div>
 
@@ -162,56 +119,19 @@ const RecruiterRegistration = () => {
   }
 
   return (
-    <div
-      className="card-elevated"
-      style={{
-        padding: 'var(--spacing-lg)',
-        marginBottom: 'var(--spacing-lg)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-md)',
-        }}
-      >
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2
-            className="text-heading-1"
-            style={{ color: 'var(--color-primary)', margin: 0 }}
-          >
-            Đăng ký nhà tuyển dụng
-          </h2>
-          <p
-            style={{
-              color: 'var(--color-neutral-600)',
-              margin: 'var(--spacing-xs) 0 0 0',
-              fontSize: '0.875rem',
-            }}
-          >
-            Quản lý các phiếu đăng ký nhà tuyển dụng của bạn
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">Đăng ký nhà tuyển dụng</h2>
+          <p className="text-gray-600 text-sm mt-1">Quản lý các phiếu đăng ký nhà tuyển dụng của bạn</p>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-sm)',
-          }}
-        >
-          <div className="badge-secondary">
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
             Tổng {registrations.length} phiếu
-          </div>
+          </span>
           <button
-            className="btn-accent"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
             onClick={handleCreateRegistration}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-xs)',
-            }}
           >
             <PlusOutlined />
             Tạo đơn đăng ký
@@ -220,195 +140,57 @@ const RecruiterRegistration = () => {
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '0.9rem',
-          }}
-        >
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-neutral-50)' }}>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                STT
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Mã phiếu
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Tên công ty
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Email liên hệ
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Ngày tạo
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'center',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Tình trạng
-              </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'center',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
-                Hành động
-              </th>
+            <tr className="bg-gray-50">
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">STT</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Mã phiếu</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Tên công ty</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Email liên hệ</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Ngày tạo</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-700">Tình trạng</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-700">Hành động</th>
             </tr>
           </thead>
           <tbody>
             {registrations.map((item, index) => (
               <tr
                 key={item.id}
-                style={{
-                  borderBottom: '1px solid var(--color-neutral-200)',
-                  transition: 'background-color 0.2s ease',
-                }}
-                onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  'var(--color-neutral-50)')
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = 'transparent')
-                }
+                className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-800)' }}>
-                    {index + 1}
-                  </div>
+                <td className="px-4 py-3 text-gray-900">{index + 1}</td>
+                <td className="px-4 py-3">
+                  <div className="text-gray-900 font-medium">{item.id}</div>
                 </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-800)', fontWeight: '500' }}>
-                    {item.id}
-                  </div>
-                </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-800)' }}>
-                    {item.companyName}
-                  </div>
-                </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-600)' }}>
-                    {item.contactEmail}
-                  </div>
-                </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-800)' }}>
+                <td className="px-4 py-3 text-gray-900">{item.companyName}</td>
+                <td className="px-4 py-3 text-gray-600">{item.contactEmail}</td>
+                <td className="px-4 py-3">
+                  <div className="text-gray-900">
                     {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '0.8rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
+                  <div className="text-xs text-gray-500">
                     {new Date(item.createdAt).toLocaleTimeString('vi-VN')}
                   </div>
                 </td>
-                <td
-                  style={{ padding: 'var(--spacing-sm)', textAlign: 'center' }}
-                >
-                  <span
-                    style={{
-                      color: getStatusColor(item.status),
-                      fontWeight: '500',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: `${getStatusColor(item.status)}20`,
-                      fontSize: '0.875rem',
-                    }}
-                  >
+                <td className="px-4 py-3 text-center">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
                     {getStatusText(item.status)}
                   </span>
                 </td>
-                <td
-                  style={{ padding: 'var(--spacing-sm)', textAlign: 'center' }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-xs)',
-                      justifyContent: 'center',
-                    }}
-                  >
+                <td className="px-4 py-3 text-center">
+                  <div className="flex gap-2 justify-center">
                     <button
-                      className="btn-outline btn-sm"
+                      className="flex items-center gap-1 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md hover:bg-gray-300 transition-colors"
                       onClick={() => handleViewRegistration(item)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--spacing-xs)',
-                        fontSize: '0.8rem',
-                        padding: '0.25rem 0.5rem',
-                      }}
                     >
                       <EyeOutlined />
                       Xem
                     </button>
                     {item.status === 'pending' && (
                       <button
-                        className="btn-accent btn-sm"
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
                         onClick={() => handleEditRegistration(item)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 'var(--spacing-xs)',
-                          fontSize: '0.8rem',
-                          padding: '0.25rem 0.5rem',
-                        }}
                       >
                         <EditOutlined />
                         Sửa

@@ -11,8 +11,8 @@ import PersonalInfoTabs from './components/personal-info/PersonalInfoTabs';
 import CVApplicationTabs from './components/cv-application/CVApplicationTabs';
 import CommunityTabs from './components/community/CommunityTabs';
 import CareerTabs from './components/career/CareerTabs';
-import TabNavigation from './components/TabNavigation';
 import ExamTabs from './components/exam/ExamTabs';
+import Sidebar from './components/Sidebar';
 import { userService, examService } from '@abc-interview-support-frontend/services';
 
 const UserProfile: React.FC = () => {
@@ -20,9 +20,9 @@ const UserProfile: React.FC = () => {
   const { user: authUser } = useAuth();
   console.log('Authenticated User:', authUser);
 
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState<string>('personal');
+  // Dashboard state
+  const [activeSection, setActiveSection] = useState<string>('personal');
+  const [activeSubsection, setActiveSubsection] = useState<string>('info');
 
   // Convert AuthUser to User format for profile display
   const [user, setUser] = useState<User>(() => {
@@ -273,74 +273,66 @@ const UserProfile: React.FC = () => {
     );
   };
 
-  // Tab configuration with badges
-  const tabs = [
-    {
-      id: 'personal',
-      label: 'Thông tin cá nhân',
-      icon: '👤',
-      description: '',
-      badge: undefined,
-    },
-    {
-      id: 'exams',
-      label: 'Bài kiểm tra',
-      icon: '📝',
-      description: '',
-      badge: completedExams.length || undefined,
-    },
-    {
-      id: 'cv',
-      label: 'CV & Ứng tuyển',
-      icon: '📄',
-      description: '',
-      badge:
-        appliedCompanies.filter((app) => app.status === 'Interview').length ||
-        undefined,
-    },
-    {
-      id: 'community',
-      label: 'Cộng đồng',
-      icon: '💬',
-      description: '',
-      badge: discussions.length || undefined,
-    },
-    {
-      id: 'career',
-      label: 'Định hướng nghề nghiệp',
-      icon: '🎯',
-      description: '',
-      badge: undefined,
-    },
-  ];
+  // Handle section change
+  const handleSectionChange = (section: string, subsection?: string) => {
+    setActiveSection(section);
+    if (subsection) {
+      setActiveSubsection(subsection);
+    } else {
+      // Set default subsection for personal section
+      if (section === 'personal') {
+        setActiveSubsection('info');
+      }
+    }
+  };
 
-  // Render tab content
-  const renderTabContent = () => {
-    switch (activeTab) {
+  // Render content based on active section and subsection
+  const renderContent = () => {
+    switch (activeSection) {
       case 'personal':
-        return (
-          <PersonalInfoTabs
-            user={user}
-            eloHistory={eloHistory}
-            onUpdateUser={handleUpdateUser}
-          />
-        );
+        switch (activeSubsection) {
+          case 'info':
+            return (
+              <PersonalInfoTabs
+                user={user}
+                eloHistory={eloHistory}
+                onUpdateUser={handleUpdateUser}
+                showOnlyPersonalInfo={true}
+              />
+            );
+          case 'elo':
+            return (
+              <PersonalInfoTabs
+                user={user}
+                eloHistory={eloHistory}
+                onUpdateUser={handleUpdateUser}
+                showOnlyEloRank={true}
+              />
+            );
+          case 'recruiter':
+            return (
+              <PersonalInfoTabs
+                user={user}
+                eloHistory={eloHistory}
+                onUpdateUser={handleUpdateUser}
+                showOnlyRecruiterRegis={true}
+              />
+            );
+          default:
+            return (
+              <PersonalInfoTabs
+                user={user}
+                eloHistory={eloHistory}
+                onUpdateUser={handleUpdateUser}
+                showOnlyPersonalInfo={true}
+              />
+            );
+        }
 
       case 'exams':
         return (
           <ExamTabs
             completedExams={completedExams}
-          />
-        );
-
-      case 'cv':
-        return (
-          <CVApplicationTabs
-            uploadedCVs={uploadedCVs}
-            appliedCompanies={appliedCompanies}
-            onUploadCV={handleUploadCV}
-            onDeleteCV={handleDeleteCV}
-            onSetActiveCV={handleSetActiveCV}
           />
         );
 
@@ -366,49 +358,24 @@ const UserProfile: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-neutral-50)',
-        padding: 'var(--spacing-lg)',
-      }}
-    >
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <h1
-            className="text-heading-1"
-            style={{
-              margin: '0 0 var(--spacing-sm) 0',
-              background:
-                'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            Hồ sơ cá nhân
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              color: 'var(--color-neutral-600)',
-              fontSize: '1rem',
-            }}
-          >
-            Quản lý thông tin cá nhân và theo dõi tiến trình học tập của bạn
-          </p>
-        </div>
-
-        {/* Tab Navigation */}
-        <TabNavigation
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
+        {/* Sidebar */}
+        <Sidebar
+          activeSection={activeSection}
+          activeSubsection={activeSubsection}
+          onSectionChange={handleSectionChange}
         />
 
-        {/* Tab Content */}
-        <div style={{ minHeight: '400px' }}>{renderTabContent()}</div>
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden">
+          <div className="p-8">
+            {/* Content */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              {renderContent()}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

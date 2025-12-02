@@ -111,128 +111,60 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
   };
 
   const renderNews = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h3
-          className="text-heading-2"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Tin tức tuyển dụng
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-blue-600 m-0">
+          📰 Tin tức tuyển dụng
         </h3>
-        <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-          <button className="btn-outline btn-sm">📅 Hôm nay</button>
-          <button className="btn-outline btn-sm">🔥 Trending</button>
-          <button className="btn-outline btn-sm">⭐ Đã lưu</button>
+        <div className="flex gap-2">
+          <button className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors">
+            📅 Hôm nay
+          </button>
+          <button className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors">
+            🔥 Trending
+          </button>
+          <button className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors">
+            ⭐ Đã lưu
+          </button>
         </div>
       </div>
 
       {newsItems.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            📰
-          </div>
-          <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-            Không có tin tức mới
-          </p>
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2 opacity-30">📰</div>
+          <p className="text-sm text-gray-500 m-0">Không có tin tức mới</p>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-md)',
-          }}
-        >
+        <div className="space-y-3">
           {newsItems.map((news) => (
             <div
               key={news.id}
-              className="card-soft"
-              style={{ padding: 'var(--spacing-md)' }}
+              className="bg-gray-50 rounded-md p-3 border border-gray-100"
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-sm)',
-                      marginBottom: 'var(--spacing-xs)',
-                    }}
-                  >
-                    <span
-                      className="badge-neutral"
-                      style={{ fontSize: '0.75rem' }}
-                    >
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-200 rounded">
                       {news.category}
                     </span>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--color-neutral-500)',
-                      }}
-                    >
-                      • {news.source}
-                    </span>
+                    <span className="text-xs text-gray-500">• {news.source}</span>
                   </div>
-                  <h4
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-800)',
-                    }}
-                  >
+                  <h4 className="text-base font-semibold text-gray-800 m-0 mb-1">
                     {news.title}
                   </h4>
-                  <p
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-600)',
-                      lineHeight: 1.5,
-                    }}
-                  >
+                  <p className="text-sm text-gray-600 m-0 mb-2 leading-relaxed">
                     {news.summary}
                   </p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-md)',
-                      fontSize: '0.875rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
-                    <span>
-                      📅{' '}
-                      {new Date(news.publishedDate).toLocaleDateString('vi-VN')}
-                    </span>
+                  <div className="flex gap-3 text-xs text-gray-500">
+                    <span>📅 {new Date(news.publishedDate).toLocaleDateString('vi-VN')}</span>
                     <span>⏱️ {news.readTime} phút đọc</span>
                   </div>
                 </div>
                 <button
-                  className="btn-ghost btn-sm"
+                  className="ml-3 text-lg hover:scale-110 transition-transform"
                   onClick={() => onBookmarkNews(news.id)}
                   style={{
-                    color: news.isBookmarked
-                      ? 'var(--color-warning)'
-                      : 'var(--color-neutral-400)',
-                    marginLeft: 'var(--spacing-md)',
+                    color: news.isBookmarked ? '#fbbf24' : '#9ca3af',
                   }}
                 >
                   {news.isBookmarked ? '⭐' : '☆'}
@@ -246,135 +178,64 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
   );
 
   const renderDiscussions = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h3
-          className="text-heading-2"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Cuộc thảo luận
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-blue-600 m-0">
+          💬 Cuộc thảo luận
         </h3>
-        <button className="btn-accent btn-sm">➕ Tạo thảo luận mới</button>
+        <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+          ➕ Tạo thảo luận mới
+        </button>
       </div>
 
       {discussions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            💬
-          </div>
-          <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-            Chưa có thảo luận nào
-          </p>
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2 opacity-30">💬</div>
+          <p className="text-sm text-gray-500 m-0">Chưa có thảo luận nào</p>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-md)',
-          }}
-        >
+        <div className="space-y-3">
           {discussions.map((discussion) => (
             <div
               key={discussion.id}
-              className="card-soft"
-              style={{ padding: 'var(--spacing-md)' }}
+              className="bg-gray-50 rounded-md p-3 border border-gray-100"
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h4
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-800)',
-                    }}
-                  >
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-gray-800 m-0 mb-1">
                     {discussion.title}
                   </h4>
-                  <p
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-600)',
-                      lineHeight: 1.5,
-                    }}
-                  >
+                  <p className="text-sm text-gray-600 m-0 mb-2 leading-relaxed">
                     {discussion.content.length > 150
                       ? `${discussion.content.substring(0, 150)}...`
                       : discussion.content}
                   </p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-md)',
-                      marginBottom: 'var(--spacing-sm)',
-                    }}
-                  >
+                  <div className="flex items-center gap-2 mb-2">
                     {discussion.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="tag"
-                        style={{ fontSize: '0.75rem' }}
+                        className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 rounded"
                       >
                         #{tag}
                       </span>
                     ))}
                   </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-lg)',
-                      fontSize: '0.875rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
+                  <div className="flex gap-4 text-xs text-gray-500">
                     <span>👤 {discussion.author}</span>
-                    <span>
-                      📅{' '}
-                      {new Date(discussion.createdDate).toLocaleDateString(
-                        'vi-VN'
-                      )}
-                    </span>
+                    <span>📅 {new Date(discussion.createdDate).toLocaleDateString('vi-VN')}</span>
                     <span>💬 {discussion.replies} phản hồi</span>
                     <span>👍 {discussion.likes} lượt thích</span>
                     <span>👁️ {discussion.views} lượt xem</span>
                   </div>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--spacing-xs)',
-                  }}
-                >
+                <div className="flex flex-col gap-1 ml-3">
                   {discussion.isParticipated && (
-                    <span
-                      className="badge-accent"
-                      style={{ fontSize: '0.75rem' }}
-                    >
+                    <span className="px-2 py-0.5 text-xs font-medium text-green-600 bg-green-50 rounded">
                       Đã tham gia
                     </span>
                   )}
                   <button
-                    className="btn-outline btn-sm"
+                    className="px-3 py-1 text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors"
                     onClick={() => onJoinDiscussion(discussion.id)}
                   >
                     💬 Tham gia
@@ -389,198 +250,92 @@ const CommunityTabs: React.FC<CommunityTabsProps> = ({
   );
 
   const renderQuestions = () => (
-    <div className="card-elevated" style={{ padding: 'var(--spacing-lg)' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h3
-          className="text-heading-2"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Câu hỏi phỏng vấn
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-blue-600 m-0">
+          ❓ Câu hỏi phỏng vấn
         </h3>
-        <button className="btn-accent btn-sm">❓ Đặt câu hỏi mới</button>
+        <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+          ❓ Đặt câu hỏi mới
+        </button>
       </div>
 
       {questions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            ❓
-          </div>
-          <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-            Chưa có câu hỏi nào
-          </p>
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2 opacity-30">❓</div>
+          <p className="text-sm text-gray-500 m-0">Chưa có câu hỏi nào</p>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-md)',
-          }}
-        >
+        <div className="space-y-3">
           {questions.map((question) => (
             <div
               key={question.id}
-              className="card-soft"
-              style={{ padding: 'var(--spacing-md)' }}
+              className="bg-gray-50 rounded-md p-3 border border-gray-100"
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-sm)',
-                      marginBottom: 'var(--spacing-xs)',
-                    }}
-                  >
-                    <span
-                      className="badge-neutral"
-                      style={{ fontSize: '0.75rem' }}
-                    >
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-200 rounded">
                       {question.category}
                     </span>
                     <span
-                      className="badge"
+                      className="px-2 py-0.5 text-xs font-medium text-white rounded"
                       style={{
-                        backgroundColor: getDifficultyColor(
-                          question.difficulty
-                        ),
-                        color: 'white',
-                        fontSize: '0.75rem',
+                        backgroundColor: getDifficultyColor(question.difficulty),
                       }}
                     >
                       {getDifficultyText(question.difficulty)}
                     </span>
                   </div>
-                  <h4
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-800)',
-                    }}
-                  >
+                  <h4 className="text-base font-semibold text-gray-800 m-0 mb-1">
                     {question.title}
                   </h4>
-                  <p
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: 'var(--color-neutral-600)',
-                      lineHeight: 1.5,
-                    }}
-                  >
+                  <p className="text-sm text-gray-600 m-0 mb-2 leading-relaxed">
                     {question.content.length > 150
                       ? `${question.content.substring(0, 150)}...`
                       : question.content}
                   </p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-md)',
-                      marginBottom: 'var(--spacing-sm)',
-                    }}
-                  >
+                  <div className="flex items-center gap-2 mb-2">
                     {question.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="tag"
-                        style={{ fontSize: '0.75rem' }}
+                        className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 rounded"
                       >
                         #{tag}
                       </span>
                     ))}
                   </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 'var(--spacing-lg)',
-                      fontSize: '0.875rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
+                  <div className="flex gap-4 text-xs text-gray-500">
                     <span>👤 {question.author}</span>
-                    <span>
-                      📅{' '}
-                      {new Date(question.createdDate).toLocaleDateString(
-                        'vi-VN'
-                      )}
-                    </span>
+                    <span>📅 {new Date(question.createdDate).toLocaleDateString('vi-VN')}</span>
                     <span>💬 {question.answers} câu trả lời</span>
                   </div>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 'var(--spacing-xs)',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                    }}
-                  >
+                <div className="flex flex-col items-center gap-1 ml-3">
+                  <div className="flex flex-col items-center">
                     <button
-                      className="btn-ghost btn-sm"
+                      className="text-green-600 hover:text-green-700 text-sm p-0.5"
                       onClick={() => onVoteQuestion(question.id, 'up')}
-                      style={{
-                        padding: '0.25rem',
-                        color: 'var(--color-success)',
-                      }}
                     >
                       ▲
                     </button>
-                    <span
-                      style={{
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        color: 'var(--color-neutral-700)',
-                      }}
-                    >
+                    <span className="text-sm font-semibold text-gray-700">
                       {question.votes}
                     </span>
                     <button
-                      className="btn-ghost btn-sm"
+                      className="text-red-600 hover:text-red-700 text-sm p-0.5"
                       onClick={() => onVoteQuestion(question.id, 'down')}
-                      style={{
-                        padding: '0.25rem',
-                        color: 'var(--color-danger)',
-                      }}
                     >
                       ▼
                     </button>
                   </div>
                   {question.isSolved && (
-                    <span
-                      className="badge-success"
-                      style={{ fontSize: '0.75rem' }}
-                    >
+                    <span className="px-2 py-0.5 text-xs font-medium text-green-600 bg-green-50 rounded">
                       ✓ Đã giải
                     </span>
                   )}
                   <button
-                    className="btn-outline btn-sm"
+                    className="px-3 py-1 text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors"
                     onClick={() => onAnswerQuestion(question.id)}
                   >
                     💡 Trả lời

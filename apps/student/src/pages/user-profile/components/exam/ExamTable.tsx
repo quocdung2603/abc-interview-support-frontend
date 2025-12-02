@@ -16,7 +16,7 @@ interface Props {
 const tableShell: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
-  fontSize: '0.9rem',
+  fontSize: '0.875rem', // text-sm equivalent
 };
 
 const badgeBase: React.CSSProperties = {
@@ -24,7 +24,7 @@ const badgeBase: React.CSSProperties = {
   alignItems: 'center',
   padding: '2px 8px',
   borderRadius: '999px',
-  fontSize: '0.75rem',
+  fontSize: '0.75rem', // text-xs equivalent
   lineHeight: 1.4,
   marginRight: 6,
   marginBottom: 6,
@@ -177,23 +177,10 @@ const ExamTable: React.FC<Props> = ({
   ];
 
   return (
-    <section
-      className="card-interactive"
-      style={{ padding: 'var(--spacing-lg)' }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 'var(--spacing-sm)',
-        }}
-      >
-        <span aria-hidden>📝</span>
-        <h3
-          className="text-heading-2"
-          style={{ margin: 0, color: 'var(--color-neutral-800)' }}
-        >
+    <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span aria-hidden className="text-lg">📝</span>
+        <h3 className="text-lg font-semibold text-gray-800 m-0">
           Danh sách bài kiểm tra — {total} mục
         </h3>
       </div>
@@ -233,10 +220,10 @@ const ExamTable: React.FC<Props> = ({
         onReset={resetFilters}
       />
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={tableShell}>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-neutral-50)' }}>
+            <tr className="bg-gray-50">
               {[
                 'Bài kiểm tra',
                 'Loại',
@@ -249,19 +236,14 @@ const ExamTable: React.FC<Props> = ({
               ].map((th) => (
                 <th
                   key={th}
-                  style={{
-                    padding: 'var(--spacing-sm)',
-                    textAlign:
-                      th === 'Bài kiểm tra' ||
-                        th === 'Field' ||
-                        th === 'Topic' ||
-                        th === 'Loại câu hỏi'
-                        ? 'left'
-                        : 'center',
-                    borderBottom: '2px solid var(--color-neutral-200)',
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className={`px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200 ${
+                    th === 'Bài kiểm tra' ||
+                    th === 'Field' ||
+                    th === 'Topic' ||
+                    th === 'Loại câu hỏi'
+                      ? 'text-left'
+                      : 'text-center'
+                  } whitespace-nowrap`}
                 >
                   {th}
                 </th>
@@ -277,215 +259,115 @@ const ExamTable: React.FC<Props> = ({
               return (
                 <tr
                   key={ex.id}
-                  style={{
-                    borderBottom: '1px solid var(--color-neutral-200)',
-                    transition: 'background-color 0.15s',
-                  }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLTableRowElement>) =>
-                  (e.currentTarget.style.backgroundColor =
-                    'var(--color-neutral-50)')
-                  }
-                  onMouseLeave={(e: React.MouseEvent<HTMLTableRowElement>) =>
-                    (e.currentTarget.style.backgroundColor = 'transparent')
-                  }
+                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                 >
-                  <td style={{ padding: 'var(--spacing-sm)' }}>
-                    <div
-                      className="truncate max-w-[200px]"
-                      style={{
-                        fontWeight: 600,
-                        color: 'var(--color-neutral-900)',
-                      }}
-                    >
+                  <td className="px-3 py-2">
+                    <div className="font-semibold text-gray-900 truncate max-w-[200px]">
                       {ex.title}
                     </div>
-                    <div
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--color-neutral-500)',
-                      }}
-                    >
+                    <div className="text-xs text-gray-500">
                       ID: {ex.id}
                     </div>
                   </td>
-                  <td style={{ padding: 'var(--spacing-sm)', textAlign: 'center' }}>
-                    <span
-                      className="badge-secondary"
-                      style={{
-                        background:
-                          ex.examType === 'VIRTUAL'
-                            ? 'var(--color-primary)'
-                            : 'var(--color-accent)',
-                        color: '#fff',
-                      }}
-                    >
+                  <td className="px-3 py-2 text-center">
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      ex.examType === 'VIRTUAL'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
                       {ex.examType === 'VIRTUAL' ? 'Phỏng vấn ảo' : 'Kiểm tra sơ loại'}
                     </span>
                   </td>
-                  <td style={{ padding: 'var(--spacing-sm)' }}>
+                  <td className="px-3 py-2 text-sm text-gray-900">
                     {ex.position || (
-                      <span style={{ color: 'var(--color-neutral-400)' }}>
-                        —
-                      </span>
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td
-                    className="truncate max-w-[180px]"
-                    style={{ padding: 'var(--spacing-sm)' }}
-                  >
+                  <td className="px-3 py-2 truncate max-w-[180px]">
                     {topics.length ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                      <div className="flex flex-wrap">
                         {topics.map((t) => (
-                          <span key={t} style={badgeBase}>
+                          <span key={t} className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full mr-1 mb-1">
                             {t}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span style={{ color: 'var(--color-neutral-400)' }}>
-                        —
-                      </span>
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td
-                    className="truncate max-w-[180px]"
-                    style={{ padding: 'var(--spacing-sm)' }}
-                  >
+                  <td className="px-3 py-2 truncate max-w-[180px]">
                     {qTypes.length ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                      <div className="flex flex-wrap">
                         {qTypes.map((t) => (
-                          <span key={t} style={badgeBase}>
+                          <span key={t} className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full mr-1 mb-1">
                             {t}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span style={{ color: 'var(--color-neutral-400)' }}>
-                        —
-                      </span>
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td
-                    style={{
-                      padding: 'var(--spacing-sm)',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <td className="px-3 py-2 text-center text-sm text-gray-900 whitespace-nowrap">
                     {formatDuration(ex.duration)}
                   </td>
-                  <td
-                    style={{
-                      padding: 'var(--spacing-sm)',
-                      textAlign: 'center',
-                    }}
-                  >
+                  <td className="px-3 py-2 text-center">
                     {rt === 'UPCOMING' && (
-                      <span
-                        className="badge-secondary"
-                        style={{
-                          background: 'var(--color-warning)',
-                          color: '#fff',
-                        }}
-                      >
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
                         Sắp diễn ra
                       </span>
                     )}
                     {rt === 'ONGOING' && (
-                      <span
-                        className="badge-secondary"
-                        style={{
-                          background: 'var(--color-success)',
-                          color: '#fff',
-                        }}
-                      >
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                         Đang diễn ra
                       </span>
                     )}
                     {rt === 'DONE' && (
-                      <span
-                        className="badge-secondary"
-                        style={{
-                          background: 'var(--color-accent)',
-                          color: '#fff',
-                        }}
-                      >
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
                         Đã thi
                       </span>
                     )}
                     {rt === 'INACTIVE' && (
-                      <span
-                        className="badge-secondary"
-                        style={{
-                          background: 'var(--color-neutral-400)',
-                          color: '#fff',
-                        }}
-                      >
+                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
                         Tạm dừng
                       </span>
                     )}
                   </td>
-                  <td
-                    style={{
-                      padding: 'var(--spacing-sm)',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <div style={{ display: 'inline-flex', gap: 8 }}>
+                  <td className="px-3 py-2 text-center whitespace-nowrap">
+                    <div className="flex gap-2 justify-center">
                       {ex.examType === 'VIRTUAL' ? (
                         rt === 'ONGOING' ? (
-                          <button
-                            className="btn-primary btn-sm"
-                            onClick={() => onJoin?.(ex.id)}
-                          >
+                          <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
                             Tham gia
                           </button>
                         ) : rt === 'DONE' ? (
-                          <button
-                            className="btn-accent btn-sm"
-                            onClick={() => onOpen?.(ex.id)}
-                          >
+                          <button className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors">
                             Mở
                           </button>
                         ) : (
-                          <button
-                            className="btn-outline btn-sm"
-                            onClick={() => onDetails?.(ex.id)}
-                          >
+                          <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
                             Chi tiết
                           </button>
                         )
                       ) : (
                         <>
                           {rt === 'UPCOMING' && (
-                            <button
-                              className="btn-outline btn-sm"
-                              onClick={() => onInfo?.(ex.id)}
-                            >
+                            <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
                               Xem thông tin
                             </button>
                           )}
                           {rt === 'ONGOING' && (
-                            <button
-                              className="btn-primary btn-sm"
-                              onClick={() => onEnter?.(ex.id)}
-                            >
+                            <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
                               Vào thi
                             </button>
                           )}
                           {rt === 'DONE' && (
-                            <button
-                              className="btn-accent btn-sm"
-                              onClick={() => onResult?.(ex.id)}
-                            >
+                            <button className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors">
                               Xem kết quả
                             </button>
                           )}
-                          <button
-                            className="btn-outline btn-sm"
-                            onClick={() => onDetails?.(ex.id)}
-                          >
+                          <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
                             Chi tiết
                           </button>
                         </>
@@ -499,11 +381,7 @@ const ExamTable: React.FC<Props> = ({
               <tr>
                 <td
                   colSpan={8}
-                  style={{
-                    padding: 'var(--spacing-lg)',
-                    textAlign: 'center',
-                    color: 'var(--color-neutral-500)',
-                  }}
+                  className="px-6 py-8 text-center text-sm text-gray-500"
                 >
                   Không có dữ liệu phù hợp bộ lọc.
                 </td>

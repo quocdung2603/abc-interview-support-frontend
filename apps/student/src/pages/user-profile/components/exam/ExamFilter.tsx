@@ -32,25 +32,27 @@ export interface ExamControlsProps {
 const controlRow: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
-  gap: 'var(--spacing-sm)',
+  gap: '0.5rem',
   alignItems: 'center',
-  marginBottom: 'var(--spacing-sm)',
+  marginBottom: '0.5rem',
 };
 
 const selectStyle: React.CSSProperties = {
   padding: '8px 10px',
-  border: '1px solid var(--color-neutral-300)',
+  border: '1px solid #d1d5db',
   borderRadius: 8,
   background: 'white',
   minWidth: 160,
+  fontSize: '0.875rem',
 };
 
 const inputStyle: React.CSSProperties = {
   padding: '8px 10px',
-  border: '1px solid var(--color-neutral-300)',
+  border: '1px solid #d1d5db',
   borderRadius: 8,
   background: 'white',
   minWidth: 220,
+  fontSize: '0.875rem',
 };
 
 const ExamFilter: React.FC<ExamControlsProps> = ({
@@ -78,17 +80,11 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
   const goNext = () => onPageChange(Math.min(totalPages, page + 1));
 
   return (
-    <div
-      className="card-elevated"
-      style={{
-        padding: 'var(--spacing-md)',
-        marginBottom: 'var(--spacing-md)',
-      }}
-    >
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       {/* Filters */}
-      <div style={controlRow}>
+      <div className="flex flex-wrap gap-2 items-center mb-2">
         <select
-          style={selectStyle}
+          className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           value={examType}
           onChange={(e) => onExamTypeChange(e.target.value)}
         >
@@ -100,7 +96,7 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
         </select>
 
         <select
-          style={selectStyle}
+          className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           value={field}
           onChange={(e) => onFieldChange(e.target.value)}
         >
@@ -113,7 +109,7 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
         </select>
 
         <select
-          style={selectStyle}
+          className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           value={topic}
           onChange={(e) => onTopicChange(e.target.value)}
         >
@@ -127,7 +123,7 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
 
         {onSearchChange && (
           <input
-            style={inputStyle}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[220px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Tìm theo tên/ID…"
             value={search || ''}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -136,9 +132,8 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
 
         {onReset && (
           <button
-            className="btn-outline"
+            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors ml-auto"
             onClick={onReset}
-            style={{ marginLeft: 'auto' }}
           >
             Reset
           </button>
@@ -146,25 +141,23 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
       </div>
 
       {/* Pagination */}
-      <div
-        style={{ ...controlRow, justifyContent: 'space-between', margin: 0 }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
           <button
-            className="btn-outline btn-sm"
+            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={goPrev}
             disabled={page <= 1}
           >
             Prev
           </button>
-          <div>
+          <div className="text-sm text-gray-900">
             Trang <strong>{page}</strong> / <strong>{totalPages}</strong>
-            <span style={{ color: 'var(--color-neutral-500)', marginLeft: 8 }}>
+            <span className="text-gray-500 ml-2">
               ({total} mục)
             </span>
           </div>
           <button
-            className="btn-outline btn-sm"
+            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={goNext}
             disabled={page >= totalPages}
           >
@@ -174,7 +167,7 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
 
         <div>
           <select
-            style={{ ...selectStyle, minWidth: 100 }}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number.parseInt(e.target.value, 10))}
           >

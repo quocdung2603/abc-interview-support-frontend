@@ -7,7 +7,7 @@ interface EloHistoryProps {
 
 const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Changed from 10 to 5
+  const [itemsPerPage] = useState(5);
   const [sortField, setSortField] = useState<keyof EloHistory>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -40,7 +40,7 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
   };
 
   const getActionColor = (action: string | undefined) => {
-    if (!action) return 'var(--color-neutral-600)';
+    if (!action) return 'text-gray-600';
 
     const lowerAction = action.toLowerCase();
     if (
@@ -48,16 +48,16 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
       lowerAction.includes('hoàn thành') ||
       lowerAction.includes('chính xác')
     ) {
-      return 'var(--color-success)';
+      return 'text-green-600';
     }
     if (
       lowerAction.includes('thua') ||
       lowerAction.includes('sai') ||
       lowerAction.includes('thất bại')
     ) {
-      return 'var(--color-danger)';
+      return 'text-red-600';
     }
-    return 'var(--color-neutral-600)';
+    return 'text-gray-600';
   };
 
   const getPointsDisplay = (points: number) => {
@@ -65,137 +65,54 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
   };
 
   const getPointsColor = (points: number) => {
-    return points > 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    return points > 0 ? 'text-green-600' : 'text-red-600';
   };
 
   if (eloHistory.length === 0) {
     return (
-      <div
-        className="card-elevated"
-        style={{
-          padding: 'var(--spacing-lg)',
-          marginBottom: 'var(--spacing-lg)',
-        }}
-      >
-        <h2
-          className="text-heading-1"
-          style={{
-            color: 'var(--color-primary)',
-            margin: '0 0 var(--spacing-md) 0',
-          }}
-        >
-          Lịch sử điểm ELO
-        </h2>
-        <div style={{ textAlign: 'center', padding: 'var(--spacing-xl)' }}>
-          <div
-            style={{
-              fontSize: '3rem',
-              marginBottom: 'var(--spacing-sm)',
-              opacity: 0.3,
-            }}
-          >
-            📈
-          </div>
-          <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
-            Chưa có hoạt động nào để hiển thị lịch sử ELO
-          </p>
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900">Lịch sử điểm ELO</h2>
+        <div className="text-center py-12">
+          <div className="text-4xl mb-4 opacity-30">📈</div>
+          <p className="text-gray-500">Chưa có hoạt động nào để hiển thị lịch sử ELO</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="card-elevated"
-      style={{
-        padding: 'var(--spacing-lg)',
-        marginBottom: 'var(--spacing-lg)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-md)',
-        }}
-      >
-        <h2
-          className="text-heading-1"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
-          Lịch sử điểm ELO
-        </h2>
-        <div className="badge-secondary">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900">Lịch sử điểm ELO</h2>
+        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
           Tổng {eloHistory.length} hoạt động
-        </div>
+        </span>
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '0.9rem',
-          }}
-        >
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-neutral-50)' }}>
+            <tr className="bg-gray-50">
               <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
+                className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('createdAt')}
               >
-                Thời gian{' '}
-                {sortField === 'createdAt' &&
-                  (sortDirection === 'asc' ? '↑' : '↓')}
+                Thời gian {sortField === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
+                className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('action')}
               >
-                Hoạt động{' '}
-                {sortField === 'action' &&
-                  (sortDirection === 'asc' ? '↑' : '↓')}
+                Hoạt động {sortField === 'action' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
+                className="px-4 py-3 text-center font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('points')}
               >
-                Điểm{' '}
-                {sortField === 'points' &&
-                  (sortDirection === 'asc' ? '↑' : '↓')}
+                Điểm {sortField === 'points' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
-              <th
-                style={{
-                  padding: 'var(--spacing-sm)',
-                  textAlign: 'left',
-                  borderBottom: '2px solid var(--color-neutral-200)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">
                 Mô tả
               </th>
             </tr>
@@ -204,56 +121,28 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
             {paginatedData.map((item, index) => (
               <tr
                 key={item.id}
-                style={{
-                  borderBottom: '1px solid var(--color-neutral-200)',
-                  transition: 'background-color 0.2s ease',
-                }}
-                onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  'var(--color-neutral-50)')
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = 'transparent')
-                }
+                className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
               >
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-800)' }}>
+                <td className="px-4 py-3">
+                  <div className="text-gray-900 font-medium">
                     {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '0.8rem',
-                      color: 'var(--color-neutral-500)',
-                    }}
-                  >
+                  <div className="text-xs text-gray-500">
                     {new Date(item.createdAt).toLocaleTimeString('vi-VN')}
                   </div>
                 </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div
-                    style={{
-                      color: getActionColor(item.action),
-                      fontWeight: '500',
-                    }}
-                  >
+                <td className="px-4 py-3">
+                  <div className={`font-medium ${getActionColor(item.action)}`}>
                     {item.action || 'Không có thông tin'}
                   </div>
                 </td>
-                <td
-                  style={{ padding: 'var(--spacing-sm)', textAlign: 'center' }}
-                >
-                  <span
-                    style={{
-                      color: getPointsColor(item.points),
-                      fontWeight: '600',
-                      fontSize: '1rem',
-                    }}
-                  >
+                <td className="px-4 py-3 text-center">
+                  <span className={`font-bold text-lg ${getPointsColor(item.points)}`}>
                     {getPointsDisplay(item.points)}
                   </span>
                 </td>
-                <td style={{ padding: 'var(--spacing-sm)' }}>
-                  <div style={{ color: 'var(--color-neutral-600)' }}>
+                <td className="px-4 py-3">
+                  <div className="text-gray-600">
                     {item.description || 'Không có mô tả'}
                   </div>
                 </td>
@@ -265,33 +154,16 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: 'var(--spacing-md)',
-            padding: 'var(--spacing-sm) 0',
-            borderTop: '1px solid var(--color-neutral-200)',
-          }}
-        >
-          <div
-            style={{ color: 'var(--color-neutral-600)', fontSize: '0.875rem' }}
-          >
-            Hiển thị {startIndex + 1} -{' '}
-            {Math.min(startIndex + itemsPerPage, eloHistory.length)} trong{' '}
-            {eloHistory.length} hoạt động
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Hiển thị {startIndex + 1} - {Math.min(startIndex + itemsPerPage, eloHistory.length)} trong {eloHistory.length} hoạt động
           </div>
 
-          <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+          <div className="flex gap-2">
             <button
-              className="btn-outline btn-sm"
+              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              style={{
-                opacity: currentPage === 1 ? 0.5 : 1,
-                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-              }}
             >
               Trước
             </button>
@@ -309,13 +181,12 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
               return (
                 <button
                   key={page}
-                  className={
+                  className={`px-3 py-1 text-sm rounded-md min-w-[2rem] ${
                     currentPage === page
-                      ? 'btn-accent btn-sm'
-                      : 'btn-outline btn-sm'
-                  }
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
                   onClick={() => setCurrentPage(page)}
-                  style={{ minWidth: '2rem' }}
                 >
                   {page}
                 </button>
@@ -323,15 +194,9 @@ const EloHistoryTable: React.FC<EloHistoryProps> = ({ eloHistory }) => {
             })}
 
             <button
-              className="btn-outline btn-sm"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              style={{
-                opacity: currentPage === totalPages ? 0.5 : 1,
-                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-              }}
             >
               Sau
             </button>

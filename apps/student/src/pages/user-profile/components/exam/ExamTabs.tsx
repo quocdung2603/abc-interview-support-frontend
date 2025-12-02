@@ -29,8 +29,8 @@ const ExamTabs: React.FC<ExamTabsProps> = ({
   };
 
   return (
-    <div>
-      <div style={{ minHeight: '400px' }}>{renderExamTable()}</div>
+    <div className="min-h-[400px]">
+      {renderExamTable()}
     </div>
   );
 };

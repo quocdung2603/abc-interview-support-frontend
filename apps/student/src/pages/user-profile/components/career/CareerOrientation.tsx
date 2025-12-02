@@ -153,64 +153,36 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
   };
 
   return (
-    <div
-      className="card-elevated"
-      style={{
-        padding: 'var(--spacing-lg)',
-        marginBottom: 'var(--spacing-lg)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-md)',
-        }}
-      >
-        <h2
-          className="text-heading-1"
-          style={{ color: 'var(--color-primary)', margin: 0 }}
-        >
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-blue-600 m-0">
           Định hướng nghề nghiệp
         </h2>
         {!isEditing ? (
-          <button
-            className="btn-accent btn-sm"
-            onClick={() => setIsEditing(true)}
-          >
+          <button className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors">
             Chỉnh sửa
           </button>
         ) : (
-          <div style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
-            <button className="btn-primary btn-sm" onClick={handleSave}>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
               Lưu
             </button>
-            <button
-              className="btn-outline btn-sm"
-              onClick={() => setIsEditing(false)}
-            >
+            <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors">
               Hủy
             </button>
           </div>
         )}
       </div>
 
-      <div style={{ display: 'grid', gap: 'var(--spacing-lg)' }}>
+      <div className="space-y-6">
         {/* Career Fields & Topics */}
         <div>
-          <h3
-            className="text-heading-2"
-            style={{
-              margin: '0 0 var(--spacing-md) 0',
-              color: 'var(--color-neutral-800)',
-            }}
-          >
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Lĩnh vực quan tâm
           </h3>
 
           {isEditing ? (
-            <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
+            <div className="space-y-4">
               {availableFields.map((field) => {
                 const fieldSelected = selectedPreferences.some(
                   (pref) => pref.fieldId === String(field.id)
@@ -224,78 +196,35 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                 return (
                   <div
                     key={field.id}
-                    className="card-interactive"
-                    style={{ padding: 'var(--spacing-md)' }}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--spacing-sm)',
-                        marginBottom: 'var(--spacing-sm)',
-                      }}
-                    >
+                    <div className="flex items-center gap-3 mb-3">
                       <input
                         type="checkbox"
                         checked={fieldSelected}
                         onChange={() => handleFieldToggle(String(field.id))}
-                        style={{ width: '1.2rem', height: '1.2rem' }}
+                        className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <div>
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: 'var(--color-neutral-800)',
-                          }}
-                        >
+                        <div className="font-semibold text-gray-900">
                           {field.name}
                         </div>
-                        <div
-                          style={{
-                            fontSize: '0.875rem',
-                            color: 'var(--color-neutral-600)',
-                          }}
-                        >
+                        <div className="text-sm text-gray-600">
                           {field.description}
                         </div>
                       </div>
                     </div>
 
                     {fieldSelected && fieldTopics.length > 0 && (
-                      <div
-                        style={{
-                          marginLeft: '2rem',
-                          paddingTop: 'var(--spacing-sm)',
-                          borderTop: '1px solid var(--color-neutral-200)',
-                        }}
-                      >
-                        <div
-                          style={{
-                            marginBottom: 'var(--spacing-xs)',
-                            fontSize: '0.875rem',
-                            fontWeight: '500',
-                            color: 'var(--color-neutral-700)',
-                          }}
-                        >
+                      <div className="ml-8 pt-3 border-t border-gray-200">
+                        <div className="text-sm font-medium text-gray-700 mb-2">
                           Chọn chủ đề cụ thể:
                         </div>
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns:
-                              'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: 'var(--spacing-xs)',
-                          }}
-                        >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                           {fieldTopics.map((topic) => (
                             <label
                               key={topic.id}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--spacing-xs)',
-                                cursor: 'pointer',
-                              }}
+                              className="flex items-center gap-2 cursor-pointer"
                             >
                               <input
                                 type="checkbox"
@@ -306,13 +235,9 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                                     String(topic.id)
                                   )
                                 }
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                               />
-                              <span
-                                style={{
-                                  fontSize: '0.875rem',
-                                  color: 'var(--color-neutral-700)',
-                                }}
-                              >
+                              <span className="text-sm text-gray-700">
                                 {topic.name}
                               </span>
                             </label>
@@ -327,29 +252,14 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
           ) : (
             <div>
               {userCareerPreferences.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: 'var(--spacing-xl)',
-                    backgroundColor: 'var(--color-neutral-50)',
-                    borderRadius: 'var(--radius-lg)',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '3rem',
-                      marginBottom: 'var(--spacing-sm)',
-                      opacity: 0.3,
-                    }}
-                  >
-                    🎯
-                  </div>
-                  <p style={{ color: 'var(--color-neutral-500)', margin: 0 }}>
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <div className="text-6xl mb-4 opacity-30">🎯</div>
+                  <p className="text-gray-500 m-0">
                     Chưa có định hướng nghề nghiệp nào được thiết lập
                   </p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gap: 'var(--spacing-sm)' }}>
+                <div className="space-y-3">
                   {availableFields
                     .filter((field) =>
                       userCareerPreferences.some(
@@ -367,35 +277,21 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                       return (
                         <div
                           key={field.id}
-                          className="card-interactive"
-                          style={{ padding: 'var(--spacing-md)' }}
+                          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 'var(--spacing-sm)',
-                              marginBottom: 'var(--spacing-sm)',
-                            }}
-                          >
-                            <span className="badge-accent">
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="inline-flex px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
                               {field.name}
                             </span>
                           </div>
                           {hasTopicPreferences && (
-                            <div
-                              style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: 'var(--spacing-xs)',
-                              }}
-                            >
+                            <div className="flex flex-wrap gap-2">
                               {fieldPreferences
                                 .filter((pref) => pref.topicId)
                                 .map((pref) => (
                                   <span
                                     key={pref.id}
-                                    className="badge-secondary"
+                                    className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
                                   >
                                     {pref.topicId && getTopicName(String(pref.topicId))}
                                   </span>
@@ -413,36 +309,18 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
 
         {/* Career Goals */}
         <div>
-          <h3
-            className="text-heading-2"
-            style={{
-              margin: '0 0 var(--spacing-md) 0',
-              color: 'var(--color-neutral-800)',
-            }}
-          >
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Mục tiêu nghề nghiệp
           </h3>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: 'var(--spacing-md)',
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <div
-                style={{
-                  marginBottom: 'var(--spacing-xs)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <div className="text-sm font-semibold text-gray-700 mb-2">
                 Mục tiêu ngắn hạn (6 tháng - 1 năm)
               </div>
               {isEditing ? (
                 <textarea
-                  className="input-field"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   value={careerGoals.shortTerm}
                   onChange={(e) =>
                     setCareerGoals({
@@ -454,33 +332,19 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   rows={3}
                 />
               ) : (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: '0.75rem',
-                    backgroundColor: 'var(--color-neutral-50)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
+                <p className="m-0 p-3 bg-gray-50 rounded-md text-gray-900 text-sm">
                   {careerGoals.shortTerm}
                 </p>
               )}
             </div>
 
             <div>
-              <div
-                style={{
-                  marginBottom: 'var(--spacing-xs)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <div className="text-sm font-semibold text-gray-700 mb-2">
                 Mục tiêu dài hạn (2-5 năm)
               </div>
               {isEditing ? (
                 <textarea
-                  className="input-field"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   value={careerGoals.longTerm}
                   onChange={(e) =>
                     setCareerGoals({ ...careerGoals, longTerm: e.target.value })
@@ -489,34 +353,20 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   rows={3}
                 />
               ) : (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: '0.75rem',
-                    backgroundColor: 'var(--color-neutral-50)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
+                <p className="m-0 p-3 bg-gray-50 rounded-md text-gray-900 text-sm">
                   {careerGoals.longTerm}
                 </p>
               )}
             </div>
 
             <div>
-              <div
-                style={{
-                  marginBottom: 'var(--spacing-xs)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <div className="text-sm font-semibold text-gray-700 mb-2">
                 Mức lương mong muốn
               </div>
               {isEditing ? (
                 <input
                   type="text"
-                  className="input-field"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={careerGoals.targetSalary}
                   onChange={(e) =>
                     setCareerGoals({
@@ -527,31 +377,19 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   placeholder="VD: 15-20 triệu VND"
                 />
               ) : (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: '0.75rem 0',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
+                <p className="m-0 py-3 text-gray-900 text-sm">
                   {careerGoals.targetSalary || 'Chưa xác định'}
                 </p>
               )}
             </div>
 
             <div>
-              <div
-                style={{
-                  marginBottom: 'var(--spacing-xs)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <div className="text-sm font-semibold text-gray-700 mb-2">
                 Quy mô công ty mong muốn
               </div>
               {isEditing ? (
                 <select
-                  className="select-field"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={careerGoals.preferredCompanySize}
                   onChange={(e) =>
                     setCareerGoals({
@@ -569,31 +407,19 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   <option value="enterprise">Tập đoàn (1000+ nhân viên)</option>
                 </select>
               ) : (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: '0.75rem 0',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
+                <p className="m-0 py-3 text-gray-900 text-sm">
                   {getCompanySizeText(careerGoals.preferredCompanySize)}
                 </p>
               )}
             </div>
 
             <div>
-              <div
-                style={{
-                  marginBottom: 'var(--spacing-xs)',
-                  fontWeight: '600',
-                  color: 'var(--color-neutral-700)',
-                }}
-              >
+              <div className="text-sm font-semibold text-gray-700 mb-2">
                 Hình thức làm việc
               </div>
               {isEditing ? (
                 <select
-                  className="select-field"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={careerGoals.workLocation}
                   onChange={(e) =>
                     setCareerGoals({
@@ -607,13 +433,7 @@ const CareerOrientation: React.FC<CareerOrientationProps> = ({
                   <option value="hybrid">Làm việc linh hoạt</option>
                 </select>
               ) : (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: '0.75rem 0',
-                    color: 'var(--color-neutral-800)',
-                  }}
-                >
+                <p className="m-0 py-3 text-gray-900 text-sm">
                   {getWorkLocationText(careerGoals.workLocation)}
                 </p>
               )}

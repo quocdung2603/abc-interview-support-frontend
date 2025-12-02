@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from 'antd';
 import {
   Field,
   Topic,
@@ -58,204 +59,68 @@ const DetailCareerModal: React.FC<DetailCareerModalProps> = ({
   };
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 999,
-          animation: 'fadeIn 0.2s ease-in-out',
-        }}
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div
-        className="card-elevated"
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1000,
-          padding: 'var(--spacing-lg)',
-          width: '90%',
-          maxWidth: '600px',
-          backgroundColor: 'white',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          animation: 'slideIn 0.3s ease-out',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 'var(--spacing-lg)',
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              color: 'var(--color-primary)',
-              fontSize: '1.5rem',
-            }}
-          >
-            👁️ Chi tiết định hướng nghề nghiệp
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              color: 'var(--color-neutral-500)',
-              padding: '0.25rem',
-              lineHeight: 1,
-            }}
-            aria-label="Đóng"
-          >
-            ×
-          </button>
+    <Modal
+      title={
+        <div className="flex items-center gap-2">
+          <span className="text-lg">👁️</span>
+          <span className="text-lg font-semibold text-blue-600">Chi tiết định hướng nghề nghiệp</span>
         </div>
-
-        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-sm)',
-              marginBottom: 'var(--spacing-sm)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: 'var(--color-neutral-600)',
-                minWidth: '120px',
-              }}
-            >
+      }
+      open={isOpen}
+      onCancel={onClose}
+      footer={[
+        <button
+          key="close"
+          className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+          onClick={onClose}
+        >
+          Đóng
+        </button>
+      ]}
+      width={800}
+      centered
+      destroyOnClose
+    >
+      <div className="py-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-gray-600 min-w-[120px]">
               🎯 Lĩnh vực:
             </span>
-            <span
-              style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: 'var(--color-primary)',
-              }}
-            >
+            <span className="text-lg font-semibold text-blue-600">
               {getFieldName(career.fieldId)}
             </span>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-sm)',
-              marginBottom: 'var(--spacing-sm)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: 'var(--color-neutral-600)',
-                minWidth: '120px',
-              }}
-            >
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-gray-600 min-w-[120px]">
               📚 Chủ đề:
             </span>
-            <span
-              className="badge-accent"
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: '500',
-              }}
-            >
+            <span className="inline-flex px-2 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
               {getTopicName(career.topicId)}
             </span>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-sm)',
-              marginBottom: 'var(--spacing-md)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: 'var(--color-neutral-600)',
-                minWidth: '120px',
-              }}
-            >
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-gray-600 min-w-[120px]">
               📅 Ngày tạo:
             </span>
-            <span
-              style={{
-                fontSize: '0.875rem',
-                color: 'var(--color-neutral-700)',
-              }}
-            >
+            <span className="text-sm text-gray-700">
               {formatDate(career.createdAt.toString())}
             </span>
           </div>
 
-          <div
-            style={{
-              paddingTop: 'var(--spacing-md)',
-              borderTop: '1px solid var(--color-neutral-200)',
-            }}
-          >
-            <h4
-              style={{
-                margin: '0 0 var(--spacing-sm) 0',
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: 'var(--color-neutral-700)',
-              }}
-            >
+          <div className="pt-4 border-t border-gray-200">
+            <h4 className="text-base font-semibold text-gray-700 mb-2">
               📝 Mô tả lĩnh vực:
             </h4>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '0.875rem',
-                color: 'var(--color-neutral-600)',
-                lineHeight: '1.6',
-              }}
-            >
+            <p className="text-sm text-gray-600 leading-relaxed">
               {getFieldDescription(career.fieldId)}
             </p>
           </div>
         </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            paddingTop: 'var(--spacing-md)',
-            borderTop: '1px solid var(--color-neutral-200)',
-          }}
-        >
-          <button className="btn-accent" onClick={onClose}>
-            Đóng
-          </button>
-        </div>
       </div>
-    </>
+    </Modal>
   );
 };
 

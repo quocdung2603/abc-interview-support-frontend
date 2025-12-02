@@ -207,9 +207,9 @@ const CareerTabs: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
-        <p style={{ color: 'var(--color-neutral-600)' }}>Đang tải dữ liệu...</p>
+      <div className="text-center py-8">
+        <div className="text-4xl mb-4">⏳</div>
+        <p className="text-gray-600">Đang tải dữ liệu...</p>
       </div>
     );
   }
@@ -229,26 +229,14 @@ const CareerTabs: React.FC = () => {
           }}
         >
           <div>
-            <h3
-              style={{
-                margin: '0 0 0.25rem 0',
-                color: 'var(--color-neutral-800)',
-                fontSize: '1.5rem',
-              }}
-            >
+            <h3 className="text-xl font-semibold text-gray-800 mb-1 m-0">
               🎯 Định hướng nghề nghiệp
             </h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--color-neutral-600)',
-                fontSize: '0.875rem',
-              }}
-            >
+            <p className="text-sm text-gray-600 m-0">
               Quản lý các lĩnh vực và chủ đề nghề nghiệp bạn quan tâm
             </p>
           </div>
-          <button className="btn-accent" onClick={handleOpenCreateModal}>
+          <button className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors" onClick={handleOpenCreateModal}>
             ➕ Thêm định hướng mới
           </button>
         </div>
@@ -293,13 +281,7 @@ const CareerTabs: React.FC = () => {
 
         {/* Career Grid */}
         {careerPreferences.length > 0 && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: 'var(--spacing-md)',
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {careerPreferences.map((career) => (
               <CareerCard
                 key={career.id}

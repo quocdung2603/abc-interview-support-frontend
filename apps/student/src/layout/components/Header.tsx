@@ -93,7 +93,7 @@ const Header: React.FC = () => {
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-        ? 'bg-white/95 backdrop-blur-md shadow-lg'
+        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
         : 'bg-white/90 backdrop-blur-sm shadow-md'
         }`}
     >
@@ -113,7 +113,7 @@ const Header: React.FC = () => {
           </button>
 
           {/* Desktop menu + sub nav */}
-          <nav className="hidden md:flex items-center gap-2 lg:gap-4">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-3">
             {menuItems.map((item) => {
               const active = isActive(item.path);
               const hasSub = hasChildren(item);
@@ -147,11 +147,11 @@ const Header: React.FC = () => {
                   {hasSub && (
                     <div
                       className="invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 focus-within:visible focus-within:opacity-100 focus-within:translate-y-0
-                                 absolute left-0 top-full mt-4 min-w-[220px] rounded-lg border border-neutral-200 bg-white shadow-menu transition-all duration-150"
+                                 absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-neutral-200 bg-white shadow-lg transition-all duration-150"
                       role="menu"
                       aria-label={`${item.label} submenu`}
                     >
-                      <ul className="py-2">
+                      <ul className="py-1">
                         {item.children!.map((sub) => (
                           <li key={sub.key}>
                             <Link
@@ -172,7 +172,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3"> 
+          <div className="flex items-center gap-3">
             <UserDropdown
               username={user?.fullName || user?.email}
               onLogout={handleLogout}
@@ -181,7 +181,7 @@ const Header: React.FC = () => {
         </div>
 
         {/* Mobile menu + sub nav dạng accordion */}
-        <nav className="flex md:hidden flex-col gap-1 pb-3 px-4">
+        <nav className="flex md:hidden flex-col gap-1 pb-4 px-4">
           {menuItems.map((item) => {
             const active = isActive(item.path);
             const hasSub = hasChildren(item);
@@ -193,7 +193,7 @@ const Header: React.FC = () => {
                   {item.path ? (
                     <Link
                       to={item.path}
-                      className={`flex-1 px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${active
+                      className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${active
                         ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                         }`}
@@ -201,7 +201,7 @@ const Header: React.FC = () => {
                       {item.label}
                     </Link>
                   ) : (
-                    <span className="flex-1 px-2 py-2 rounded-md text-xs font-medium text-gray-700">
+                    <span className="flex-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700">
                       {item.label}
                     </span>
                   )}
@@ -210,11 +210,18 @@ const Header: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setOpenSubKey(opened ? null : item.key)}
-                      className="px-2 py-2 text-xs text-gray-600 hover:text-blue-600"
+                      className="px-2 py-2 text-xs text-gray-600 hover:text-blue-600 transition-colors"
                       aria-expanded={opened}
                       aria-controls={`sub-${item.key}`}
                     >
-                      {opened ? 'Thu gọn' : 'Mở'}
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${opened ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -225,12 +232,12 @@ const Header: React.FC = () => {
                     className={`overflow-hidden transition-[max-height,opacity] duration-200 ${opened ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                       }`}
                   >
-                    <ul className="pl-3 py-1">
+                    <ul className="pl-4 py-1 border-l border-gray-200 ml-2">
                       {item.children!.map((sub) => (
                         <li key={sub.key}>
                           <Link
                             to={sub.path}
-                            className="block px-3 py-2 text-xs rounded-md text-gray-700 hover:bg-neutral-100 hover:text-blue-700"
+                            className="block px-3 py-2 text-sm rounded-md text-gray-700 hover:bg-neutral-100 hover:text-blue-700 transition-colors"
                           >
                             {sub.label}
                           </Link>

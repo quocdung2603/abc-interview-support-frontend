@@ -13,15 +13,40 @@ interface PersonalInfoTabsProps {
   user: User;
   eloHistory: EloHistory[];
   onUpdateUser: (user: User) => void;
+  showOnlyPersonalInfo?: boolean;
+  showOnlyEloRank?: boolean;
+  showOnlyRecruiterRegis?: boolean;
 }
 
 const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
   user,
   eloHistory,
   onUpdateUser,
+  showOnlyPersonalInfo = false,
+  showOnlyEloRank = false,
+  showOnlyRecruiterRegis = false,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<string>('info');
 
+  // If showing only specific section, render directly without tabs
+  if (showOnlyPersonalInfo) {
+    return <PersonalInfo user={user as any} onUpdateUser={onUpdateUser as any} />;
+  }
+
+  if (showOnlyEloRank) {
+    return (
+      <div className="space-y-6">
+        <EloRankInfo user={user} />
+        <EloHistoryTable eloHistory={eloHistory as any} />
+      </div>
+    );
+  }
+
+  if (showOnlyRecruiterRegis) {
+    return <RecruiterRegistration />;
+  }
+
+  // Default behavior with tabs
   const subTabs = [
     {
       id: 'info',
@@ -53,14 +78,14 @@ const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
         );
       case 'elo':
         return (
-          <div>
+          <div className="space-y-6">
             <EloRankInfo user={user} />
             <EloHistoryTable eloHistory={eloHistory as any} />
           </div>
-        );  
+        );
       case 'recruiter':
         return (
-          <RecruiterRegistration /> 
+          <RecruiterRegistration />
         );
       default:
         return null;
@@ -74,7 +99,7 @@ const PersonalInfoTabs: React.FC<PersonalInfoTabsProps> = ({
         activeTab={activeSubTab}
         onTabChange={setActiveSubTab}
       />
-      <div style={{ minHeight: '400px' }}>{renderSubTabContent()}</div>
+      <div className="min-h-96">{renderSubTabContent()}</div>
     </div>
   );
 };

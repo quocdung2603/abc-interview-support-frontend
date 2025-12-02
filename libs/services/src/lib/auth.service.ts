@@ -64,6 +64,11 @@ export class AuthService {
     });
     return response.data;
   }
+
+  async refreshToken(refreshToken: string) {
+    const response = await this.apiClient.post('/auth/refresh/', refreshToken);
+    return response.data;
+  }
 }
 /**
  * Create an instance of AuthService

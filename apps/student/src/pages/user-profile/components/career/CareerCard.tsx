@@ -41,96 +41,43 @@ const CareerCard: React.FC<CareerCardProps> = ({
   };
 
   return (
-    <div
-      className="card-soft"
-      style={{
-        padding: 'var(--spacing-md)',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '';
-      }}
-    >
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-1">
       {/* Top gradient line */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '4px',
-          background:
-            'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
-        }}
-      />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
 
-      <div style={{ marginBottom: 'var(--spacing-md)', marginTop: '0.5rem' }}>
-        <h4
-          style={{
-            margin: '0 0 0.5rem 0',
-            color: 'var(--color-neutral-800)',
-            fontSize: '1.125rem',
-            fontWeight: '600',
-          }}
-        >
+      <div className="mb-4 mt-2">
+        <h4 className="text-lg font-semibold text-gray-800 mb-2 m-0">
           {getFieldName(career.fieldId)}
         </h4>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-xs)',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span
-            className="badge-accent"
-            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-          >
+        <div className="flex items-center gap-1 flex-wrap">
+          <span className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
             📚 {getTopicName(career.topicId)}
           </span>
         </div>
       </div>
 
-      <div
-        style={{
-          fontSize: '0.75rem',
-          color: 'var(--color-neutral-500)',
-          marginBottom: 'var(--spacing-md)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-        }}
-      >
-        <CalendarOutlined twoToneColor="#52c41a" />
+      <div className="text-xs text-gray-500 mb-4 flex items-center gap-1">
+        <CalendarOutlined className="text-green-500" />
         <span>
           Tạo ngày: {new Date(career.createdAt).toLocaleDateString('vi-VN')}
         </span>
       </div>
 
-      <div className='w-full flex flex-row justify-between gap-[var(--spacing-xs)]'
-      >
+      <div className="w-full flex flex-row justify-between gap-1">
         <button
-          className="btn-outline btn-sm w-1/3"
+          className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors flex-1"
           onClick={() => onViewDetail(career)}
         >
           Xem
         </button>
         <button
-          className="btn-outline btn-sm w-1/3"
+          className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors flex-1"
           onClick={() => onEdit(career)}
         >
           Sửa
         </button>
         <button
-          className="btn-outline btn-sm w-1/3"
+          className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors flex-1"
           onClick={() => onDelete(career.id)}
         >
           Xóa
