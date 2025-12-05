@@ -85,14 +85,14 @@ const mockAnswers: DiscussionAnswer[] = [
     downVotes: 0,
     createdAt: '1 ngày trước',
     updatedAt: '1 ngày trước',
-  },  
+  },
   {
     id: 5,
     postId: 1,
     userId: 103,
     content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
     upVotes: 7,
-    downVotes: 1,   
+    downVotes: 1,
     createdAt: '2 ngày trước',
     updatedAt: '2 ngày trước',
   },
@@ -105,24 +105,24 @@ const mockAnswers: DiscussionAnswer[] = [
     downVotes: 0,
     createdAt: '1 ngày trước',
     updatedAt: '1 ngày trước',
-  },  
+  },
   {
     id: 7,
     postId: 1,
     userId: 103,
     content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
     upVotes: 7,
-    downVotes: 1,   
+    downVotes: 1,
     createdAt: '2 ngày trước',
     updatedAt: '2 ngày trước',
   },
-    {
+  {
     id: 8,
     postId: 1,
     userId: 103,
     content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
     upVotes: 7,
-    downVotes: 1,   
+    downVotes: 1,
     createdAt: '2 ngày trước',
     updatedAt: '2 ngày trước',
   },
@@ -135,26 +135,26 @@ const mockAnswers: DiscussionAnswer[] = [
     downVotes: 0,
     createdAt: '1 ngày trước',
     updatedAt: '1 ngày trước',
-  },  
+  },
   {
     id: 10,
     postId: 1,
     userId: 103,
     content: 'Tham gia các dự án mã nguồn mở để có thêm kinh nghiệm thực tế và xây dựng mạng lưới quan hệ trong ngành.',
     upVotes: 7,
-    downVotes: 1,   
+    downVotes: 1,
     createdAt: '2 ngày trước',
     updatedAt: '2 ngày trước',
   },
 
 ];
 
-interface DiscusionDetailProps {
+type DiscusionDetailProps = {
   post?: Post;
   fields?: Field[];
   topics?: Topic[];
   levels?: Level[];
-}
+};
 
 const DiscussionDetails: React.FC<DiscusionDetailProps> = ({
   post = mockPost,

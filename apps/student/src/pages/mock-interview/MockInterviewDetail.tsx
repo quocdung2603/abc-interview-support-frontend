@@ -1,20 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Progress, Modal, message } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
 import { examService } from '@abc-interview-support-frontend/services';
-import { ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
+import { ExamDetailHeader, ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
 
 interface UserAnswers {
   [questionId: string]: string; // Tất cả đáp án đều lưu dưới dạng string
 }
 
-interface MockInterviewDetailProps {
+type MockInterviewDetailProps = {
   examId?: string;
   onBack?: () => void;
-}
+};
 
 const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propExamId, onBack }) => {
-  const propsExamId = propExamId;
+  const { id: urlExamId } = useParams<{ id: string }>();
+  const examId = urlExamId || propExamId;
   const navigate = useNavigate();
 
   // State management
@@ -28,6 +31,8 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   );
   const [isExamActive, setIsExamActive] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [isOpenBackModal, setIsOpenBackModal] = useState(false);
+  const [isSubmitModal, setIsSubmitModal] = useState(false);
 
   const getExamById = async (examId: string) => {
     try {
@@ -62,12 +67,12 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   // Initialize mock data
   useEffect(() => {
     const initializeExam = async () => {
-      getExamById(propsExamId || '');
+      getExamById(examId || '');
       getAllAnswers().finally(() => setLoading(false));
     };
 
     initializeExam();
-  }, [propsExamId]);
+  }, [examId]);
 
   // Handle answer changes
   const handleAnswerChange = useCallback(
@@ -125,37 +130,56 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
 
   // Submit exam
   const handleSubmitExam = useCallback(() => {
-    const confirmSubmit = globalThis.window.confirm(
-      'Bạn có chắc chắn muốn nộp bài? Sau khi nộp bài, bạn không thể thay đổi đáp án.'
-    );
+    setIsSubmitModal(true);
+  }, []);
 
-    if (confirmSubmit) {
-      setIsExamActive(false);
-      // Here you would typically submit to API
-      console.log('Submitting exam with answers:', userAnswers);
+  const confirmSubmitExam = useCallback(() => {
+    setIsExamActive(false);
+    // Here you would typically submit to API
+    console.log('Submitting exam with answers:', userAnswers);
 
-      // Store results in localStorage for the result page
-      const examResult = {
-        exam: exam,
-        questions: questions,
-        answers: answers,
-        userAnswers: userAnswers,
-        timeSpent: (exam?.duration ?? 0) * 60 - 120, // Simulate time spent
-        completedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(`examResult_${propsExamId}`, JSON.stringify(examResult));
+    // Store results in localStorage for the result page
+    const examResult = {
+      exam: exam,
+      questions: questions,
+      answers: answers,
+      userAnswers: userAnswers,
+      timeSpent: (exam?.duration ?? 0) * 60 - 120, // Simulate time spent
+      completedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(`examResult_${examId}`, JSON.stringify(examResult));
 
-      // Navigate to results page
-      navigate(`/mock-interview-result/${propsExamId}`);
-    }
-  }, [userAnswers, propsExamId, navigate, exam, questions, answers]);
+    // Navigate to results page
+    navigate(`/mock-interview-result/${examId}`);
+  }, [userAnswers, examId, navigate, exam, questions, answers]);
 
   // Auto-submit when time is up
   const handleTimeUp = useCallback(() => {
-    alert('Hết thời gian làm bài! Bài thi sẽ được tự động nộp.');
+    message.warning('Thời gian làm bài đã kết thúc. Bài kiểm tra sẽ được nộp tự động.');
     setIsExamActive(false);
-    handleSubmitExam();
-  }, [handleSubmitExam]);
+    confirmSubmitExam();
+  }, [confirmSubmitExam]);
+
+  const handleOnBack = () => {
+    setIsExamActive(false);
+    // Here you would typically submit to API
+    console.log('Submitting exam with answers:', userAnswers);
+
+    // Store results in localStorage for the result page
+    const examResult = {
+      exam: exam,
+      questions: questions,
+      answers: answers,
+      userAnswers: userAnswers,
+      timeSpent: (exam?.duration ?? 0) * 60 - 120, // Simulate time spent
+      completedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(`examResult_${examId}`, JSON.stringify(examResult));
+
+    // Close modal and navigate back to mock interview list
+    setIsOpenBackModal(false);
+    navigate('/mock-interview');
+  }
 
   // Keyboard navigation
   useEffect(() => {
@@ -341,30 +365,23 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
+            <ExamDetailHeader
+              onBack={() => setIsOpenBackModal(true)}
+              exam={exam}
+              questions={questions}
+            />
             <div className="flex items-center space-x-4">
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  title="Quay lại danh sách bài kiểm tra"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span>Quay lại</span>
-                </button>
-              )}
-              <div>
-                <h1 className="text-lg font-bold text-gray-800">{exam.title}</h1>
-                <p className="text-sm text-gray-600">
-                  {exam.position} • {questions.length} câu hỏi • {exam.duration}{' '}
-                  phút
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                Câu {currentQuestionIndex + 1}/{questions.length}
+              <div className="text-center">
+                <div className="text-sm text-gray-600 mb-1">
+                  Tiến độ làm bài
+                </div>
+                <Progress
+                  type="circle"
+                  percent={Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}
+                  size={50}
+                  strokeColor="#1890ff"
+                  format={() => `${currentQuestionIndex + 1}/${questions.length}`}
+                />
               </div>
             </div>
           </div>
@@ -422,6 +439,50 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
           </div>
         </div>
       </div>
+
+      {/* Back Confirmation Modal */}
+      <Modal
+        title={
+          <div className="flex items-center">
+            <ExclamationCircleOutlined className="text-orange-500 mr-2" />
+            <span>Xác nhận quay lại</span>
+          </div>
+        }
+        open={isOpenBackModal}
+        onOk={handleOnBack}
+        onCancel={() => setIsOpenBackModal(false)}
+        okText="Nộp bài và quay lại"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+        centered
+      >
+        <p>Bạn có chắc chắn muốn nộp bài và quay lại danh sách bài kiểm tra?</p>
+        <p className="text-sm text-gray-600 mt-2">
+          Sau khi nộp bài, bạn không thể thay đổi đáp án và sẽ được chuyển về trang danh sách bài kiểm tra.
+        </p>
+      </Modal>
+
+      {/* Submit Confirmation Modal */}
+      <Modal
+        title={
+          <div className="flex items-center">
+            <ExclamationCircleOutlined className="text-red-500 mr-2" />
+            <span>Xác nhận nộp bài</span>
+          </div>
+        }
+        open={isSubmitModal}
+        onOk={confirmSubmitExam}
+        onCancel={() => setIsSubmitModal(false)}
+        okText="Nộp bài"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+        centered
+      >
+        <p>Bạn có chắc chắn muốn nộp bài kiểm tra?</p>
+        <p className="text-sm text-gray-600 mt-2">
+          Sau khi nộp bài, bạn không thể thay đổi đáp án và sẽ được chuyển đến trang kết quả.
+        </p>
+      </Modal>
     </div>
   );
 };

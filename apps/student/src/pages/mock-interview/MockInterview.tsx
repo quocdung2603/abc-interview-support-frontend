@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { examService } from '@abc-interview-support-frontend/services';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import { Exam } from '@abc-interview-support-frontend/types';
-import MockInterviewDetail from './MockInterviewDetail';
 import { ExamCreationForm, ExamList, MockInterviewHeader } from './components/mock-interview';
 
 interface ExamFormData {
@@ -25,8 +25,8 @@ const MockInterview = () => {
   const [searchCriteria, setSearchCriteria] = useState<Partial<ExamFormData>>(
     {}
   );
-  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const getUserExams = async () => {
     try {
@@ -123,68 +123,60 @@ const MockInterview = () => {
   };
 
   const handleStartExam = (examId: string) => {
-    setSelectedExamId(examId);
+    navigate(`/mock-interview-detail/${examId}`);
   };
 
   const handleCriteriaChange = (criteria: Partial<ExamFormData>) => {
     setSearchCriteria(criteria);
   };
 
-  const handleBackToList = () => {
-    setSelectedExamId(null);
-  };
-
   return (
     <div
       className="min-h-screen bg-neutral-50">
       <MockInterviewHeader />
-      {selectedExamId ? (
-        <MockInterviewDetail examId={selectedExamId} onBack={handleBackToList} />
-      ) : (
-        <div className="container-center py-8 px-4">
-          <div className="max-w-5xl mx-auto">
-            {/* Exam Creation Form */}
-            <div className="animate-fade-in">
-              <ExamCreationForm
-                onCreateExam={handleCreateExam}
-                onCriteriaChange={handleCriteriaChange}
-              />
-            </div>
+      <div className="container-center py-8 px-4">
+        <div className="max-w-5xl mx-auto">
+          {/* Exam Creation Form */}
+          <div className="animate-fade-in">
+            <ExamCreationForm
+              onCreateExam={handleCreateExam}
+              onCriteriaChange={handleCriteriaChange}
+            />
+          </div>
 
-            {/* Created Exams */}
-            {createdExams.length > 0 && (
-              <div className="animate-fade-in-up">
-                <ExamList
-                  title="🆕 Bài Kiểm Tra Được Tạo"
-                  exams={createdExams}
-                  onStartExam={handleStartExam}
-                  showCreatedBadge={true}
-                />
-              </div>
-            )}
-
-            {/* Available Exams */}
+          {/* Created Exams */}
+          {createdExams.length > 0 && (
             <div className="animate-fade-in-up">
               <ExamList
-                title="📚 Các Bài Kiểm Tra Có Sẵn"
-                exams={filteredAvailableExams}
-                emptyMessage="Không tìm thấy bài kiểm tra phù hợp với tiêu chí đã chọn."
+                title="🆕 Bài Kiểm Tra Được Tạo"
+                exams={createdExams}
                 onStartExam={handleStartExam}
+                showCreatedBadge={true}
               />
             </div>
+          )}
 
-            {/* Floating Stats */}
-            {(createdExams.length > 0 || filteredAvailableExams.length > 0) && (
-              <div
-                className="fixed bottom-6 right-6 w-10 h-10 bg-accent text-white border-0 rounded-full shadow-lg cursor-pointer flex items-center justify-center text-lg transition-all duration-300 hover:bg-accent-dark hover:scale-110 hover:shadow-xl z-50"
-                title="Tổng số bài kiểm tra"
-              >
-                {createdExams.length + filteredAvailableExams.length}
-              </div>
-            )}
+          {/* Available Exams */}
+          <div className="animate-fade-in-up">
+            <ExamList
+              title="📚 Các Bài Kiểm Tra Có Sẵn"
+              exams={filteredAvailableExams}
+              emptyMessage="Không tìm thấy bài kiểm tra phù hợp với tiêu chí đã chọn."
+              onStartExam={handleStartExam}
+            />
           </div>
+
+          {/* Floating Stats */}
+          {(createdExams.length > 0 || filteredAvailableExams.length > 0) && (
+            <div
+              className="fixed bottom-6 right-6 w-10 h-10 bg-accent text-white border-0 rounded-full shadow-lg cursor-pointer flex items-center justify-center text-lg transition-all duration-300 hover:bg-accent-dark hover:scale-110 hover:shadow-xl z-50"
+              title="Tổng số bài kiểm tra"
+            >
+              {createdExams.length + filteredAvailableExams.length}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
