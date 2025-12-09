@@ -70,13 +70,9 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
 
   return (
     <div ref={rootRef} className="card-interactive p-4 mb-3">
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         {/* Voting section */}
-        <div className="flex flex-col items-center gap-1 min-w-[48px] border-r border-r-gray-300">
-          <span className="font-bold text-xs text-green-600">
-            {answer.upVotes}
-          </span>
-
+        <div className="flex flex-col items-center gap-2 min-w-[48px] border-r border-r-gray-300 pr-3">
           <button
             onClick={handleUpvote}
             className="p-2 rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600"
@@ -92,10 +88,6 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
           >
             <CaretDownOutlined className="text-sm" />
           </button>
-
-          <span className="font-bold text-xs text-red-600">
-            {answer.downVotes}
-          </span>
         </div>
 
         {/* Answer content */}
@@ -146,6 +138,28 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
                 {expanded ? 'Thu gọn' : 'Xem tất cả'}
               </button>
             )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-1 min-w-[48px] border-l border-l-gray-300 pl-3">
+          {/* Vote statistics */}
+          <div className="text-center space-y-2">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Số lượt vote
+              </span>
+              <div className="text-sm font-bold text-gray-800">
+                {answer.voteCount}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Phần trăm hữu ích
+              </span>
+              <div className="text-sm font-medium text-green-600">
+                {(answer.votePercentage * 100).toFixed(0)}%
+              </div>
+            </div>
           </div>
         </div>
       </div>

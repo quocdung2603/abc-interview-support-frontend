@@ -1,12 +1,12 @@
 import { Button, Space, Typography } from 'antd';
 import React from 'react';
 import { ArrowLeftOutlined, ClockCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Exam, Question } from '@abc-interview-support-frontend/types';
+import { Exam, QuestionInExam } from '@abc-interview-support-frontend/types';
 
 interface ExamDetailHeaderProps {
   onBack?: () => void;
   exam: Exam;
-  questions: Question[];
+  questions: QuestionInExam[];
 }
 
 const ExamDetailHeader: React.FC<ExamDetailHeaderProps> = ({ onBack, exam, questions }) => {

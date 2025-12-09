@@ -57,15 +57,24 @@ export class ExamService {
     return response.data;
   }
 
-  async createExamWithRandomQuestions(examData: CreateExamData) {
-    const newExamData = {
-      ...examData,
-      language: 'Vietnamese',
-    };
+  async createExamWithRandomQuestions(examData: any) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No authentication token found.');
+    }
+    console.log('Request data:', examData);
+
     const response = await this.apiClient.post(
       '/exams/with-random-questions',
-      newExamData
+      examData.requestData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-User-Id': examData.userId,
+        },
+      }
     );
+    console.log('Exam creation response:', response.data);
     return response.data;
   }
 
@@ -184,6 +193,62 @@ export class ExamService {
           Authorization: `Bearer ${token}`,
         },
       }
+    );
+    return response.data;
+  }
+
+  getAnswerByQuestion = async (questionId: number) => {
+    const response = await this.apiClient.get(
+      `/questions/${questionId}/answers`,
+      {
+        params: {
+          page: 0,
+          size: 1000,
+        },
+      }
+    );
+    return response.data;
+  };
+
+  submitExamAnswers = async (
+    userId: number,
+    examId: number,
+    answers: any[]
+  ) => {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No authentication token found.');
+    }
+
+    const requestData: any = {
+      userId,
+      answers,
+    };
+
+    console.log('Submitting exam answers:', requestData);
+
+    const response = await this.apiClient.post(
+      `/exams/${examId}/submit`,
+      requestData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  };
+
+  async getDetailExamResult(examId: string, userId: string) {
+    const response = await this.apiClient.get(
+      `/exams/${examId}/history?userId=${userId}`
+    );
+    return response.data;
+  }
+
+  async getExamResult(examId: string, userId: string) {
+    const response = await this.apiClient.get(
+      `/exams/${examId}/results/${userId}`
     );
     return response.data;
   }

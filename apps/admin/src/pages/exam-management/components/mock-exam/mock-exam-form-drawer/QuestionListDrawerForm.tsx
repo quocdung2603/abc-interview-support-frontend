@@ -29,14 +29,21 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
   const [selectedField, setSelectedField] = useState<number | undefined>();
   const [selectedTopic, setSelectedTopic] = useState<number | undefined>();
   const [selectedLevel, setSelectedLevel] = useState<number | undefined>();
+  const [selectedQuestionType, setSelectedQuestionType] = useState<number | undefined>();
+
+  // Filter topics based on selected field
+  const filteredTopics = topics.filter(
+    (topic) => !selectedField || topic.fieldId === selectedField
+  );
 
   const filteredQuestions = questionList.filter(question => {
     const matchesSearch = question.questionContent.toLowerCase().includes(searchText.toLowerCase());
     const matchesField = !selectedField || question.fieldId === selectedField;
     const matchesTopic = !selectedTopic || question.topicId === selectedTopic;
     const matchesLevel = !selectedLevel || question.levelId === selectedLevel;
+    const matchesQuestionType = !selectedQuestionType || question.questionTypeId === selectedQuestionType;
 
-    return matchesSearch && matchesField && matchesTopic && matchesLevel;
+    return matchesSearch && matchesField && matchesTopic && matchesLevel && matchesQuestionType;
   });
 
   const getAllQuestion = async () => {
@@ -52,6 +59,16 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
   useEffect(() => {
     getAllQuestion();
   }, [])
+
+  // Reset topic filter when field changes
+  useEffect(() => {
+    if (selectedField && selectedTopic) {
+      const isTopicValid = filteredTopics.some(topic => topic.id === selectedTopic);
+      if (!isTopicValid) {
+        setSelectedTopic(undefined);
+      }
+    }
+  }, [selectedField, selectedTopic, filteredTopics]);
 
   const columns = [
     {
@@ -77,6 +94,15 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
       dataIndex: 'levelName',
       key: 'levelName',
       render: (levelName: string) => <Tag color="orange">{levelName}</Tag>,
+    },
+    {
+      title: 'Loại câu hỏi',
+      dataIndex: 'questionTypeId',
+      key: 'questionTypeId',
+      render: (questionTypeId: number) => {
+        const questionType = questionTypes.find(qt => qt.id === questionTypeId);
+        return <Tag color="purple">{questionType?.name || 'N/A'}</Tag>;
+      },
     },
     {
       title: 'Vote',
@@ -144,8 +170,9 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
             value={selectedTopic}
             onChange={setSelectedTopic}
             style={{ width: 120 }}
+            disabled={!selectedField}
           >
-            {topics.map(topic => (
+            {filteredTopics.map(topic => (
               <Option key={topic.id} value={topic.id}>{topic.name}</Option>
             ))}
           </Select>
@@ -158,6 +185,17 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
           >
             {levels.map(level => (
               <Option key={level.id} value={level.id}>{level.name}</Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Loại câu hỏi"
+            allowClear
+            value={selectedQuestionType}
+            onChange={setSelectedQuestionType}
+            style={{ width: 120 }}
+          >
+            {questionTypes.map(questionType => (
+              <Option key={questionType.id} value={questionType.id}>{questionType.name}</Option>
             ))}
           </Select>
         </Space>

@@ -11,6 +11,7 @@ interface AnswerFormProps {
   placeholder?: string;
   handleAnswerClick: () => void;
   postType: 'DISCUSSION' | 'QUESTION';
+  remainingComments?: number;
 }
 
 const AnswerForm: React.FC<AnswerFormProps> = ({
@@ -19,16 +20,15 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
   placeholder = 'Nhập câu trả lời của bạn...',
   handleAnswerClick,
   postType,
+  remainingComments = 3,
 }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [counterSend, setCounterSend] = useState<number>(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const maxAnswers = postType === 'DISCUSSION' ? Infinity : 1;
-    if (!content.trim() || isSubmitting || disabled || counterSend >= maxAnswers) {
+    if (!content.trim() || isSubmitting || disabled || (postType === 'QUESTION' && remainingComments <= 0)) {
       return;
     }
 
@@ -36,7 +36,6 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
     try {
       await onSubmit(content.trim());
       setContent('');
-      setCounterSend(counterSend + 1);
     } catch (error) {
       console.error('Error submitting answer:', error);
     } finally {
@@ -51,32 +50,33 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
     }
   };
 
-  const getCounterSendColor = (counterSend: number, postType: string) => {
-    if (postType === 'DISCUSSION') return 'text-blue-600';
-    if (counterSend === 0) return 'text-green-600';
-    return 'text-red-600';
+  const getRemainingCommentsColor = (remainingComments: number, postType: string) => {
+    if (postType === 'DISCUSSION') return 'text-blue-600'; // Màu xanh cho discussion
+    if (remainingComments === 0) return 'text-red-600';
+    if (remainingComments <= 1) return 'text-orange-600';
+    return 'text-green-600';
   };
 
-  const getRemainingAnswersText = (counterSend: number, postType: string) => {
+  const getRemainingCommentsText = (remainingComments: number, postType: string) => {
     if (postType === 'DISCUSSION') {
-      return `Đã trả lời ${counterSend} lần`;
+      return 'Thảo luận tự do - Bình luận thoải mái';
     }
-    const remaining = Math.max(0, 1 - counterSend);
-    return `Còn ${remaining}/1 lượt trả lời`;
+    const usedComments = 3 - remainingComments;
+    return `Đã bình luận ${usedComments}/3 lần - Còn ${remainingComments} lượt`;
   };
 
-  const isDisabled = disabled || isSubmitting || !content.trim();
+  const isDisabled = disabled || isSubmitting || !content.trim() || (postType === 'QUESTION' && remainingComments <= 0);
 
   return (
     <div className="card-elevated max-w-4xl min-w-3xl p-4">
       <div className=" w-full flex justify-between items-center">
         <h3
-          className={`text-lg font-semibold  ${getCounterSendColor(
-            counterSend,
+          className={`text-lg font-semibold  ${getRemainingCommentsColor(
+            remainingComments,
             postType
           )} mb-3`}
         >
-          {getRemainingAnswersText(counterSend, postType)}
+          {getRemainingCommentsText(remainingComments, postType)}
         </h3>
         <button onClick={handleAnswerClick}>
           <CloseOutlined className="text-lg text-red-500" />
@@ -89,10 +89,10 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={postType === 'QUESTION' && remainingComments <= 0 ? 'Bạn đã hết lượt bình luận cho câu hỏi này' : placeholder}
             rows={6}
-            disabled={disabled || isSubmitting}
-            className={`input-field resize-none ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+            disabled={disabled || isSubmitting || (postType === 'QUESTION' && remainingComments <= 0)}
+            className={`input-field resize-none ${disabled || (postType === 'QUESTION' && remainingComments <= 0) ? 'bg-gray-100 cursor-not-allowed' : ''
               }`}
             maxLength={2000}
           />
@@ -117,6 +117,10 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
             {disabled ? (
               <span className="text-red-600">
                 ⚠️ Cuộc thảo luận đã kết thúc
+              </span>
+            ) : (postType === 'QUESTION' && remainingComments <= 0) ? (
+              <span className="text-red-600">
+                ⚠️ Bạn đã hết lượt bình luận cho câu hỏi này
               </span>
             ) : (
               <span>💡 Hãy đưa ra câu trả lời chi tiết và hữu ích</span>

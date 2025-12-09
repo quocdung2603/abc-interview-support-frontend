@@ -1,453 +1,100 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
-import ExamSummary from './components/mock-interview-result/ExamSummary';
-import QuestionResultItem from './components/mock-interview-result/QuestionResultItem';
+import { examService } from '@abc-interview-support-frontend/services';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+import { message } from 'antd';
 import AIReviewModal from './components/mock-interview-result/AIReviewModal';
 import AIReviewButton from './components/mock-interview-result/AIReviewButton';
+
+interface AnswerDetail {
+  questionId: number;
+  orderNumber: number;
+  questionContent: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  metadata: {
+    fieldId: number;
+    fieldName: string | null;
+    topicIds: number[];
+    topicNames: string[] | null;
+    levelId: number;
+    levelName: string | null;
+    questionTypeId: number;
+    questionTypeName: string | null;
+  };
+}
+
+interface ExamResult {
+  examId: number;
+  userId: number;
+  examTitle: string;
+  score: number;
+  passStatus: boolean;
+  completedAt: string;
+  answers: AnswerDetail[];
+}
 
 const MockInterviewResult = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [exam, setExam] = useState<Exam | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<string, Answer[]>>({});
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  const [examResult, setExamResult] = useState<ExamResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [aiModalVisible, setAiModalVisible] = useState(false);
-  const [timeSpent, setTimeSpent] = useState(0);
-
-  // Mock data - In real app, this would come from API/props/localStorage
-  const mockExam: Exam = {
-    id: 1,
-    userId: 1,
-    examType: 'RECRUITER',
-    title: 'Bài kiểm tra React Developer - Level Junior',
-    position: 'React Developer',
-    fieldId: 1,
-    levelId: 1,
-    topicIds: [1, 2, 3], // React, JavaScript, HTML/CSS
-    questionTypeIds: [1, 2, 3, 4], // SingleChoice, MultipleChoice, FillInTheBlank, OpenEnded
-    questionCount: 10,
-    duration: 60,
-    status: 'COMPLETED',
-    language: 'Vietnamese',
-    createdAt: new Date().toISOString(),
-    createdBy: '1',
-  };
-
-  const mockQuestions: Question[] = [
-    {
-      questionId: '1',
-      userId: 'system',
-      topicId: 'React',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'SingleChoice',
-      questionContent: 'React là gì?',
-      questionAnswer:
-        'React là một thư viện JavaScript được phát triển bởi Facebook để xây dựng giao diện người dùng, đặc biệt là cho các ứng dụng web đơn trang (SPA). React sử dụng khái niệm component-based architecture và virtual DOM để tối ưu hiệu suất.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '2',
-      userId: 'system',
-      topicId: 'React',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'MultipleChoice',
-      questionContent:
-        'Những Hook nào được built-in trong React? (Chọn tất cả đáp án đúng)',
-      questionAnswer:
-        'React cung cấp nhiều built-in hooks như useState để quản lý state, useEffect để xử lý side effects, useContext để consume context, useReducer cho state phức tạp, useMemo và useCallback để tối ưu hiệu suất.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '3',
-      userId: 'system',
-      topicId: 'JavaScript',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'FillInTheBlank',
-      questionContent:
-        'Để khai báo một biến const trong JavaScript, ta sử dụng từ khóa _____ và để khai báo function, ta sử dụng từ khóa _____.',
-      questionAnswer:
-        'Từ khóa "const" được sử dụng để khai báo biến không thể thay đổi giá trị sau khi được gán. Từ khóa "function" được sử dụng để khai báo function trong JavaScript. Ngoài ra còn có arrow function syntax (=>) là cách khai báo function ngắn gọn hơn.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '4',
-      userId: 'system',
-      topicId: 'React',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'OpenEnded',
-      questionContent:
-        'Hãy giải thích sự khác biệt giữa state và props trong React. Đưa ra ví dụ cụ thể.',
-      questionAnswer:
-        'State và props là hai khái niệm quan trọng trong React: Props (properties) là dữ liệu được truyền từ component cha xuống component con, không thể thay đổi trong component con (read-only). State là dữ liệu nội bộ của component, có thể thay đổi và khi thay đổi sẽ trigger re-render.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-    {
-      questionId: '5',
-      userId: 'system',
-      topicId: 'JavaScript',
-      fieldId: 'frontend',
-      levelId: 'junior',
-      questionTypeId: 'FillInTheBlank',
-      questionContent:
-        'Trong JavaScript, để lặp qua một mảng, ta có thể sử dụng vòng lặp _____ hoặc phương thức _____ hoặc _____.',
-      questionAnswer:
-        'Có nhiều cách để lặp qua mảng trong JavaScript: vòng lặp "for" truyền thống, phương thức "forEach" để thực hiện một hành động với mỗi phần tử, và phương thức "map" để tạo mảng mới từ việc transform mỗi phần tử.',
-      status: 'Approved',
-      language: 'Vietnamese',
-      createdAt: new Date(),
-      usefulVote: 0,
-      unusefulVote: 0,
-    },
-  ];
-
-  const mockAnswers: Record<string, Answer[]> = {
-    '1': [
-      {
-        answerId: 'a1-1',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent:
-          'Một thư viện JavaScript để xây dựng giao diện người dùng',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-2',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một framework backend cho Node.js',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-3',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một cơ sở dữ liệu',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a1-4',
-        userId: 'system',
-        questionId: '1',
-        questionTypeId: 'SingleChoice',
-        answerContent: 'Một ngôn ngữ lập trình',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '2': [
-      {
-        answerId: 'a2-1',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useState',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-2',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useEffect',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-3',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useContext',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a2-4',
-        userId: 'system',
-        questionId: '2',
-        questionTypeId: 'MultipleChoice',
-        answerContent: 'useCustomHook',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '3': [
-      {
-        answerId: 'a3-1',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'const',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-2',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'function',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-3',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'let',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a3-4',
-        userId: 'system',
-        questionId: '3',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'var',
-        isCorrect: false,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-    '5': [
-      {
-        answerId: 'a5-1',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'for',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-2',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'forEach',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-      {
-        answerId: 'a5-3',
-        userId: 'system',
-        questionId: '5',
-        questionTypeId: 'FillInTheBlank',
-        answerContent: 'map',
-        isCorrect: true,
-        usefulVote: 0,
-        unusefulVote: 0,
-        createdAt: new Date(),
-      },
-    ],
-  };
-
-  // Mock user answers - In real app, this would come from the completed exam
-  const mockUserAnswers: Record<string, string> = {
-    '1': 'a1-1', // Correct
-    '2': 'a2-1|a2-2', // Partially correct (missing a2-3)
-    '3': 'let|arrow', // Incorrect
-    '4': 'State là dữ liệu nội bộ của component, props là dữ liệu từ component cha truyền xuống.', // Correct but brief
-    '5': 'for|forEach|map', // Correct
-  };
+  const [error, setError] = useState<string | null>(null);
+  const [aiReviewModalVisible, setAiReviewModalVisible] = useState(false);
 
   useEffect(() => {
-    const initializeResult = async () => {
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+    const fetchExamResult = async () => {
+      if (!id || !user?.userId) {
+        setError('Missing exam ID or user ID');
+        setLoading(false);
+        return;
+      }
 
-        // Try to get result from localStorage first
-        const storedResult = localStorage.getItem(`examResult_${id}`);
-        if (storedResult) {
-          const result = JSON.parse(storedResult);
-          setExam(result.exam);
-          setQuestions(result.questions);
-          setAnswers(result.answers);
-          setUserAnswers(result.userAnswers);
-          setTimeSpent(result.timeSpent);
-        } else {
-          // Fallback to mock data
-          setExam(mockExam);
-          setQuestions(mockQuestions);
-          setAnswers(mockAnswers);
-          setUserAnswers(mockUserAnswers);
-          setTimeSpent(2340); // 39 minutes in seconds
+      try {
+        setLoading(true);
+        const result = await examService.getDetailExamResult(id, user.userId.toString());
+        console.log('Exam result:', result);
+
+        // Check for duplicate questionIds
+        const questionIds = result.answers.map((a: AnswerDetail) => a.questionId);
+        const uniqueQuestionIds = new Set(questionIds);
+        console.log('Total answers:', result.answers.length);
+        console.log('Unique question IDs:', uniqueQuestionIds.size);
+
+        if (questionIds.length !== uniqueQuestionIds.size) {
+          console.warn('DUPLICATE QUESTION IDs DETECTED!');
+          console.log('Question IDs:', questionIds);
+          const duplicates = questionIds.filter((id: any, index: any) => questionIds.indexOf(id) !== index);
+          console.log('Duplicate IDs:', [...new Set(duplicates)]);
         }
 
-        setLoading(false);
-      } catch (error) {
+        setExamResult(result);
+        setError(null);
+      } catch (error: any) {
         console.error('Failed to load exam result:', error);
+        setError('Không thể tải kết quả bài kiểm tra. Vui lòng thử lại.');
+        message.error('Không thể tải kết quả bài kiểm tra');
+      } finally {
         setLoading(false);
       }
     };
 
-    initializeResult();
-  }, [id]);
+    fetchExamResult();
+  }, [id, user?.userId]);
 
-  // Calculate results
-  const calculateResults = () => {
-    let correctAnswers = 0;
-    const totalQuestions = questions.length;
-
-    questions.forEach((question) => {
-      const userAnswer = userAnswers[question.questionId];
-      const questionAnswers = answers[question.questionId] || [];
-
-      if (!userAnswer) return;
-
-      let isCorrect = false;
-
-      switch (question.questionTypeId) {
-        case 'SingleChoice': {
-          const correctAnswer = questionAnswers.find((a) => a.isCorrect);
-          isCorrect = userAnswer === correctAnswer?.answerId;
-          break;
-        }
-
-        case 'MultipleChoice': {
-          const correctAnswerIds = questionAnswers
-            .filter((a) => a.isCorrect)
-            .map((a) => a.answerId);
-          const userAnswerIds = userAnswer.split('|');
-          isCorrect =
-            correctAnswerIds.length === userAnswerIds.length &&
-            correctAnswerIds.every((id) => userAnswerIds.includes(id));
-          break;
-        }
-
-        case 'FillInTheBlank': {
-          const correctAnswers = questionAnswers
-            .filter((a) => a.isCorrect)
-            .map((a) => a.answerContent);
-          const userAnswersArray = userAnswer.split('|');
-          isCorrect =
-            correctAnswers.length === userAnswersArray.length &&
-            correctAnswers.every(
-              (correct, index) =>
-                userAnswersArray[index]?.toLowerCase() === correct.toLowerCase()
-            );
-          break;
-        }
-
-        case 'OpenEnded': {
-          // For mock purposes, consider it correct if user provided an answer
-          // In real app, this would need AI evaluation or manual grading
-          isCorrect = userAnswer.length > 20; // Simple length check
-          break;
-        }
-      }
-
-      if (isCorrect) correctAnswers++;
-    });
-
-    const score =
-      totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-
-    return { correctAnswers, totalQuestions, score };
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('vi-VN');
   };
 
-  const checkQuestionCorrect = (question: Question): boolean => {
-    const userAnswer = userAnswers[question.questionId];
-    const questionAnswers = answers[question.questionId] || [];
+  const getPassStatusColor = (passed: boolean) => {
+    return passed ? '#059669' : '#dc2626';
+  };
 
-    if (!userAnswer) return false;
-
-    switch (question.questionTypeId) {
-      case 'SingleChoice': {
-        const correctAnswer = questionAnswers.find((a) => a.isCorrect);
-        return userAnswer === correctAnswer?.answerId;
-      }
-
-      case 'MultipleChoice': {
-        const correctAnswerIds = questionAnswers
-          .filter((a) => a.isCorrect)
-          .map((a) => a.answerId);
-        const userAnswerIds = userAnswer.split('|');
-        return (
-          correctAnswerIds.length === userAnswerIds.length &&
-          correctAnswerIds.every((id) => userAnswerIds.includes(id))
-        );
-      }
-
-      case 'FillInTheBlank': {
-        const correctAnswers = questionAnswers
-          .filter((a) => a.isCorrect)
-          .map((a) => a.answerContent);
-        const userAnswersArray = userAnswer.split('|');
-        return (
-          correctAnswers.length === userAnswersArray.length &&
-          correctAnswers.every(
-            (correct, index) =>
-              userAnswersArray[index]?.toLowerCase() === correct.toLowerCase()
-          )
-        );
-      }
-
-      case 'OpenEnded':
-        return userAnswer.length > 20;
-    }
-
-    return false;
+  const getPassStatusText = (passed: boolean) => {
+    return passed ? 'ĐẠT' : 'KHÔNG ĐẠT';
   };
 
   if (loading) {
@@ -461,12 +108,12 @@ const MockInterviewResult = () => {
     );
   }
 
-  if (!exam || questions.length === 0) {
+  if (error || !examResult) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            Không tìm thấy kết quả bài kiểm tra
+            {error || 'Không tìm thấy kết quả bài kiểm tra'}
           </p>
           <button
             onClick={() => navigate('/mock-interview')}
@@ -478,8 +125,6 @@ const MockInterviewResult = () => {
       </div>
     );
   }
-
-  const results = calculateResults();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -497,7 +142,7 @@ const MockInterviewResult = () => {
               </button>
             </div>
             <div className="text-sm text-gray-600">
-              Hoàn thành lúc: {new Date().toLocaleString('vi-VN')}
+              Hoàn thành lúc: {formatDate(examResult.completedAt)}
             </div>
           </div>
         </div>
@@ -505,70 +150,179 @@ const MockInterviewResult = () => {
 
       {/* Main content */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Exam Summary */}
-        <ExamSummary
-          exam={exam}
-          totalQuestions={results.totalQuestions}
-          correctAnswers={results.correctAnswers}
-          timeSpent={timeSpent}
-          score={results.score}
-        />
-
-        {/* Questions and Results */}
-        <div className="card-elevated" style={{ padding: '2rem' }}>
-          <h3 className="text-heading-2" style={{ marginBottom: '1.5rem' }}>
-            Chi tiết kết quả từng câu hỏi
-          </h3>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <div
+        {/* Exam Result Summary */}
+        <div className="card-elevated" style={{ padding: '2rem', marginBottom: '2rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <h2 className="text-heading-2" style={{ marginBottom: '1rem', color: '#1e293b' }}>
+              {examResult.examTitle}
+            </h2>
+            <h1
+              className="text-heading-1"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                fontSize: '0.875rem',
-                color: '#64748b',
+                marginBottom: '1rem',
+                color: getPassStatusColor(examResult.passStatus)
               }}
             >
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-              >
-                <div
-                  style={{
-                    width: '1rem',
-                    height: '1rem',
-                    borderRadius: '50%',
-                    background: '#059669',
-                  }}
-                />
-                <span>Câu trả lời đúng</span>
+              {getPassStatusText(examResult.passStatus)}
+            </h1>
+            <div
+              style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                color: getPassStatusColor(examResult.passStatus),
+                marginBottom: '0.5rem'
+              }}
+            >
+              {(examResult.score).toFixed(1)}%
+            </div>
+            <p className="text-body" style={{ color: '#64748b' }}>
+              Điểm số của bạn
+            </p>
+          </div>
+
+          {/* Result Details */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1.5rem',
+              padding: '1.5rem',
+              background: '#f8fafc',
+              borderRadius: '0.5rem'
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                Tổng số câu hỏi
               </div>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-              >
-                <div
-                  style={{
-                    width: '1rem',
-                    height: '1rem',
-                    borderRadius: '50%',
-                    background: '#dc2626',
-                  }}
-                />
-                <span>Câu trả lời sai</span>
+              <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1e293b' }}>
+                {examResult.answers.length}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                Trả lời đúng
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#059669' }}>
+                {examResult.answers.filter(a => a.isCorrect).length}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                Trả lời sai
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#dc2626' }}>
+                {examResult.answers.filter(a => !a.isCorrect).length}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                Hoàn thành lúc
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: '600', color: '#1e293b' }}>
+                {formatDate(examResult.completedAt)}
               </div>
             </div>
           </div>
+        </div>
 
-          {questions.map((question, index) => (
-            <QuestionResultItem
-              key={question.questionId}
-              question={question}
-              answers={answers[question.questionId] || []}
-              userAnswer={userAnswers[question.questionId] || ''}
-              isCorrect={checkQuestionCorrect(question)}
-              questionNumber={index + 1}
-            />
-          ))}
+        {/* Questions and Answers */}
+        <div className="card-elevated" style={{ padding: '2rem' }}>
+          <h3 className="text-heading-3" style={{ marginBottom: '1.5rem' }}>
+            Chi tiết từng câu hỏi
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {examResult.answers.map((answer, index) => (
+              <div
+                key={`${answer.questionId}-${answer.orderNumber}-${index}`}
+                style={{
+                  padding: '1.5rem',
+                  background: answer.isCorrect ? '#f0fdf4' : '#fef2f2',
+                  border: `2px solid ${answer.isCorrect ? '#059669' : '#dc2626'}`,
+                  borderRadius: '0.5rem'
+                }}
+              >
+                {/* Question Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      borderRadius: '50%',
+                      background: answer.isCorrect ? '#059669' : '#dc2626',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: '600',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                  <div
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                      background: answer.isCorrect ? '#059669' : '#dc2626',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {answer.isCorrect ? '✓ Đúng' : '✗ Sai'}
+                  </div>
+                </div>
+
+                {/* Question Content */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '1rem', fontWeight: '600', color: '#1e293b', marginBottom: '0.5rem' }}>
+                    {answer.questionContent}
+                  </p>
+                </div>
+
+                {/* Answers */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {/* User Answer */}
+                  <div
+                    style={{
+                      padding: '0.75rem',
+                      background: 'white',
+                      borderRadius: '0.375rem',
+                      border: '1px solid #e5e7eb'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', fontWeight: '600' }}>
+                      Câu trả lời của bạn:
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#1e293b' }}>
+                      {answer.userAnswer || '(Chưa trả lời)'}
+                    </div>
+                  </div>
+
+                  {/* Correct Answer (only show if user answer is wrong) */}
+                  {!answer.isCorrect && (
+                    <div
+                      style={{
+                        padding: '0.75rem',
+                        background: 'white',
+                        borderRadius: '0.375rem',
+                        border: '1px solid #059669'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.75rem', color: '#059669', marginBottom: '0.25rem', fontWeight: '600' }}>
+                        Đáp án đúng:
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: '#1e293b' }}>
+                        {answer.correctAnswer}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -582,30 +336,51 @@ const MockInterviewResult = () => {
         >
           <button
             onClick={() => navigate('/mock-interview')}
-            className="btn-secondary"
+            className="btn-primary"
           >
-            Làm bài khác
-          </button>
-          <button onClick={() => window.print()} className="btn-outline">
-            📄 In kết quả
+            Làm bài kiểm tra khác
           </button>
         </div>
       </div>
 
-      {/* AI Review Button */}
-      <AIReviewButton onClick={() => setAiModalVisible(true)} />
+      {/* AI Review Button - Floating */}
+      <AIReviewButton onClick={() => setAiReviewModalVisible(true)} />
 
       {/* AI Review Modal */}
-      <AIReviewModal
-        visible={aiModalVisible}
-        onClose={() => setAiModalVisible(false)}
-        questions={questions}
-        answers={answers}
-        userAnswers={userAnswers}
-        correctAnswers={results.correctAnswers}
-        totalQuestions={results.totalQuestions}
-        timeSpent={timeSpent}
-      />
+      {examResult && (
+        <AIReviewModal
+          visible={aiReviewModalVisible}
+          onClose={() => setAiReviewModalVisible(false)}
+          questions={examResult.answers.map(a => ({
+            id: a.questionId,
+            userId: examResult.userId,
+            topicId: a.metadata.topicIds[0] || 0,
+            fieldId: a.metadata.fieldId,
+            levelId: a.metadata.levelId,
+            questionTypeId: a.metadata.questionTypeId,
+            status: 'APPROVED' as const,
+            questionContent: a.questionContent,
+            questionAnswer: a.correctAnswer,
+            language: 'Vietnamese',
+            similarityScore: 0,
+            usefulVote: 0,
+            unusefulVote: 0,
+            createdAt: examResult.completedAt,
+            fieldName: a.metadata.fieldName || '',
+            levelName: a.metadata.levelName || '',
+            topicName: a.metadata.topicNames?.[0] || '',
+            questionTypeName: a.metadata.questionTypeName || '',
+          }))}
+          answers={{}}
+          userAnswers={examResult.answers.reduce((acc, a) => ({
+            ...acc,
+            [a.questionId]: a.userAnswer
+          }), {})}
+          correctAnswers={examResult.answers.filter(a => a.isCorrect).length}
+          totalQuestions={examResult.answers.length}
+          timeSpent={0}
+        />
+      )}
     </div>
   );
 };

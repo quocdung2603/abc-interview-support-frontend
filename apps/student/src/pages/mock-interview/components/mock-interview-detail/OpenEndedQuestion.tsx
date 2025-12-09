@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Question } from '@abc-interview-support-frontend/types';
+import { QuestionInExam } from '@abc-interview-support-frontend/types';
 
 interface OpenEndedQuestionProps {
-  question: Question;
+  question: QuestionInExam;
   userAnswer: string;
   onAnswerChange: (answer: string) => void;
 }
@@ -48,7 +48,7 @@ const OpenEndedQuestion: React.FC<OpenEndedQuestionProps> = ({
 
         <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500 mb-6">
           <div className="text-gray-800 leading-relaxed text-lg">
-            {question.questionContent}
+            {question.questionText}
           </div>
         </div>
 

@@ -1,24 +1,24 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 // Import types
-import { User, EloHistory, ExamResult } from '@abc-interview-support-frontend/types';
+import { User, EloHistory, ExamResult, Field, Topic, Level, QuestionType, Post, News, Question } from '@abc-interview-support-frontend/types';
 
 // Import hooks
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 // Import components
 import PersonalInfoTabs from './components/personal-info/PersonalInfoTabs';
-import CVApplicationTabs from './components/cv-application/CVApplicationTabs';
 import CommunityTabs from './components/community/CommunityTabs';
+import NewsTabs from './components/news/NewsTabs';
+import QuestionTabs from './components/question/QuestionTabs';
 import CareerTabs from './components/career/CareerTabs';
 import ExamTabs from './components/exam/ExamTabs';
 import Sidebar from './components/Sidebar';
-import { userService, examService } from '@abc-interview-support-frontend/services';
+import { userService, examService, questionService, communityService, newsService } from '@abc-interview-support-frontend/services';
 
 const UserProfile: React.FC = () => {
   // Get authenticated user
   const { user: authUser } = useAuth();
-  console.log('Authenticated User:', authUser);
 
   // Dashboard state
   const [activeSection, setActiveSection] = useState<string>('personal');
@@ -80,6 +80,12 @@ const UserProfile: React.FC = () => {
   // Exam results state
   const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
+  // Options state for filters
+  const [fields, setFields] = useState<Field[]>([]);
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [questionTypes, setQuestionTypes] = useState<QuestionType[]>([]);
+
   const loadExamResults = useCallback(async () => {
     if (user.id) {
       try {
@@ -92,6 +98,85 @@ const UserProfile: React.FC = () => {
     }
   }, [user.id]);
 
+  // Load filter options from API
+  const loadFilterOptions = useCallback(async () => {
+    try {
+      const [fieldsRes, levelsRes, topicsRes, questionTypesRes] = await Promise.all([
+        questionService.getAllFields(),
+        questionService.getAllLevels(),
+        questionService.getAllTopics(),
+        questionService.getAllQuestionTypes(),
+      ]);
+
+      setFields(fieldsRes.content || fieldsRes || []);
+      setLevels(levelsRes.content || levelsRes || []);
+      setTopics(topicsRes.content || topicsRes || []);
+      setQuestionTypes(questionTypesRes.content || questionTypesRes || []);
+    } catch (error) {
+      console.error('Error loading filter options:', error);
+    }
+  }, []);
+
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  const loadCommunityPost = useCallback(async () => {
+    if (user.id) {
+      try {
+        const res = await communityService.getAllPost();
+        let posts = res.content || [];
+        posts = posts.filter((post: Post) => post.userId === user.id);
+        setPosts(posts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setPosts([]);
+      }
+    }
+  }, [user.id]);
+
+  const [news, setNews] = useState<News[]>([]);
+  const loadNews = useCallback(async () => {
+    if (user.id) {
+      try {
+        const res = await newsService.getAllNews();
+        let news = res.content || [];
+        console.log('User Id:', user.id);
+        console.log('User News Items:', news);
+        news = news.filter((newsItem: News) => newsItem.userId === user.id);
+        setNews(news);
+      } catch (error) {
+        setNews([]);
+        console.error('Error fetching news:', error);
+      }
+    }
+  }, [user.id]);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const loadQuestions = useCallback(async () => {
+    if (user.id) {
+      try {
+        const res = await questionService.getAllQuestions();
+        let questions = res.content || [];
+        questions = questions.filter((question: Question) => question.userId === user.id);
+        setQuestions(questions);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        setQuestions([]);
+      }
+    }
+  }, [user.id]);
+
+  // Function to reload all data
+  const loadUserData = useCallback(async () => {
+    await Promise.all([
+      loadEloHistory(),
+      loadExamResults(),
+      loadFilterOptions(),
+      loadCommunityPost(),
+      loadNews(),
+      loadQuestions(),
+    ]);
+  }, [loadEloHistory, loadExamResults, loadFilterOptions, loadCommunityPost, loadNews, loadQuestions]);
+
   // Create completed exams from exam results
   const completedExams = examResults.map(result => ({
     id: result.id, // Use result.id as unique key instead of examId
@@ -99,8 +184,10 @@ const UserProfile: React.FC = () => {
     examType: 'VIRTUAL' as const, // Default type
     title: `Exam ${result.examId}`,
     position: 'Unknown Position',
-    topics: [],
-    questionTypes: [],
+    fieldId: 0, // Default field
+    levelId: 0, // Default level
+    topicIds: [], // Empty topics
+    questionTypeIds: [], // Empty question types
     questionCount: 0,
     duration: 0,
     status: 'COMPLETED' as const,
@@ -114,130 +201,12 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     loadEloHistory();
     loadExamResults();
-  }, [loadEloHistory, loadExamResults]);
-
-  // Mock CV and application data
-  const [uploadedCVs, setUploadedCVs] = useState([
-    {
-      id: 'cv-001',
-      fileName: 'Nguyen_Minh_Tuan_CV.pdf',
-      uploadDate: new Date('2024-01-05'),
-      fileSize: 2.3,
-      isActive: true,
-    },
-    {
-      id: 'cv-002',
-      fileName: 'Nguyen_Minh_Tuan_EN.pdf',
-      uploadDate: new Date('2024-01-08'),
-      fileSize: 2.1,
-      isActive: false,
-    },
-  ]);
-
-  const [appliedCompanies] = useState([
-    {
-      id: 'app-001',
-      companyName: 'Tech Innovations Co.',
-      position: 'Frontend Developer',
-      appliedDate: new Date('2024-01-10'),
-      status: 'Interview' as const,
-      cvUsed: 'Nguyen_Minh_Tuan_CV.pdf',
-    },
-    {
-      id: 'app-002',
-      companyName: 'Startup Hub Vietnam',
-      position: 'Full Stack Developer',
-      appliedDate: new Date('2024-01-12'),
-      status: 'Reviewed' as const,
-      cvUsed: 'Nguyen_Minh_Tuan_EN.pdf',
-    },
-  ]);
-
+    loadFilterOptions();
+    loadCommunityPost();
+    loadNews();
+    loadQuestions();
+  }, [loadEloHistory, loadExamResults, loadFilterOptions, loadCommunityPost, loadNews, loadQuestions]);
   // Mock community data
-  const [newsItems] = useState([
-    {
-      id: 'news-001',
-      title: 'Top 10 câu hỏi phỏng vấn JavaScript thường gặp năm 2024',
-      summary:
-        'Tổng hợp các câu hỏi phỏng vấn JavaScript phổ biến nhất mà các nhà tuyển dụng thường hỏi.',
-      publishedDate: new Date('2024-01-15'),
-      source: 'VietnamWorks',
-      readTime: 5,
-      category: 'Phỏng vấn',
-      isBookmarked: false,
-    },
-    {
-      id: 'news-002',
-      title: 'Xu hướng tuyển dụng IT 2024: Remote work và AI skills',
-      summary:
-        'Khảo sát mới nhất về xu hướng tuyển dụng trong ngành công nghệ thông tin.',
-      publishedDate: new Date('2024-01-12'),
-      source: 'ITViec',
-      readTime: 8,
-      category: 'Xu hướng',
-      isBookmarked: true,
-    },
-  ]);
-
-  const [discussions] = useState([
-    {
-      id: 'discussion-001',
-      title: 'Tips để vượt qua vòng phỏng vấn technical của các công ty lớn',
-      content:
-        'Mình vừa pass được vòng phỏng vấn technical của một công ty outsourcing lớn. Chia sẻ một số kinh nghiệm...',
-      author: 'Nguyễn Văn A',
-      createdDate: new Date('2024-01-14'),
-      replies: 23,
-      likes: 45,
-      views: 234,
-      tags: ['phỏng vấn', 'technical', 'kinh nghiệm'],
-      isParticipated: false,
-    },
-    {
-      id: 'discussion-002',
-      title: 'Làm sao để chuẩn bị portfolio tốt cho Frontend Developer?',
-      content:
-        'Mình đang chuẩn bị portfolio để apply vào vị trí Frontend Dev. Các bạn có thể chia sẻ kinh nghiệm...',
-      author: 'Trần Thị B',
-      createdDate: new Date('2024-01-13'),
-      replies: 18,
-      likes: 32,
-      views: 156,
-      tags: ['portfolio', 'frontend', 'tư vấn'],
-      isParticipated: true,
-    },
-  ]);
-
-  const [communityQuestions] = useState([
-    {
-      id: 'question-001',
-      title: 'Sự khác biệt giữa var, let và const trong JavaScript?',
-      content:
-        'Em đang học JavaScript và thấy có 3 cách khai báo biến. Các anh chị có thể giải thích rõ sự khác biệt...',
-      author: 'Lê Minh C',
-      createdDate: new Date('2024-01-15'),
-      answers: 7,
-      votes: 12,
-      difficulty: 'Easy' as const,
-      category: 'JavaScript',
-      tags: ['javascript', 'variables', 'es6'],
-      isSolved: true,
-    },
-    {
-      id: 'question-002',
-      title: 'Cách implement Binary Search Tree hiệu quả nhất?',
-      content:
-        'Em đang làm bài tập về cấu trúc dữ liệu. Ai có thể hướng dẫn cách implement BST một cách tối ưu...',
-      author: 'Phạm Văn D',
-      createdDate: new Date('2024-01-14'),
-      answers: 3,
-      votes: 8,
-      difficulty: 'Hard' as const,
-      category: 'Data Structures',
-      tags: ['algorithms', 'tree', 'data-structures'],
-      isSolved: false,
-    },
-  ]);
 
   // Handler functions
   const handleUpdateUser = async (updatedUser: User) => {
@@ -249,39 +218,17 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const handleUploadCV = (cvFile: File) => {
-    const newCV = {
-      id: `cv-${Date.now()}`,
-      fileName: cvFile.name,
-      uploadDate: new Date(),
-      fileSize: cvFile.size,
-      isActive: false,
-    };
-    setUploadedCVs((prev) => [...prev, newCV]);
-  };
-
-  const handleDeleteCV = (cvId: string) => {
-    setUploadedCVs((prev) => prev.filter((cv) => cv.id !== cvId));
-  };
-
-  const handleSetActiveCV = (cvId: string) => {
-    setUploadedCVs((prev) =>
-      prev.map((cv) => ({
-        ...cv,
-        isActive: cv.id === cvId,
-      }))
-    );
-  };
-
   // Handle section change
   const handleSectionChange = (section: string, subsection?: string) => {
     setActiveSection(section);
     if (subsection) {
       setActiveSubsection(subsection);
     } else {
-      // Set default subsection for personal section
+      // Set default subsection based on section
       if (section === 'personal') {
         setActiveSubsection('info');
+      } else if (section === 'community') {
+        setActiveSubsection('discussions');
       }
     }
   };
@@ -328,26 +275,66 @@ const UserProfile: React.FC = () => {
               />
             );
         }
-
+        break;
       case 'exams':
         return (
           <ExamTabs
             completedExams={completedExams}
+            fields={fields}
+            levels={levels}
+            topics={topics}
+            questionTypes={questionTypes}
           />
         );
 
       case 'community':
-        return (
-          <CommunityTabs
-            newsItems={newsItems}
-            discussions={discussions}
-            questions={communityQuestions}
-            onBookmarkNews={() => { alert('Bookmark news feature coming soon!'); }}
-            onJoinDiscussion={() => { alert('Join discussion feature coming soon!'); }}
-            onAnswerQuestion={() => { alert('Answer question feature coming soon!'); }}
-            onVoteQuestion={() => { alert('Vote question feature coming soon!'); }}
-          />
-        );
+        switch (activeSubsection) {
+          case 'discussions':
+            return (
+              <CommunityTabs
+                user={user}
+                posts={posts}
+                fields={fields}
+                topics={topics}
+                levels={levels}
+                onRefresh={loadUserData}
+              />
+            );
+          case 'questions':
+            return (
+              <QuestionTabs
+                user={user}
+                questions={questions}
+                fields={fields}
+                topics={topics}
+                levels={levels}
+                questionTypes={questionTypes}
+                onRefresh={loadUserData}
+              />
+            );
+          case 'news':
+            return (
+              <NewsTabs
+                user={user}
+                news={news}
+                fields={fields}
+                topics={topics}
+                levels={levels}
+                onRefresh={loadUserData}
+              />
+            );
+          default:
+            return (
+              <CommunityTabs
+                user={user}
+                posts={posts}
+                fields={fields}
+                topics={topics}
+                levels={levels}
+                onRefresh={loadUserData}
+              />
+            );
+        }
 
       case 'career':
         return <CareerTabs />;

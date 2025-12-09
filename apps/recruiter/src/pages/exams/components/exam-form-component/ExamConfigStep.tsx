@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Upload, Button, message, Radio, Table, Tag, Tooltip } from 'antd';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
 import { FileTextOutlined, DatabaseOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -45,13 +45,6 @@ const ExamConfigStep: React.FC<ExamConfigStepProps> = ({
   const [questionSource, setQuestionSource] = useState<'upload' | 'existing'>('upload');
   const [questionListDrawerVisible, setQuestionListDrawerVisible] = useState(false);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>(initSelectedQuestions || []);
-
-  // Update selectedQuestions when initSelectedQuestions changes
-  useEffect(() => {
-    if (initSelectedQuestions) {
-      setSelectedQuestions(initSelectedQuestions);
-    }
-  }, [initSelectedQuestions]);
 
   const handleFileChange = (info: UploadChangeParam) => {
     let fileList = [...info.fileList];

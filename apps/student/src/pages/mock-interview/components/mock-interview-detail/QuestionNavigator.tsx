@@ -1,10 +1,17 @@
 import React from 'react';
-import { Question } from '@abc-interview-support-frontend/types';
+import { QuestionInExam } from '@abc-interview-support-frontend/types';
+
+interface UserAnswer {
+  questionId: number;
+  answerContent: string;
+}
+
+type UserAnswers = UserAnswer[];
 
 interface QuestionNavigatorProps {
-  questions: Question[];
+  questions: QuestionInExam[];
   currentQuestionIndex: number;
-  userAnswers: Record<string, string>; // Cập nhật type
+  userAnswers: UserAnswers; // Changed to array
   markedQuestions: Set<string>;
   onQuestionSelect: (index: number) => void;
   onToggleMark: (questionId: string) => void;
@@ -20,8 +27,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 }) => {
   const getQuestionStatus = (question: Question, index: number) => {
     const hasAnswer =
-      userAnswers[question.id.toString()] !== undefined &&
-      userAnswers[question.id.toString()] !== '';
+      userAnswers.some((ua) => ua.questionId === question.id && ua.answerContent.trim() !== '');
     const isMarked = markedQuestions.has(question.id.toString());
     const isCurrent = index === currentQuestionIndex;
 
@@ -76,8 +82,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 
     questions.forEach((question) => {
       const hasAnswer =
-        userAnswers[question.id.toString()] !== undefined &&
-        userAnswers[question.id.toString()] !== '';
+        userAnswers.some((ua) => ua.questionId === question.id && ua.answerContent.trim() !== '');
       const isMarked = markedQuestions.has(question.id.toString());
 
       if (hasAnswer) answered++;

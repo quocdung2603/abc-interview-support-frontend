@@ -1,8 +1,8 @@
 import React from 'react';
-import { Question, Answer } from '@abc-interview-support-frontend/types';
+import { QuestionInExam, Answer } from '@abc-interview-support-frontend/types';
 
 interface MultipleChoiceQuestionProps {
-  question: Question;
+  question: QuestionInExam;
   answers: Answer[];
   selectedAnswers: string[];
   onAnswerChange: (answerIds: string[]) => void;
@@ -14,10 +14,10 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
   selectedAnswers,
   onAnswerChange,
 }) => {
-  const handleAnswerToggle = (answerId: string) => {
-    const updatedAnswers = selectedAnswers.includes(answerId)
-      ? selectedAnswers.filter((id) => id !== answerId)
-      : [...selectedAnswers, answerId];
+  const handleAnswerToggle = (answerContent: string) => {
+    const updatedAnswers = selectedAnswers.includes(answerContent)
+      ? selectedAnswers.filter((content) => content !== answerContent)
+      : [...selectedAnswers, answerContent];
     onAnswerChange(updatedAnswers);
   };
 
@@ -31,7 +31,7 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
     <div className="space-y-4">
       <div className="bg-white rounded-lg p-6 shadow-md border border-neutral-200">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          {question.questionContent}
+          {question.questionText}
         </h3>
         <p className="text-sm text-gray-600 mb-4">
           <span className="font-medium">Lưu ý:</span> Câu hỏi này có thể có
@@ -41,21 +41,21 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
         <div className="space-y-3">
           {answers.map((answer) => (
             <label
-              key={answer.answerId.toString()}
+              key={answer.id.toString()}
               className="flex items-start cursor-pointer p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
               style={{
-                borderColor: selectedAnswers.includes(answer.answerId.toString())
+                borderColor: selectedAnswers.includes(answer.answerContent)
                   ? '#0ea5e9'
                   : '#e2e8f0',
-                backgroundColor: selectedAnswers.includes(answer.answerId.toString())
+                backgroundColor: selectedAnswers.includes(answer.answerContent)
                   ? '#f0f9ff'
                   : 'white',
               }}
             >
               <input
                 type="checkbox"
-                checked={selectedAnswers.includes(answer.answerId.toString())}
-                onChange={() => handleAnswerToggle(answer.answerId.toString())}
+                checked={selectedAnswers.includes(answer.answerContent)}
+                onChange={() => handleAnswerToggle(answer.answerContent)}
                 style={checkboxStyles}
                 className="mt-1 mr-3"
               />

@@ -11,6 +11,14 @@ interface ExamFormPreviewProps {
   questionTypes: QuestionType[];
 }
 
+interface Registration {
+  id: number;
+  examId: number;
+  userId: number;
+  registrationStatus: string;
+  registeredAt: string;
+}
+
 const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
   visible,
   onClose,
@@ -19,6 +27,8 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
 }) => {
   const [examDetail, setExamDetail] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(false);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
 
   useEffect(() => {
     const fetchExamDetail = async () => {
@@ -43,6 +53,29 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
     };
 
     fetchExamDetail();
+  }, [exam, visible]);
+
+  useEffect(() => {
+    const fetchRegistrations = async () => {
+      if (exam && visible) {
+        setLoadingRegistrations(true);
+        try {
+          const response = await examService.getRegistrationByExam(exam.id.toString());
+          console.log('Registrations API Response:', response);
+          setRegistrations(response.content || []);
+        } catch (error) {
+          console.error('Error fetching registrations:', error);
+          message.error('Không thể tải danh sách thí sinh');
+          setRegistrations([]);
+        } finally {
+          setLoadingRegistrations(false);
+        }
+      } else if (!visible) {
+        setRegistrations([]);
+      }
+    };
+
+    fetchRegistrations();
   }, [exam, visible]);
   // Mock data cho danh sách thí sinh
   const mockCandidates = [
@@ -149,33 +182,28 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
       width: 60,
     },
     {
-      title: 'Tên thí sinh',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'User ID',
+      dataIndex: 'userId',
+      key: 'userId',
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+      title: 'Trạng thái đăng ký',
+      dataIndex: 'registrationStatus',
+      key: 'registrationStatus',
       render: (status: string) => {
-        const statusColors = {
-          'Hoàn thành': 'green',
-          'Đang làm': 'blue',
-          'Chưa bắt đầu': 'default',
+        const statusColors: Record<string, string> = {
+          'REGISTERED': 'green',
+          'CANCELLED': 'red',
+          'COMPLETED': 'blue',
         };
-        return <Tag color={statusColors[status as keyof typeof statusColors]}>{status}</Tag>;
+        return <Tag color={statusColors[status] || 'default'}>{status}</Tag>;
       },
     },
     {
-      title: 'Điểm số',
-      dataIndex: 'score',
-      key: 'score',
-      render: (score: number | null) => score ? `${score}/100` : '-',
+      title: 'Thời gian đăng ký',
+      dataIndex: 'registeredAt',
+      key: 'registeredAt',
+      render: (date: string) => new Date(date).toLocaleString('vi-VN'),
     },
   ];
 
@@ -318,10 +346,11 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
         <div>
           <Table
             columns={candidateColumns}
-            dataSource={mockCandidates}
+            dataSource={registrations}
             rowKey="id"
             pagination={false}
             size="small"
+            loading={loadingRegistrations}
           />
         </div>
       ),

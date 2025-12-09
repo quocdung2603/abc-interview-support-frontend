@@ -58,15 +58,21 @@ export interface QuestionVariant {
 }
 
 export interface Answer {
-  answerId: number;
+  id: number; // Changed from answerId to id
   userId: number;
   questionId: number;
-  questionVariantId: number;
+  questionTypeId: number; // Added
   answerContent: string;
   isSampleAnswer?: boolean;
   isCorrect?: boolean;
   similarityScore?: number;
   usefulVote: number;
   unusefulVote: number;
-  createdAt: Date;
+  orderNumber: number; // Added
+  createdAt: string; // Changed from Date to string
+}
+
+// Interface riêng cho dữ liệu từ getExamById (exam questions)
+export interface QuestionInExam extends Omit<Question, 'questionContent'> {
+  questionText: string; // Thay thế questionContent bằng questionText
 }

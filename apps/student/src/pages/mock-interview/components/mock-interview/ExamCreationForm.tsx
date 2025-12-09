@@ -311,7 +311,7 @@ const ExamCreationForm: React.FC<ExamCreationFormProps> = ({
                       id="question-count"
                       type="number"
                       className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:border-accent focus:outline-none"
-                      min="5"
+                      min="1"
                       max="50"
                       value={formData.questionCount}
                       onChange={(e) =>

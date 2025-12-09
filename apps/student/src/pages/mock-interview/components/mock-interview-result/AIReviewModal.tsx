@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
 import { Question, Answer } from '@abc-interview-support-frontend/types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AIReviewModalProps {
   visible: boolean;
@@ -25,163 +26,145 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
 }) => {
   const [aiReview, setAiReview] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     if (visible && !aiReview) {
       generateAIReview();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  const generateAIReview = async () => {
+  const callGeminiAPI = async (prompt: string): Promise<string> => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    console.log('Environment variables:', {
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey?.length,
+      allEnvKeys: Object.keys(import.meta.env)
+    });
+
+    if (!apiKey) {
+      console.error('API key is missing. Please check .env file and restart dev server.');
+      throw new Error('API key không được cấu hình. Vui lòng kiểm tra file .env và restart lại dev server.');
+    }
+
+    try {
+      // Initialize Google Generative AI with API key
+      const genAI = new GoogleGenerativeAI(apiKey);
+
+      // Get the model
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 4096,
+        },
+      });
+
+      // Generate content
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+
+      console.log('API Response:', text);
+      return text;
+    } catch (error: any) {
+      console.error('Gemini API Error:', error);
+
+      // Handle rate limit error
+      if (error?.message?.includes('429') || error?.message?.includes('quota')) {
+        throw new Error('Đã vượt giới hạn quota API. Vui lòng thử lại sau 20 giây hoặc đợi một lát.');
+      }
+
+      throw new Error(`Không thể kết nối với AI: ${error?.message || 'Unknown error'}`);
+    }
+  }; const generateAIReview = async () => {
     setLoading(true);
+    setError('');
 
-    // Simulate AI processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+      const timeInMinutes = Math.round(timeSpent / 60);
 
-    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
-    const timeInMinutes = Math.round(timeSpent / 60);
+      // Prepare exam data for AI
+      const examData = {
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers: totalQuestions - correctAnswers,
+        scorePercentage: percentage,
+        timeSpent: timeInMinutes,
+        questions: questions.map((q) => ({
+          id: q.id,
+          content: q.questionContent,
+          topic: q.topicName || 'Unknown',
+          field: q.fieldName || 'Unknown',
+          level: q.levelName || 'Unknown',
+          type: q.questionTypeName || 'Unknown',
+          userAnswer: userAnswers[q.id] || 'Không trả lời',
+          correctAnswer: q.questionAnswer,
+        })),
+      };
 
-    // Analyze mistakes
-    const incorrectQuestions = questions.filter((q) => {
-      const userAnswer = userAnswers[q.id];
-      const questionAnswers = answers[q.id] || [];
+      // Create prompt for Gemini
+      const prompt = `Bạn là một chuyên gia đánh giá kết quả học tập và định hướng nghề nghiệp. Hãy phân tích kết quả bài kiểm tra sau và đưa ra nhận xét chi tiết, đánh giá năng lực và định hướng phát triển:
 
-      if (!userAnswer) return true; // No answer = incorrect
+**Thông tin bài kiểm tra:**
+- Tổng số câu hỏi: ${examData.totalQuestions}
+- Số câu trả lời đúng: ${examData.correctAnswers}
+- Số câu trả lời sai: ${examData.incorrectAnswers}
+- Điểm số: ${examData.scorePercentage}%
+- Thời gian hoàn thành: ${examData.timeSpent} phút
 
-      if (q.questionTypeName === 'SingleChoice') {
-        const correctAnswer = questionAnswers.find((a) => a.isCorrect);
-        return userAnswer !== correctAnswer?.answerId.toString();
-      } else if (q.questionTypeName === 'MultipleChoice') {
-        const correctAnswerIds = questionAnswers
-          .filter((a) => a.isCorrect)
-          .map((a) => a.answerId.toString());
-        const userAnswerIds = userAnswer.split('|');
-        return !arraysEqual(correctAnswerIds.sort(), userAnswerIds.sort());
-      } else if (q.questionTypeName === 'FillInTheBlank') {
-        const correctAnswers = questionAnswers
-          .filter((a) => a.isCorrect)
-          .map((a) => a.answerContent);
-        const userAnswersArray = userAnswer.split('|');
-        return !correctAnswers.every(
-          (correct, index) =>
-            userAnswersArray[index]?.toLowerCase() === correct.toLowerCase()
-        );
-      }
+**Chi tiết câu hỏi và câu trả lời:**
+${examData.questions.map((q, idx) => `
+Câu ${idx + 1}:
+- Nội dung: ${q.content}
+- Chủ đề: ${q.topic}
+- Lĩnh vực: ${q.field}
+- Cấp độ: ${q.level}
+- Loại câu hỏi: ${q.type}
+- Câu trả lời của thí sinh: ${q.userAnswer}
+- Đáp án đúng: ${q.correctAnswer}
+`).join('\n')}
 
-      return false;
-    });
+Hãy phân tích và đưa ra:
 
-    // Count question types
-    const questionTypes = questions.reduce((acc, q) => {
-      acc[q.questionTypeName] = (acc[q.questionTypeName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+1. **ĐÁNH GIÁ TỔNG QUAN** (2-3 câu): Nhận xét về kết quả tổng thể, điểm mạnh và điểm yếu
 
-    // Analyze topic performance
-    const topicAnalysis = questions.reduce((acc, q) => {
-      const isCorrect = !incorrectQuestions.some(
-        (iq) => iq.id === q.id
-      );
-      const topicKey = q.topicName || q.topicId.toString();
-      if (!acc[topicKey]) {
-        acc[topicKey] = { correct: 0, total: 0 };
-      }
-      acc[topicKey].total++;
-      if (isCorrect) acc[topicKey].correct++;
-      return acc;
-    }, {} as Record<string, { correct: number; total: number }>);
+2. **PHÂN TÍCH CHI TIẾT**:
+   - Phân tích theo chủ đề: Chủ đề nào làm tốt, chủ đề nào cần cải thiện
+   - Phân tích theo cấp độ: Đánh giá khả năng ở các mức độ khó khác nhau
+   - Phân tích theo loại câu hỏi: Loại câu hỏi nào làm tốt nhất
 
-    let review = `🎯 **Phân tích kết quả tổng quan**\n\n`;
+3. **ĐIỂM MẠNH**: Liệt kê 2-3 điểm mạnh cụ thể dựa trên kết quả
 
-    if (percentage >= 80) {
-      review += `✨ **Xuất sắc!** Bạn đã đạt được ${percentage}% điểm số, cho thấy sự hiểu biết vững chắc về các kiến thức được kiểm tra.\n\n`;
-    } else if (percentage >= 60) {
-      review += `👍 **Khá tốt!** Với ${percentage}% điểm số, bạn đã nắm vững phần lớn kiến thức, nhưng vẫn còn một số điểm cần cải thiện.\n\n`;
-    } else if (percentage >= 40) {
-      review += `📚 **Trung bình.** ${percentage}% điểm số cho thấy bạn có hiểu biết cơ bản, nhưng cần học tập thêm để nâng cao kiến thức.\n\n`;
-    } else {
-      review += `💪 **Cần cải thiện.** ${percentage}% điểm số cho thấy bạn cần dành thêm thời gian để ôn tập và củng cố kiến thức cơ bản.\n\n`;
+4. **ĐIỂM CẦN CẢI THIỆN**: Liệt kê 2-3 điểm cần cải thiện cụ thể và giải thích tại sao
+
+5. **LỘ TRÌNH HỌC TẬP**: 
+   - Đề xuất 3-4 hướng học tập ưu tiên
+   - Gợi ý tài nguyên học tập phù hợp
+   - Thời gian dự kiến để cải thiện
+
+6. **ĐỊNH HƯỚNG NGHỀ NGHIỆP**:
+   - Đánh giá mức độ sẵn sàng cho vị trí công việc dựa trên kết quả
+   - Gợi ý vị trí phù hợp với năng lực hiện tại
+   - Các kỹ năng cần bổ sung để đạt mục tiêu nghề nghiệp
+
+7. **KẾ HOẠCH HÀNH ĐỘNG**: 3-5 bước cụ thể để cải thiện trong 1-3 tháng tới
+
+Hãy viết bằng tiếng Việt, tone thân thiện, động viên và mang tính xây dựng. Sử dụng emoji phù hợp để dễ đọc hơn.`;
+
+      const aiResponse = await callGeminiAPI(prompt);
+      setAiReview(aiResponse);
+    } catch (err) {
+      console.error('Error generating AI review:', err);
+      setError('Không thể tạo đánh giá từ AI. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
     }
-
-    review += `⏱️ **Phân tích thời gian:**\n`;
-    review += `- Thời gian hoàn thành: ${timeInMinutes} phút\n`;
-    if (timeInMinutes < 30) {
-      review += `- Bạn hoàn thành khá nhanh. Hãy chắc chắn rằng bạn đã đọc kỹ từng câu hỏi.\n\n`;
-    } else if (timeInMinutes > 50) {
-      review += `- Bạn sử dụng gần hết thời gian. Hãy luyện tập để tăng tốc độ giải bài.\n\n`;
-    } else {
-      review += `- Thời gian hoàn thành hợp lý, cho thấy sự cân bằng giữa tốc độ và độ chính xác.\n\n`;
-    }
-
-    review += `📊 **Phân tích theo loại câu hỏi:**\n`;
-    Object.entries(questionTypes).forEach(([type, count]) => {
-      let typeLabel;
-      if (type === 'SingleChoice') {
-        typeLabel = 'Trắc nghiệm 1 đáp án';
-      } else if (type === 'MultipleChoice') {
-        typeLabel = 'Trắc nghiệm nhiều đáp án';
-      } else if (type === 'FillInTheBlank') {
-        typeLabel = 'Điền vào chỗ trống';
-      } else {
-        typeLabel = 'Tự luận';
-      }
-
-      const correctCount = questions.filter(
-        (q) =>
-          q.questionTypeName === type &&
-          !incorrectQuestions.some((iq) => iq.id === q.id)
-      ).length;
-      review += `- ${typeLabel}: ${correctCount}/${count} câu đúng\n`;
-    });
-
-    review += `\n🎯 **Phân tích theo chủ đề:**\n`;
-    Object.entries(topicAnalysis).forEach(([topicId, data]) => {
-      const percentage = Math.round((data.correct / data.total) * 100);
-      review += `- ${topicId}: ${data.correct}/${data.total} câu (${percentage}%)\n`;
-    });
-
-    if (incorrectQuestions.length > 0) {
-      review += `\n🔍 **Những điểm cần cải thiện:**\n`;
-
-      const mostMissedTopics = Object.entries(topicAnalysis)
-        .filter(([, data]) => data.correct / data.total < 0.7)
-        .sort((a, b) => a[1].correct / a[1].total - b[1].correct / b[1].total)
-        .slice(0, 3);
-
-      if (mostMissedTopics.length > 0) {
-        review += `\n**Chủ đề cần ôn tập ưu tiên:**\n`;
-        mostMissedTopics.forEach(([topicId, data]) => {
-          const percentage = Math.round((data.correct / data.total) * 100);
-          review += `• ${topicId} (${percentage}% đúng)\n`;
-        });
-      }
-
-      review += `\n**Gợi ý cải thiện:**\n`;
-      review += `• Xem lại giải thích của ${incorrectQuestions.length} câu bạn làm sai\n`;
-      review += `• Tập trung ôn tập các chủ đề có tỷ lệ đúng thấp\n`;
-      review += `• Luyện tập thêm với các câu hỏi tương tự\n`;
-      review += `• Đọc kỹ đề bài trước khi trả lời\n`;
-    }
-
-    review += `\n🚀 **Lời khuyên cho lần thi tiếp theo:**\n`;
-    review += `• Dành thời gian đều cho từng câu hỏi\n`;
-    review += `• Kiểm tra lại đáp án trước khi nộp bài\n`;
-    review += `• Không bỏ trống câu nào, hãy đoán nếu không chắc chắn\n`;
-    review += `• Thực hành thường xuyên để cải thiện kỹ năng\n\n`;
-
-    review += `💡 **Kết luận:** ${percentage >= 70
-      ? 'Bạn đã có nền tảng tốt! Hãy tiếp tục duy trì và hoàn thiện thêm.'
-      : 'Đây là cơ hội tuyệt vời để học hỏi và phát triển. Hãy tiếp tục cố gắng!'
-      }`;
-
-    setAiReview(review);
-    setLoading(false);
-  };
-
-  const arraysEqual = (arr1: string[], arr2: string[]) => {
-    return (
-      arr1.length === arr2.length && arr1.every((val, i) => val === arr2[i])
-    );
   };
 
   const formatReviewText = (text: string) => {
@@ -266,10 +249,12 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
       ]}
       width={800}
       style={{ maxHeight: '80vh', overflow: 'auto' }}
-      bodyStyle={{
-        maxHeight: '60vh',
-        overflow: 'auto',
-        padding: '1.5rem',
+      styles={{
+        body: {
+          maxHeight: '60vh',
+          overflow: 'auto',
+          padding: '1.5rem',
+        },
       }}
     >
       {loading ? (
@@ -288,6 +273,25 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
           <div style={{ color: '#64748b' }}>
             🤖 AI đang phân tích kết quả của bạn...
           </div>
+          <div style={{ color: '#94a3b8', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+            Vui lòng đợi trong giây lát
+          </div>
+        </div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <div style={{ color: '#dc2626', marginBottom: '1rem' }}>
+            {error}
+          </div>
+          <button
+            onClick={() => {
+              setError('');
+              generateAIReview();
+            }}
+            className="btn-secondary"
+          >
+            Thử lại
+          </button>
         </div>
       ) : (
         <div

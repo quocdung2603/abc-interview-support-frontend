@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Question, Answer } from '@abc-interview-support-frontend/types';
+import { QuestionInExam, Answer } from '@abc-interview-support-frontend/types';
 
 interface FillInTheBlankQuestionProps {
-  question: Question;
+  question: QuestionInExam;
   answers: Answer[]; // Danh sách các đáp án có thể chọn
   userAnswer: string;
   onAnswerChange: (answer: string) => void;
@@ -27,7 +27,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
   }, [userAnswer]);
 
   const getBlanksCount = () => {
-    const questionText = question.questionContent;
+    const questionText = question.questionText;
     const blankPattern = /(_____+|\[blank\]|\{blank\})/gi;
     const matches = questionText.match(blankPattern);
     return matches ? matches.length : 1;
@@ -75,7 +75,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
           >
             <option value="">-- Chọn đáp án --</option>
             {answers.map((answer) => (
-              <option key={answer.answerId} value={answer.answerContent}>
+              <option key={answer.id} value={answer.answerContent}>
                 {answer.answerContent}
               </option>
             ))}
@@ -128,7 +128,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
               >
                 <option value="">-- Chọn đáp án --</option>
                 {answers.map((answer) => (
-                  <option key={answer.answerId} value={answer.answerContent}>
+                  <option key={answer.id} value={answer.answerContent}>
                     {answer.answerContent}
                   </option>
                 ))}
@@ -185,7 +185,7 @@ const FillInTheBlankQuestion: React.FC<FillInTheBlankQuestionProps> = ({
           <div className="flex flex-wrap gap-2">
             {answers.map((answer) => (
               <span
-                key={answer.answerId}
+                key={answer.id}
                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
               >
                 {answer.answerContent}

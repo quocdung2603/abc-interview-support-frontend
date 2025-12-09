@@ -12,11 +12,11 @@ import {
 } from 'antd';
 import {
   Post,
-  User,
   Field,
   Topic,
   Level,
 } from '@abc-interview-support-frontend/types';
+import { communityService } from '@abc-interview-support-frontend/services';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -43,12 +43,51 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
   const [activeTab, setActiveTab] = useState('basic');
+
+  // Format datetime for datetime-local input (remove seconds)
+  const formatDateTimeForInput = (dateTimeString: string | undefined): string => {
+    if (!dateTimeString) return '';
+
+    try {
+      // If it's already in the right format (without seconds), return as is
+      if (dateTimeString.includes('T') && !dateTimeString.includes(':')) {
+        return dateTimeString;
+      }
+
+      // Parse the datetime string and format for datetime-local input
+      const date = new Date(dateTimeString);
+
+      // Format as YYYY-MM-DDTHH:mm (without seconds for datetime-local)
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.warn('Error formatting datetime:', error);
+      return '';
+    }
+  };
+
+  // Convert datetime-local format to ISO string for API
+  const convertToISOString = (dateTimeLocal: string): string => {
+    if (!dateTimeLocal) return '';
+    try {
+      const date = new Date(dateTimeLocal);
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error converting to ISO string:', error);
+      return '';
+    }
+  };
 
   // Form data states
   const [formData, setFormData] = useState({
-    userId: data?.userId || undefined,
+    userId: 1, // Fixed user ID
     fieldId: data?.fieldId || undefined,
     topicId: data?.topicId || undefined,
     levelId: data?.levelId || undefined,
@@ -57,29 +96,8 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
     title: data?.title || '',
     content: data?.content || '',
     isLocked: !!data?.lockTime,
-    lockTime: data?.lockTime || '',
+    lockTime: formatDateTimeForInput(data?.lockTime),
   });
-
-  // Load users, fields, topics, levels for selection
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Mock users
-        const mockUsers: User[] = [
-          { id: 1, roleId: 1, roleName: 'User', email: 'user1@example.com', fullName: 'Nguyễn Văn A', dateOfBirth: '1990-01-01', address: 'Hà Nội', status: 'ACTIVE', isStudying: true, eloScore: 1200, eloRank: 'Learner', createdAt: '2025-01-01T00:00:00.000000' },
-          { id: 2, roleId: 1, roleName: 'User', email: 'user2@example.com', fullName: 'Trần Thị B', dateOfBirth: '1992-05-15', address: 'Hồ Chí Minh', status: 'ACTIVE', isStudying: false, eloScore: 1500, eloRank: 'Intermediate', createdAt: '2025-01-01T00:00:00.000000' },
-          { id: 3, roleId: 1, roleName: 'User', email: 'user3@example.com', fullName: 'Lê Văn C', dateOfBirth: '1988-12-20', address: 'Đà Nẵng', status: 'ACTIVE', isStudying: true, eloScore: 1800, eloRank: 'Advanced', createdAt: '2025-01-01T00:00:00.000000' },
-        ];
-        setUsers(mockUsers);
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
-    };
-
-    if (open) {
-      loadData();
-    }
-  }, [open]);
 
   // Reset/initialize form when data changes
   useEffect(() => {
@@ -88,7 +106,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
       if (data) {
         // Editing existing post
         const initialData = {
-          userId: data.userId,
+          userId: 1, // Fixed user ID
           fieldId: data.fieldId,
           topicId: data.topicId,
           levelId: data.levelId,
@@ -100,7 +118,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           lockTime: data.lockTime || '',
         };
         form.setFieldsValue({
-          userId: data.userId,
           fieldId: data.fieldId,
           topicId: data.topicId,
           levelId: data.levelId,
@@ -115,7 +132,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
       } else {
         // Creating new post
         const initialData = {
-          userId: undefined,
+          userId: 1, // Fixed user ID
           fieldId: undefined,
           topicId: undefined,
           levelId: undefined,
@@ -131,10 +148,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
       }
     }
   }, [data, open, form]);
-
-  const handleUserChange = (value: number) => {
-    setFormData(prev => ({ ...prev, userId: value }));
-  };
 
   const handleFieldChange = (value: number) => {
     setFormData(prev => ({ ...prev, fieldId: value, topicId: undefined })); // Reset topic when field changes
@@ -165,15 +178,26 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
   };
 
   const handleLockChange = (checked: boolean) => {
+    console.log('Lock switch changed:', checked);
     setFormData(prev => ({
       ...prev,
       isLocked: checked,
-      lockTime: checked ? (prev.lockTime || new Date().toISOString()) : ''
+      lockTime: checked ? (prev.lockTime || formatDateTimeForInput(new Date().toISOString())) : ''
     }));
+    console.log('New lockTime value:', checked ? (formData.lockTime || formatDateTimeForInput(new Date().toISOString())) : '');
   };
 
   const handleLockTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, lockTime: e.target.value }));
+    const selectedValue = e.target.value;
+    console.log('LockTime selected (raw):', selectedValue);
+
+    // Parse the datetime-local value to check if it's correct
+    const selectedDate = new Date(selectedValue);
+    console.log('Parsed date:', selectedDate);
+    console.log('Hours:', selectedDate.getHours());
+    console.log('Minutes:', selectedDate.getMinutes());
+
+    setFormData(prev => ({ ...prev, lockTime: selectedValue }));
   };
 
   const handleSubmit = async () => {
@@ -182,12 +206,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 
       // Validate form
       await form.validateFields();
-
-      if (!formData.userId) {
-        message.error('Vui lòng chọn người dùng');
-        setActiveTab('basic');
-        return;
-      }
 
       if (!formData.fieldId) {
         message.error('Vui lòng chọn lĩnh vực');
@@ -205,34 +223,46 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
         userId: formData.userId,
         fieldId: formData.fieldId,
         topicId: formData.topicId,
-        levelId: formData.levelId,
+        levelId: formData.levelId || levels[0]?.id || 1, // Default to first level or 1
         postType: formData.postType,
-        status: formData.status,
         title: formData.title,
         content: formData.content,
-        lockTime: formData.isLocked && formData.lockTime ? formData.lockTime : null,
+        lockTime: formData.isLocked && formData.lockTime ? convertToISOString(formData.lockTime) : '',
       };
 
       console.log('Form values:', formData);
       console.log('Complete post data:', postData);
 
-      // TODO: Implement actual API calls
-      if (data) {
-        // Update existing post
-        console.log('Update post:', data.id, postData);
-        message.success('Cập nhật bài viết thành công!');
-      } else {
-        // Create new post
-        console.log('Create post:', postData);
-        message.success('Tạo bài viết thành công!');
-      }
+      try {
+        if (data) {
+          // Update existing post - TODO: Implement update API when available
+          console.log('Update post:', data.id, postData);
+          message.success('Cập nhật bài viết thành công!');
+        } else {
+          // Create new post
+          const response = await communityService.createPost(postData);
+          console.log('Create post response:', response);
+          message.success('Tạo bài viết thành công!');
+        }
 
-      // Call onSuccess callback to refresh data
-      if (onSuccess) {
-        onSuccess();
-      }
+        // Call onSuccess callback to refresh data
+        if (onSuccess) {
+          onSuccess();
+        }
 
-      onClose();
+        onClose();
+      } catch (apiError: any) {
+        console.error('API Error:', apiError);
+
+        // Handle API error
+        if (apiError.response?.data?.message) {
+          message.error(`Lỗi: ${apiError.response.data.message}`);
+        } else if (apiError.message) {
+          message.error(`Lỗi: ${apiError.message}`);
+        } else {
+          message.error('Có lỗi xảy ra khi lưu bài viết. Vui lòng thử lại.');
+        }
+      }
     } catch (error: unknown) {
       console.error('Form submission error:', error);
 
@@ -311,7 +341,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
         form={form}
         layout="vertical"
         initialValues={{
-          userId: data?.userId,
           fieldId: data?.fieldId,
           topicId: data?.topicId,
           levelId: data?.levelId,
@@ -325,29 +354,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
       >
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="Thông tin cơ bản" key="basic">
-            <Form.Item
-              label="Người tạo"
-              name="userId"
-              rules={[
-                { required: true, message: 'Vui lòng chọn người tạo bài viết' },
-              ]}
-            >
-              <Select
-                placeholder="Chọn người dùng..."
-                onChange={handleUserChange}
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-                }
-              >
-                {users.map(user => (
-                  <Option key={user.id} value={user.id}>
-                    {user.fullName} ({user.email})
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
             <Form.Item
               label="Lĩnh vực"
               name="fieldId"

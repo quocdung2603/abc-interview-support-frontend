@@ -13,7 +13,7 @@ interface DiscussionPostProps {
   levels: Level[];
 }
 
-const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
+const DiscussionPost: React.FC<DiscussionPostProps> = ({
   post,
   onPostClick,
   fields,
@@ -49,7 +49,7 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
       minute: '2-digit',
     });
   }
-  
+
   const shorternContent = (content: string, maxLength: number) => {
     if (content.length <= maxLength) return content;
     return content.slice(0, maxLength) + '...';
@@ -139,4 +139,4 @@ const DiscussionPostComponent: React.FC<DiscussionPostProps> = ({
   );
 };
 
-export default DiscussionPostComponent;
+export default DiscussionPost;

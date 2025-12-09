@@ -22,16 +22,52 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
     seconds: 0,
     isExpired: false,
   });
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!post.lockTime) return;
 
     const calculateTimeRemaining = () => {
-      const now = new Date().getTime();
-      const end = new Date(post.lockTime!).getTime();
-      const difference = end - now;
+      // Get current time
+      const now = new Date();
+   
 
-      if (difference <= 0) {
+      const lockTime = post.lockTime;
+
+      // Parse lockTime as UTC
+      let endDate: Date;
+      if (typeof lockTime === 'string' && lockTime.includes('T')) {
+        const utcString = lockTime + (lockTime.includes('Z') ? '' : 'Z');
+        endDate = new Date(utcString);
+      } else {
+        endDate = new Date(lockTime);
+      }
+
+      // Calculate difference
+      const end = endDate.getTime();
+      const current = now.getTime();
+      const difference = end - current;
+
+
+      // Store endDate for UI display
+      setEndDate(endDate);
+
+      // Check if lockTime is a valid date
+      if (isNaN(end)) {
+        console.warn('Invalid lockTime:', post.lockTime);
+        setTimeRemaining({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isExpired: false,
+        });
+        return;
+      }
+
+      const timeDiff = end - current;
+
+      if (timeDiff <= 0) {
         setTimeRemaining({
           days: 0,
           hours: 0,
@@ -42,12 +78,12 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
         return;
       }
 
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
       const hours = Math.floor(
-        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
       );
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
       setTimeRemaining({
         days,
@@ -64,9 +100,23 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
     return () => clearInterval(interval);
   }, [post.lockTime]);
 
-  // Don't show timer if no lockTime
+  // Show different UI based on lockTime status
   if (!post.lockTime) {
-    return null;
+    return (
+      <div className="card-elevated p-3 bg-green-50 border border-green-200">
+        <div className="flex items-center gap-2">
+          <ClockCircleOutlined className="text-green-600 text-lg" />
+          <div>
+            <h3 className="font-semibold text-green-800">
+              Bài viết chưa giới hạn thời gian
+            </h3>
+            <p className="text-sm text-green-600">
+              Bạn có thể thảo luận vô thời hạn
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (timeRemaining.isExpired) {
@@ -92,9 +142,6 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
       <div className="flex items-center gap-3">
         <ClockCircleOutlined className="text-blue-600 text-lg" />
         <div className="flex-1">
-          <h3 className="font-semibold text-blue-800 mb-1">
-            Thời gian còn lại
-          </h3>
           <div className="flex gap-3">
             {timeRemaining.days > 0 && (
               <div className="text-center">

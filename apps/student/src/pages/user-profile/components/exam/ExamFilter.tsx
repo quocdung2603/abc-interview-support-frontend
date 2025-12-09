@@ -14,13 +14,6 @@ export interface ExamControlsProps {
   onTopicChange: (v: string) => void;
   topicOptions: string[];
 
-  // Pagination
-  page: number; // 1-based
-  pageSize: number;
-  total: number;
-  onPageChange: (p: number) => void;
-  onPageSizeChange: (s: number) => void;
-
   // Optional: free-text search
   search?: string;
   onSearchChange?: (v: string) => void;
@@ -65,20 +58,10 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
   topic,
   onTopicChange,
   topicOptions,
-  page,
-  pageSize,
-  total,
-  onPageChange,
-  onPageSizeChange,
   search,
   onSearchChange,
   onReset,
 }) => {
-  const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
-
-  const goPrev = () => onPageChange(Math.max(1, page - 1));
-  const goNext = () => onPageChange(Math.min(totalPages, page + 1));
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       {/* Filters */}
@@ -138,46 +121,6 @@ const ExamFilter: React.FC<ExamControlsProps> = ({
             Reset
           </button>
         )}
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <button
-            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={goPrev}
-            disabled={page <= 1}
-          >
-            Prev
-          </button>
-          <div className="text-sm text-gray-900">
-            Trang <strong>{page}</strong> / <strong>{totalPages}</strong>
-            <span className="text-gray-500 ml-2">
-              ({total} mục)
-            </span>
-          </div>
-          <button
-            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={goNext}
-            disabled={page >= totalPages}
-          >
-            Next
-          </button>
-        </div>
-
-        <div>
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number.parseInt(e.target.value, 10))}
-          >
-            {[5, 10, 20, 50].map((s) => (
-              <option key={s} value={s}>
-                {s} / trang
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
     </div>
   );

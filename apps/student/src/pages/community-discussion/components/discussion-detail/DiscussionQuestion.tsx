@@ -111,13 +111,13 @@ const DiscussionQuestion: React.FC<DiscussionQuestionProps> = ({ post, fields, t
 
       <div className="flex items-center justify-between pt-3 border-t border-gray-200">
         <div className="flex items-center gap-4">
-          <span key={post.fieldId} className="badge-accent text-xs">
+          <span key={`field-${post.fieldId}`} className="badge-accent text-xs">
             #{getFieldName(post.fieldId)}
           </span>
-          <span key={post.levelId} className="badge-secondary text-xs">
+          <span key={`level-${post.levelId}`} className="badge-secondary text-xs">
             #{getLevelName(post.levelId)}
           </span>
-          <span key={post.topicId} className="badge-accent text-xs">
+          <span key={`topic-${post.topicId}`} className="badge-accent text-xs">
             #{getTopicName(post.topicId)}
           </span>
         </div>

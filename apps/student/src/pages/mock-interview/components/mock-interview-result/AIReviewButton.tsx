@@ -1,4 +1,5 @@
 import React from 'react';
+import { RobotOutlined } from '@ant-design/icons';
 
 interface AIReviewButtonProps {
   onClick: () => void;
@@ -41,7 +42,7 @@ const AIReviewButton: React.FC<AIReviewButtonProps> = ({ onClick }) => {
         }}
         title="Nhận đánh giá từ AI"
       >
-        🤖
+        <RobotOutlined />
       </button>
 
       {/* Tooltip */}
@@ -64,7 +65,7 @@ const AIReviewButton: React.FC<AIReviewButtonProps> = ({ onClick }) => {
         }}
         id="ai-tooltip"
       >
-        💡 Nhận đánh giá từ AI
+        Nhận đánh giá từ AI
         <div
           style={{
             position: 'absolute',

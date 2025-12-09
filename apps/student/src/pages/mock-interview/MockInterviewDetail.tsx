@@ -2,13 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Progress, Modal, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { Question, Answer, Exam } from '@abc-interview-support-frontend/types';
+import { QuestionInExam, Answer, Exam } from '@abc-interview-support-frontend/types';
 import { examService } from '@abc-interview-support-frontend/services';
 import { ExamDetailHeader, ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
-interface UserAnswers {
-  [questionId: string]: string; // Tất cả đáp án đều lưu dưới dạng string
+interface UserAnswer {
+  questionId: number;
+  answerContent: string;
 }
+
+type UserAnswers = UserAnswer[];
 
 type MockInterviewDetailProps = {
   examId?: string;
@@ -19,13 +23,14 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   const { id: urlExamId } = useParams<{ id: string }>();
   const examId = urlExamId || propExamId;
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // State management
   const [exam, setExam] = useState<Exam | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionInExam[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer[]>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
+  const [userAnswers, setUserAnswers] = useState<UserAnswers>([]);
   const [markedQuestions, setMarkedQuestions] = useState<Set<string>>(
     new Set()
   );
@@ -40,23 +45,39 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
       const exam = res || null;
       setExam(exam);
       setQuestions(exam.questions || []);
+      return exam;
     } catch (error) {
       console.error('Error fetching exam:', error);
       setExam(null);
+      setQuestions([]);
+      return null;
     }
   }
 
-  const getAllAnswers = async () => {
+  const fetchAnswersForQuestions = async (questions: QuestionInExam[]) => {
     try {
-      const res = await examService.getAllAnswer();
-      const answersArray: Answer[] = res.content || [];
       const answersMap: Record<string, Answer[]> = {};
-      answersArray.forEach((answer) => {
-        if (!answersMap[answer.questionId]) {
-          answersMap[answer.questionId] = [];
+
+      // Only fetch answers for questions that are not OpenEnded (questionTypeId !== 3)
+      const questionsWithAnswers = questions.filter(q => q.questionTypeId !== 3);
+
+      const answerPromises = questionsWithAnswers.map(async (question) => {
+        try {
+          const res = await examService.getAnswerByQuestion(question.id);
+          const answersArray: Answer[] = res.content || [];
+          return { questionId: question.id, answers: answersArray };
+        } catch (error) {
+          console.error(`Error fetching answers for question ${question.id}:`, error);
+          return { questionId: question.id, answers: [] };
         }
-        answersMap[answer.questionId].push(answer);
       });
+
+      const results = await Promise.all(answerPromises);
+
+      results.forEach(({ questionId, answers }) => {
+        answersMap[questionId.toString()] = answers;
+      });
+
       setAnswers(answersMap);
     } catch (error) {
       console.error('Error fetching answers:', error);
@@ -67,8 +88,11 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   // Initialize mock data
   useEffect(() => {
     const initializeExam = async () => {
-      getExamById(examId || '');
-      getAllAnswers().finally(() => setLoading(false));
+      const exam = await getExamById(examId || '');
+      if (exam && exam.questions) {
+        await fetchAnswersForQuestions(exam.questions);
+      }
+      setLoading(false);
     };
 
     initializeExam();
@@ -77,10 +101,18 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   // Handle answer changes
   const handleAnswerChange = useCallback(
     (questionId: string, answer: string) => {
-      setUserAnswers((prev) => ({
-        ...prev,
-        [questionId]: answer,
-      }));
+      setUserAnswers((prev) => {
+        const existingIndex = prev.findIndex((ua) => ua.questionId === parseInt(questionId));
+        if (existingIndex >= 0) {
+          // Update existing
+          const newAnswers = [...prev];
+          newAnswers[existingIndex] = { questionId: parseInt(questionId), answerContent: answer };
+          return newAnswers;
+        } else {
+          // Add new
+          return [...prev, { questionId: parseInt(questionId), answerContent: answer }];
+        }
+      });
     },
     []
   );
@@ -120,11 +152,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   const clearCurrentAnswer = useCallback(() => {
     const currentQuestion = questions[currentQuestionIndex];
     if (currentQuestion) {
-      setUserAnswers((prev) => {
-        const newAnswers = { ...prev };
-        delete newAnswers[currentQuestion.id];
-        return newAnswers;
-      });
+      setUserAnswers((prev) => prev.filter((ua) => ua.questionId !== currentQuestion.id));
     }
   }, [questions, currentQuestionIndex]);
 
@@ -133,10 +161,21 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     setIsSubmitModal(true);
   }, []);
 
-  const confirmSubmitExam = useCallback(() => {
+  const confirmSubmitExam = useCallback(async () => {
     setIsExamActive(false);
-    // Here you would typically submit to API
-    console.log('Submitting exam with answers:', userAnswers);
+
+    const userId = parseInt(user?.userId || '1');
+    const examIdNum = parseInt(examId || '0');
+
+    try {
+      await examService.submitExamAnswers(userId, examIdNum, userAnswers);
+      message.success('Bài kiểm tra đã được nộp thành công!');
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      message.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+      setIsExamActive(true); // Re-enable exam if submission failed
+      return;
+    }
 
     // Store results in localStorage for the result page
     const examResult = {
@@ -151,7 +190,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
 
     // Navigate to results page
     navigate(`/mock-interview-result/${examId}`);
-  }, [userAnswers, examId, navigate, exam, questions, answers]);
+  }, [user, examId, userAnswers, exam, questions, answers, navigate]);
 
   // Auto-submit when time is up
   const handleTimeUp = useCallback(() => {
@@ -160,10 +199,22 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     confirmSubmitExam();
   }, [confirmSubmitExam]);
 
-  const handleOnBack = () => {
+  const handleOnBack = async () => {
     setIsExamActive(false);
-    // Here you would typically submit to API
-    console.log('Submitting exam with answers:', userAnswers);
+
+    const userId = parseInt(user?.userId || '1');
+    const examIdNum = parseInt(examId || '0');
+
+    try {
+      await examService.submitExamAnswers(userId, examIdNum, userAnswers);
+      message.success('Bài kiểm tra đã được nộp thành công!');
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      message.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+      setIsExamActive(true); // Re-enable exam if submission failed
+      setIsOpenBackModal(false);
+      return;
+    }
 
     // Store results in localStorage for the result page
     const examResult = {
@@ -222,7 +273,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     if (!currentQuestion) return null;
 
     const currentAnswers = answers[currentQuestion.id.toString()] || [];
-    const userAnswer = userAnswers[currentQuestion.id.toString()];
+    const userAnswer = userAnswers.find((ua) => ua.questionId === currentQuestion.id)?.answerContent || '';
 
     console.log('Current question:', currentQuestion);
     // console.log('Current answers:', currentAnswers);
@@ -232,7 +283,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
         <div className="space-y-4">
           <div className="bg-white rounded-lg p-6 shadow-md border border-neutral-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {currentQuestion.questionContent}
+              {currentQuestion.questionText}
             </h3>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-yellow-800">
@@ -253,14 +304,6 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
                 />
               </label>
             </div>
-            {currentQuestion.questionAnswer && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Gợi ý đáp án:</span><br />
-                  {currentQuestion.questionAnswer}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       );
@@ -298,11 +341,10 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
           />
         );
 
-      case 3: // FillInTheBlank
+      case 3: // OpenEnded
         return (
-          <FillInTheBlankQuestion
+          <OpenEndedQuestion
             question={currentQuestion}
-            answers={currentAnswers}
             userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
             onAnswerChange={(answer) =>
               handleAnswerChange(currentQuestion.id.toString(), answer)
@@ -310,10 +352,11 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
           />
         );
 
-      case 4: // OpenEnded
+      case 4: // FillInTheBlank
         return (
-          <OpenEndedQuestion
+          <FillInTheBlankQuestion
             question={currentQuestion}
+            answers={currentAnswers}
             userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
             onAnswerChange={(answer) =>
               handleAnswerChange(currentQuestion.id.toString(), answer)
@@ -356,8 +399,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
   const currentQuestion = questions[currentQuestionIndex];
   const hasCurrentAnswer =
     currentQuestion &&
-    userAnswers[currentQuestion.id] !== undefined &&
-    userAnswers[currentQuestion.id] !== '';
+    userAnswers.some((ua) => ua.questionId === currentQuestion.id && ua.answerContent.trim() !== '');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">

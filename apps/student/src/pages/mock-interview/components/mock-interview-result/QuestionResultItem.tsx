@@ -78,7 +78,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
     ) {
       const userAnswers = userAnswer.split('|');
       const answerContents = userAnswers.map((answerId) => {
-        const answer = answers.find((a) => a.answerId.toString() === answerId);
+        const answer = answers.find((a) => a.id.toString() === answerId);
         return answer?.answerContent || answerId;
       });
 
@@ -108,7 +108,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
     }
 
     // Single choice or open ended
-    const answer = answers.find((a) => a.answerId.toString() === userAnswer);
+    const answer = answers.find((a) => a.id.toString() === userAnswer);
     const displayAnswer = answer?.answerContent || userAnswer;
 
     return (
@@ -139,7 +139,7 @@ const QuestionResultItem: React.FC<QuestionResultItemProps> = ({
         <div style={{ marginTop: '0.5rem' }}>
           {correctAnswers.map((answer, index) => (
             <div
-              key={answer.answerId}
+              key={answer.id}
               style={{
                 color: '#166534',
                 fontSize: '0.875rem',

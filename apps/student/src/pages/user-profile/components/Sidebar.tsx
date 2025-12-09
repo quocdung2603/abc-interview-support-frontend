@@ -32,6 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: 'community',
       label: 'Cộng đồng',
       icon: <TeamOutlined />,
+      subItems: [
+        { id: 'discussions', label: 'Thảo luận' },
+        { id: 'questions', label: 'Câu hỏi' },
+        { id: 'news', label: 'Tin tức' },
+      ]
     },
     {
       id: 'career',
@@ -50,11 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div>
                   <button
                     onClick={() => onSectionChange(item.id)}
-                    className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                      activeSection === item.id
-                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
+                    className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${activeSection === item.id
+                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
                   >
                     <span className="mr-3 text-sm">{item.icon}</span>
                     <span className="font-medium text-sm">{item.label}</span>
@@ -66,11 +70,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <button
                           key={subItem.id}
                           onClick={() => onSectionChange(item.id, subItem.id)}
-                          className={`w-full flex items-center px-3 py-2 text-left rounded-md transition-colors text-xs ${
-                            activeSubsection === subItem.id
-                              ? 'bg-blue-100 text-blue-800 font-medium'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                          }`}
+                          className={`w-full flex items-center px-3 py-2 text-left rounded-md transition-colors text-xs ${activeSubsection === subItem.id
+                            ? 'bg-blue-100 text-blue-800 font-medium'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                            }`}
                         >
                           {subItem.label}
                         </button>
@@ -81,11 +84,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               ) : (
                 <button
                   onClick={() => onSectionChange(item.id)}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                    activeSection === item.id
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${activeSection === item.id
+                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                 >
                   <span className="mr-3 text-sm">{item.icon}</span>
                   <span className="font-medium text-sm">{item.label}</span>

@@ -32,7 +32,7 @@ const MockInterview = () => {
     try {
       const res = await examService.getAllExams();
       let exams = res.content || [];
-      exams = exams.filter((exam: Exam) => exam.userId === Number(user?.userId) && exam.examType === 'VIRTUAL');
+      exams = exams.filter((exam: Exam) => exam.userId === Number(user?.userId) && exam.examType === 'PRACTICE');
       setCreatedExams(exams);
     } catch (error) {
       console.error('Error fetching user exams:', error);
@@ -44,7 +44,7 @@ const MockInterview = () => {
     try {
       const res = await examService.getAllExams();
       let exams = res.content || [];
-      exams = exams.filter((exam: Exam) => exam.userId !== Number(user?.userId) && exam.examType === 'VIRTUAL' && exam.status === 'PUBLISHED');
+      exams = exams.filter((exam: Exam) => exam.userId !== 1 && exam.examType === 'VIRTUAL' && exam.status === 'PUBLISHED');
       setAvailableExams(exams);
     } catch (error) {
       setAvailableExams([]);
@@ -99,26 +99,39 @@ const MockInterview = () => {
 
   const handleCreateExam = async (examData: ExamFormData) => {
     try {
-      // Transform data to match API format
-      const apiData = {
+      // Transform data to match API format - only include required fields
+      const apiData: any = {
         userId: Number(user?.userId),
-        examType: "VIRTUAL",
-        title: examData.title || '',
-        position: examData.position || '',
-        fieldId: examData.fieldId,
-        levelId: examData.levelId,
-        topicIds: [Number.parseInt(examData.topic)], // Convert to array of numbers
-        questionTypeIds: examData.questionTypes.map(type => Number.parseInt(type)), // Convert to array of numbers
-        questionCount: examData.questionCount,
-        duration: examData.duration,
-        language: "vi"
+        requestData: {
+          title: examData.title || '',
+          position: examData.position || '',
+          duration: examData.duration,
+          language: "vi",
+          fieldId: Number(examData.fieldId),
+          topicIds: [Number.parseInt(examData.topic)],
+          levelId: Number(examData.levelId),
+          questionTypeId: Number.parseInt(examData.questionTypes[0]),
+          numberOfQuestions: Number(examData.questionCount),
+        }
       };
-      await examService.createExam(apiData);
+
+      console.log('Creating exam with transformed data:', apiData);
+
+      const response = await examService.createExamWithRandomQuestions(apiData);
+      console.log('Exam created successfully:', response);
+
       // Refresh the exam lists
       getAllExams();
       getUserExams();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating exam:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
     }
   };
 

@@ -4,6 +4,7 @@ import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-
 import MockInterviewDetail from './MockInterviewDetail';
 import { BaseExamList, BaseInterviewHeader, ExamFilterForm } from './components/base-interview';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
+import { useNavigate } from 'react-router-dom';
 
 interface ExamFormData {
   field: string;
@@ -21,6 +22,8 @@ interface ExamFormData {
 
 const BaseInterview = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [availableExams, setAvailableExams] = useState<Exam[]>([]);
   const [registeredExams, setRegisteredExams] = useState<Exam[]>([]);
   const [registeredExamIds, setRegisteredExamIds] = useState<Set<number>>(new Set());
@@ -196,7 +199,7 @@ const BaseInterview = () => {
   };
 
   const handleStartExam = (examId: string): void => {
-    throw new Error('Function not implemented.');
+    navigate(`/mock-interview-detail/${examId}`);
   }
 
   return (

@@ -1,4 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { Table, Tag, Button } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import ExamFilter from './ExamFilter';
 import { Exam } from '@abc-interview-support-frontend/types';
 import { questionService } from '@abc-interview-support-frontend/services';
@@ -12,25 +14,6 @@ interface Props {
   onInfo?: (id: number) => void; // Xem thông tin (Recruiter)
   onResult?: (id: number) => void; // Xem kết quả (Recruiter)
 }
-
-const tableShell: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: '0.875rem', // text-sm equivalent
-};
-
-const badgeBase: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '2px 8px',
-  borderRadius: '999px',
-  fontSize: '0.75rem', // text-xs equivalent
-  lineHeight: 1.4,
-  marginRight: 6,
-  marginBottom: 6,
-  backgroundColor: 'var(--color-neutral-100)',
-  color: 'var(--color-neutral-700)',
-};
 
 const parseJsonArray = (jsonString?: string | number[]): string[] => {
   if (!jsonString) return [];
@@ -49,32 +32,12 @@ const parseJsonArray = (jsonString?: string | number[]): string[] => {
   }
 };
 
-const formatDateTime = (d?: Date) =>
-  d
-    ? new Date(d).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-    : '—';
+type RuntimeState = 'UPCOMING' | 'ONGOING' | 'DONE';
 
-const formatDuration = (minutes?: number) => {
-  if (!minutes && minutes !== 0) return '—';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-};
-
-type RuntimeState = 'UPCOMING' | 'ONGOING' | 'DONE' | 'INACTIVE';
-
-const runtimeStateOf = (ex: Exam, now = new Date()): RuntimeState => {
-  // Since Exam interface doesn't have startTime/endTime, we'll use status-based logic
+const runtimeStateOf = (ex: Exam): RuntimeState => {
   if (ex.status === 'COMPLETED') return 'DONE';
-  if (ex.status === 'INACTIVE') return 'INACTIVE';
-  if (ex.status === 'ACTIVE') return 'ONGOING';
-  return 'UPCOMING'; // DRAFT
+  if (ex.status === 'ONGOING') return 'ONGOING';
+  return 'UPCOMING'; // DRAFT or PUBLISHED
 };
 
 const ExamTable: React.FC<Props> = ({
@@ -125,21 +88,17 @@ const ExamTable: React.FC<Props> = ({
     fetchOptions();
   }, []);
 
-  // State bộ lọc + phân trang
+  // State bộ lọc
   const [examType, setExamType] = useState<string>('');
   const [field, setField] = useState<string>('');
   const [topic, setTopic] = useState<string>('');
   const [search, setSearch] = useState<string>('');
-
-  const [page, setPage] = useState<number>(1); // 1-based
-  const [pageSize, setPageSize] = useState<number>(10);
 
   const resetFilters = () => {
     setExamType('');
     setField('');
     setTopic('');
     setSearch('');
-    setPage(1);
   };
 
   // Áp dụng lọc
@@ -149,7 +108,7 @@ const ExamTable: React.FC<Props> = ({
       if (examType && e.examType !== examType) return false;
       if (field && e.position !== field) return false;
       if (topic) {
-        const topics = parseJsonArray(e.topics);
+        const topics = parseJsonArray(e.topicIds);
         if (!topics.includes(topic)) return false;
       }
 
@@ -162,13 +121,6 @@ const ExamTable: React.FC<Props> = ({
     });
   }, [exams, examType, field, topic, search]);
 
-  // Phân trang
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
-  const currentPage = Math.min(page, totalPages);
-  const startIdx = (currentPage - 1) * pageSize;
-  const pageData = filtered.slice(startIdx, startIdx + pageSize);
-
   // Exam type options
   const examTypeOptions = [
     { value: '', label: 'Tất cả loại' },
@@ -176,220 +128,186 @@ const ExamTable: React.FC<Props> = ({
     { value: 'RECRUITER', label: 'Kiểm tra sơ loại' },
   ];
 
+  // Columns configuration
+  const columns: ColumnsType<Exam> = [
+    {
+      title: 'Bài kiểm tra',
+      dataIndex: 'title',
+      key: 'title',
+      width: 250,
+      render: (title: string, record: Exam) => (
+        <div>
+          <div className="font-semibold text-gray-900 truncate max-w-[200px]">
+            {title}
+          </div>
+          <div className="text-xs text-gray-500">ID: {record.id}</div>
+        </div>
+      ),
+    },
+    {
+      title: 'Loại',
+      dataIndex: 'examType',
+      key: 'examType',
+      width: 150,
+      align: 'center',
+      render: (examType: string) => {
+        const isVirtual = examType === 'VIRTUAL';
+        const isPractice = examType === 'PRACTICE';
+        return (
+          <Tag color={isVirtual ? 'blue' : isPractice ? 'cyan' : 'purple'}>
+            {isVirtual ? 'Phỏng Vấn Ảo' : isPractice ? 'Luyện Tập' : 'Sơ Loại'}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 150,
+      align: 'center',
+      render: (_: string, record: Exam) => {
+        const rt = runtimeStateOf(record);
+        if (rt === 'UPCOMING') {
+          return <Tag color="warning">Sắp diễn ra</Tag>;
+        }
+        if (rt === 'ONGOING') {
+          return <Tag color="success">Đang diễn ra</Tag>;
+        }
+        return <Tag color="purple">Đã thi</Tag>;
+      },
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
+      width: 250,
+      align: 'center',
+      render: (_: unknown, record: Exam) => {
+        const rt = runtimeStateOf(record);
+        const isVirtual = record.examType === 'VIRTUAL';
+
+        return (
+          <div className="flex gap-2 justify-center">
+            {isVirtual ? (
+              <>
+                {rt === 'ONGOING' && (
+                  <Button type="primary" size="small">
+                    Thi lại
+                  </Button>
+                )}
+                {rt === 'DONE' && (
+                  <>
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{ backgroundColor: '#9333ea' }}
+                      onClick={() => onResult?.(record.id)}
+                    >
+                      Kết quả
+                    </Button>
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => onDetails?.(record.id)}
+                    >
+                      Chi tiết
+                    </Button>
+                  </>
+                )}
+                {rt === 'UPCOMING' && (
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => onDetails?.(record.id)}
+                  >
+                    Chi tiết
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                {rt === 'UPCOMING' && (
+                  <Button type="link" size="small">
+                    Xem thông tin
+                  </Button>
+                )}
+                {rt === 'ONGOING' && (
+                  <Button type="primary" size="small">
+                    Vào thi
+                  </Button>
+                )}
+                {rt === 'DONE' && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    style={{ backgroundColor: '#9333ea' }}
+                  >
+                    Xem kết quả
+                  </Button>
+                )}
+                <Button type="link" size="small">
+                  Chi tiết
+                </Button>
+              </>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-2 mb-4">
         <span aria-hidden className="text-lg">📝</span>
         <h3 className="text-lg font-semibold text-gray-800 m-0">
-          Danh sách bài kiểm tra — {total} mục
+          Danh sách bài kiểm tra — {filtered.length} mục
         </h3>
       </div>
 
       <ExamFilter
         examType={examType}
-        onExamTypeChange={(v) => {
-          setExamType(v);
-          setPage(1);
-        }}
+        onExamTypeChange={setExamType}
         examTypeOptions={examTypeOptions}
         field={field}
-        onFieldChange={(v) => {
-          setField(v);
-          setPage(1);
-        }}
+        onFieldChange={setField}
         fieldOptions={fieldOptions}
         topic={topic}
-        onTopicChange={(v) => {
-          setTopic(v);
-          setPage(1);
-        }}
+        onTopicChange={setTopic}
         topicOptions={topicOptions}
-        page={currentPage}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={setPage}
-        onPageSizeChange={(s) => {
-          setPageSize(s);
-          setPage(1);
-        }}
         search={search}
-        onSearchChange={(v) => {
-          setSearch(v);
-          setPage(1);
-        }}
+        onSearchChange={setSearch}
         onReset={resetFilters}
       />
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-gray-50">
-              {[
-                'Bài kiểm tra',
-                'Loại',
-                'Field',
-                'Topic',
-                'Loại câu hỏi',
-                'Thời lượng',
-                'Trạng thái',
-                'Hành động',
-              ].map((th) => (
-                <th
-                  key={th}
-                  className={`px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wider border-b-2 border-gray-200 ${
-                    th === 'Bài kiểm tra' ||
-                    th === 'Field' ||
-                    th === 'Topic' ||
-                    th === 'Loại câu hỏi'
-                      ? 'text-left'
-                      : 'text-center'
-                  } whitespace-nowrap`}
-                >
-                  {th}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {pageData.map((ex: Exam) => {
-              const topics = parseJsonArray(ex.topics);
-              const qTypes = parseJsonArray(ex.questionTypes);
-              const rt = runtimeStateOf(ex);
-
-              return (
-                <tr
-                  key={ex.id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-3 py-2">
-                    <div className="font-semibold text-gray-900 truncate max-w-[200px]">
-                      {ex.title}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      ID: {ex.id}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      ex.examType === 'VIRTUAL'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-purple-100 text-purple-800'
-                    }`}>
-                      {ex.examType === 'VIRTUAL' ? 'Phỏng vấn ảo' : 'Kiểm tra sơ loại'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-sm text-gray-900">
-                    {ex.position || (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 truncate max-w-[180px]">
-                    {topics.length ? (
-                      <div className="flex flex-wrap">
-                        {topics.map((t) => (
-                          <span key={t} className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full mr-1 mb-1">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 truncate max-w-[180px]">
-                    {qTypes.length ? (
-                      <div className="flex flex-wrap">
-                        {qTypes.map((t) => (
-                          <span key={t} className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full mr-1 mb-1">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-center text-sm text-gray-900 whitespace-nowrap">
-                    {formatDuration(ex.duration)}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    {rt === 'UPCOMING' && (
-                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Sắp diễn ra
-                      </span>
-                    )}
-                    {rt === 'ONGOING' && (
-                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Đang diễn ra
-                      </span>
-                    )}
-                    {rt === 'DONE' && (
-                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                        Đã thi
-                      </span>
-                    )}
-                    {rt === 'INACTIVE' && (
-                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        Tạm dừng
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-center whitespace-nowrap">
-                    <div className="flex gap-2 justify-center">
-                      {ex.examType === 'VIRTUAL' ? (
-                        rt === 'ONGOING' ? (
-                          <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
-                            Tham gia
-                          </button>
-                        ) : rt === 'DONE' ? (
-                          <button className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors">
-                            Mở
-                          </button>
-                        ) : (
-                          <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
-                            Chi tiết
-                          </button>
-                        )
-                      ) : (
-                        <>
-                          {rt === 'UPCOMING' && (
-                            <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
-                              Xem thông tin
-                            </button>
-                          )}
-                          {rt === 'ONGOING' && (
-                            <button className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
-                              Vào thi
-                            </button>
-                          )}
-                          {rt === 'DONE' && (
-                            <button className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors">
-                              Xem kết quả
-                            </button>
-                          )}
-                          <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
-                            Chi tiết
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {pageData.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="px-6 py-8 text-center text-sm text-gray-500"
-                >
-                  Không có dữ liệu phù hợp bộ lọc.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        dataSource={filtered}
+        rowKey="id"
+        pagination={{
+          defaultPageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} của ${total} mục`,
+          locale: {
+            items_per_page: '/ trang',
+            jump_to: 'Đến trang',
+            page: '',
+          },
+        }}
+        locale={{
+          emptyText: (
+            <div className="py-8 text-center">
+              <span className="text-4xl mb-2 block" role="img" aria-label="empty">
+                📝
+              </span>
+              <p className="text-gray-500">Không có dữ liệu phù hợp bộ lọc.</p>
+            </div>
+          ),
+        }}
+        scroll={{ x: 1000 }}
+      />
     </section>
   );
 };

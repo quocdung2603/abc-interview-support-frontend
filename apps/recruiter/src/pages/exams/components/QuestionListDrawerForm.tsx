@@ -45,11 +45,11 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
       try {
         setLoading(true);
         const response = await questionService.getAllQuestions();
-        
+
         // Debug response structure
         console.log('API Response:', response);
         console.log('Response data:', response?.data);
-        
+
         // Handle different response structures
         let questionsData: Question[] = [];
         if (Array.isArray(response.content)) {
@@ -94,6 +94,10 @@ const QuestionListDrawerForm: React.FC<QuestionListDrawerFormProps> = ({
 
     if (selectedLevel) {
       filtered = filtered.filter(q => q.levelId === selectedLevel);
+    }
+
+    if (selectedQuestionType) {
+      filtered = filtered.filter(q => q.questionTypeId === selectedQuestionType);
     }
 
     if (searchText) {

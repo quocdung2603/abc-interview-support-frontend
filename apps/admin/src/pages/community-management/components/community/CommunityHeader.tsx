@@ -21,10 +21,10 @@ const CommunityHeader: React.FC<PageHeaderProps> = ({ onCreate }) => {
             className="text-heading-2 text-gradient-primary"
             style={{ marginBottom: 'var(--spacing-sm)' }}
           >
-            Quản lý người dùng
+            Quản lý cộng đồng
           </div>
           <div className="text-body text-neutral-600">
-            Xem, chỉnh sửa và quản lý các tài khoản người dùng.
+            Xem, chỉnh sửa và quản lý các bài viết cộng đồng.
           </div>
         </div>
         <Button
@@ -39,7 +39,7 @@ const CommunityHeader: React.FC<PageHeaderProps> = ({ onCreate }) => {
             minWidth: '140px',
           }}
         >
-          Tạo lĩnh vực mới
+          Tạo bài viết cộng đồng mới
         </Button>
       </div>
 

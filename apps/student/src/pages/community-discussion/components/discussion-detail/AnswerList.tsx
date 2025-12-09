@@ -31,7 +31,8 @@ const AnswerList: React.FC<AnswerListProps> = ({
   useEffect(() => {
     const fetchAuthors = async () => {
       const authorPromises = answers.map(async (answer) => {
-        if (authors[answer.userId]) return; // Already fetched
+        // Skip if userId is undefined or already fetched
+        if (!answer.userId || authors[answer.userId]) return;
 
         try {
           const user = await userService.getUserById(answer.userId.toString());
@@ -125,11 +126,11 @@ const AnswerList: React.FC<AnswerListProps> = ({
 
       {/* Answers List - Tighter spacing */}
       <div className="space-y-2 mb-4">
-        {answers.map((answer) => (
+        {answers.map((answer, index) => (
           <AnswerItem
-            key={answer.id}
+            key={`${answer.id}-${answer.createdAt}-${index}`}
             answer={answer}
-            author={authors[answer.userId] || { name: `User ${answer.userId}`, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' }}
+            author={authors[answer.userId || 0] || { name: `User ${answer.userId || 'Unknown'}`, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' }}
             onVote={onVote}
           />
         ))}

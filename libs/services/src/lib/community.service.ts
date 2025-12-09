@@ -56,6 +56,10 @@ export class CommunityService {
 
   async createPost(data: {
     userId: number;
+    topicId: number;
+    levelId: number;
+    fieldId: number;
+    postType: 'DISCUSSION' | 'QUESTION';
     title: string;
     content: string;
     lockTime: string;
@@ -66,6 +70,87 @@ export class CommunityService {
         Authorization: `Bearer ${token}`,
       },
     });
+    return response.data;
+  }
+
+  async createDiscussionPost(
+    userId: number,
+    data: {
+      fieldId: number;
+      topicId: number;
+      levelId: number;
+      postType: 'DISCUSSION' | 'QUESTION';
+      title: string;
+      content: string;
+      lockTime: null;
+    }
+  ) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+
+    const response = await this.apiClient.post('/posts', data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-User-Id': userId.toString(),
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  }
+
+  async getPostComments(postId: number) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.get(`/comments/post/${postId}`, {
+      params: {
+        page: 0,
+        size: 1000,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }
+
+  async createPostComment(data: {
+    postId: number;
+    userId: number;
+    content: string;
+  }) {
+    const token = this.getToken();
+    const response = await this.apiClient.post('/comments', data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }
+
+  async voteComments(
+    commentId: number,
+    data: {
+      userId: number;
+      voteType: 'USEFUL' | 'NOT_USEFUL';
+    }
+  ) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.post(
+      `/comments/${commentId}/vote`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   }
 }
