@@ -39,13 +39,14 @@ const QuestionTabs: React.FC<QuestionTabsProps> = ({
     setEditMode(true);
     setEditData({
       questionId: question.id,
-      title: question.questionContent,
-      content: question.questionContent, // Using questionContent for both title and content since API doesn't separate them
-      fieldId: question.fieldId,
+      userId: question.userId,
       topicId: question.topicId,
+      fieldId: question.fieldId,
       levelId: question.levelId,
       questionTypeId: question.questionTypeId,
-      answers: [], // TODO: Parse questionAnswer if it's JSON, otherwise leave empty
+      content: question.questionContent,
+      answer: question.questionAnswer,
+      language: question.language,
     });
     setDrawerOpen(true);
   }, []);

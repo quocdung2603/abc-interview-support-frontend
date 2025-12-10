@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Progress, Modal, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { QuestionInExam, Answer, Exam } from '@abc-interview-support-frontend/types';
-import { examService } from '@abc-interview-support-frontend/services';
+import { examService, userService } from '@abc-interview-support-frontend/services';
 import { ExamDetailHeader, ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
@@ -170,6 +170,14 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     try {
       await examService.submitExamAnswers(userId, examIdNum, userAnswers);
       message.success('Bài kiểm tra đã được nộp thành công!');
+      const eloUpdateData: any = {
+        userId: userId,
+        action: 'EXAM_COMPLETED',
+        points: Number(exam?.levelId || 1),
+        description: 'Hoàn thành bài kiểm tra. Giữ vững phong độ!',
+      }
+      await userService.updateElo(eloUpdateData);
+      message.success('Đã cập nhật điểm ELO cho người dùng!');
     } catch (error) {
       console.error('Error submitting exam:', error);
       message.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');

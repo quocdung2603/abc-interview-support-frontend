@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Post, Field, Level, Topic, DiscussionAnswer } from '@abc-interview-support-frontend/types';
-import { questionService, communityService } from '@abc-interview-support-frontend/services';
+import { questionService, communityService, userService } from '@abc-interview-support-frontend/services';
 import DiscussionTimer from './components/discussion-detail/DiscussionTimer';
 import DiscussionQuestion from './components/discussion-detail/DiscussionQuestion';
 import VoteRemaining from './components/discussion-detail/VoteRemaining';
@@ -180,7 +180,6 @@ const DiscussionDetails = (
 
       // Call the vote API
       const updatedComment = await communityService.voteComments(answerId, voteData);
-      console.log('API response after vote:', updatedComment);
 
       // Update the local state with the response from API
       setAnswers((prev) =>
@@ -188,27 +187,30 @@ const DiscussionDetails = (
           if (answer.id === answerId) {
             console.log('Updating answer:', answer.id, 'with new data:', updatedComment);
 
-            // If API doesn't return updated vote statistics, calculate locally
-            if (updatedComment && typeof updatedComment.voteCount === 'number') {
+            // Always preserve the original answer content and merge with API response
+            const currentAnswer = prev.find(a => a.id === answerId);
+            if (!currentAnswer) return answer;
+
+            // If API returns full comment data, use it but ensure content is preserved
+            if (updatedComment && typeof updatedComment === 'object') {
               return {
-                ...updatedComment,
-                userVoteStatus: apiVoteType // Mark that user has voted
+                ...currentAnswer, // Preserve all original data including content
+                ...updatedComment, // Override with API response (vote stats, etc.)
+                userVoteStatus: apiVoteType, // Mark that user has voted
+                // Ensure content is never lost
+                content: updatedComment.content || currentAnswer.content,
               };
             } else {
-              // Fallback: increment vote count locally
-              const currentAnswer = prev.find(a => a.id === answerId);
-              if (currentAnswer) {
-                return {
-                  ...currentAnswer,
-                  voteCount: currentAnswer.voteCount + 1,
-                  userVoteStatus: apiVoteType, // Mark that user has voted
-                  // Recalculate percentage (this is approximate)
-                  votePercentage: voteType === 'up' ?
-                    Math.min(1, ((currentAnswer.voteCount + 1) / (currentAnswer.voteCount + 1))) :
-                    currentAnswer.votePercentage
-                };
-              }
-              return answer;
+              // Fallback: increment vote count locally, preserve all other data
+              return {
+                ...currentAnswer,
+                voteCount: currentAnswer.voteCount + 1,
+                userVoteStatus: apiVoteType, // Mark that user has voted
+                // Recalculate percentage (this is approximate)
+                votePercentage: voteType === 'up' ?
+                  Math.min(1, ((currentAnswer.voteCount + 1) / (currentAnswer.voteCount + 1))) :
+                  currentAnswer.votePercentage
+              };
             }
           }
           return answer;
@@ -220,6 +222,14 @@ const DiscussionDetails = (
 
       // Show success message
       message.success('Đã vote thành công!');
+      const eloUpdateData: any = {
+        userId: Number(user.userId),
+        action: 'COMMENT_VOTED',
+        points: 1,
+        description: 'Nhận điểm ELO vì bình luận được vote!',
+      }
+      await userService.updateElo(eloUpdateData);
+      message.success('Đã cập nhật điểm ELO cho bạn! Tích cực vote các bình luận hữu ích nhé!');
     } catch (error: any) {
       console.error('Error voting:', error);
       console.error('Error details:', {

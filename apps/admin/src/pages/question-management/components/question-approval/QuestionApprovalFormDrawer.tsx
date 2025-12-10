@@ -95,6 +95,14 @@ const QuestionApprovalFormDrawer: React.FC<FormDrawerProps> = ({
       if (decision === 'approve') {
         await questionService.approveQuestion(data.id);
         message.success('Đã duyệt câu hỏi thành công!');
+        const eloUpdateData: any = {
+          userId: data.userId,
+          points: 50,
+          action: 'QUESTION_APPROVED',
+          description: 'Câu hỏi được duyệt thành công! Cảm ơn bạn đã đóng góp.',
+        }
+        await userService.updateElo(eloUpdateData);
+        message.success('Đã cập nhật ELO cho người dùng!');
       } else if (decision === 'reject') {
         await questionService.rejectQuestion(data.id);
         message.success('Đã từ chối câu hỏi!');

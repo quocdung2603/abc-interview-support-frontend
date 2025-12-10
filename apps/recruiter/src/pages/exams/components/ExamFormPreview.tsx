@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Tag, Tabs, Table, message } from 'antd';
+import { Drawer, Tag, Tabs, Table, message, Modal, Button, Descriptions } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import { Exam, QuestionType } from '@abc-interview-support-frontend/types';
-import { examService } from '@abc-interview-support-frontend/services';
+import { Exam, QuestionType, User } from '@abc-interview-support-frontend/types';
+import { examService, userService } from '@abc-interview-support-frontend/services';
 
 interface ExamFormPreviewProps {
   visible: boolean;
@@ -17,6 +17,7 @@ interface Registration {
   userId: number;
   registrationStatus: string;
   registeredAt: string;
+  userName?: string; // Thêm field để lưu tên user
 }
 
 const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
@@ -29,6 +30,8 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
   const [loading, setLoading] = useState(false);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [userDetailModalVisible, setUserDetailModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchExamDetail = async () => {
@@ -62,7 +65,27 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
         try {
           const response = await examService.getRegistrationByExam(exam.id.toString());
           console.log('Registrations API Response:', response);
-          setRegistrations(response.content || []);
+
+          // Fetch user details for each registration
+          const registrationsWithNames = await Promise.all(
+            (response.content || []).map(async (registration: Registration) => {
+              try {
+                const userResponse = await userService.getUserById(registration.userId.toString());
+                return {
+                  ...registration,
+                  userName: userResponse.fullName || `User ${registration.userId}`,
+                };
+              } catch (error) {
+                console.error(`Error fetching user ${registration.userId}:`, error);
+                return {
+                  ...registration,
+                  userName: `User ${registration.userId}`,
+                };
+              }
+            })
+          );
+
+          setRegistrations(registrationsWithNames);
         } catch (error) {
           console.error('Error fetching registrations:', error);
           message.error('Không thể tải danh sách thí sinh');
@@ -77,30 +100,17 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
 
     fetchRegistrations();
   }, [exam, visible]);
-  // Mock data cho danh sách thí sinh
-  const mockCandidates = [
-    {
-      id: 1,
-      name: 'Nguyễn Văn A',
-      email: 'nguyenvana@example.com',
-      status: 'Hoàn thành',
-      score: 85,
-    },
-    {
-      id: 2,
-      name: 'Trần Thị B',
-      email: 'tranthib@example.com',
-      status: 'Đang làm',
-      score: null,
-    },
-    {
-      id: 3,
-      name: 'Lê Văn C',
-      email: 'levanc@example.com',
-      status: 'Chưa bắt đầu',
-      score: null,
-    },
-  ];
+
+  const handleViewUser = async (userId: number) => {
+    try {
+      const userResponse = await userService.getUserById(userId.toString());
+      setSelectedUser(userResponse);
+      setUserDetailModalVisible(true);
+    } catch (error) {
+      console.error('Error fetching user detail:', error);
+      message.error('Không thể tải thông tin người dùng');
+    }
+  };
 
   const questionColumns = [
     {
@@ -182,9 +192,15 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
       width: 60,
     },
     {
-      title: 'User ID',
-      dataIndex: 'userId',
-      key: 'userId',
+      title: 'Tên thí sinh',
+      dataIndex: 'userName',
+      key: 'userName',
+      render: (text: string) => <span className="font-medium">{text}</span>,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
     {
       title: 'Trạng thái đăng ký',
@@ -204,6 +220,19 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
       dataIndex: 'registeredAt',
       key: 'registeredAt',
       render: (date: string) => new Date(date).toLocaleString('vi-VN'),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (_:any, record: Registration) => (
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewUser(record.userId)}
+          className="text-blue-600 hover:text-blue-800"
+        >
+        </Button>
+      ),
     },
   ];
 
@@ -366,6 +395,31 @@ const ExamFormPreview: React.FC<ExamFormPreviewProps> = ({
       width={900}
     >
       {exam && <Tabs defaultActiveKey="info" items={tabItems} />}
+
+      {/* User Detail Modal */}
+      <Modal
+        title="Chi tiết thí sinh"
+        open={userDetailModalVisible}
+        onCancel={() => setUserDetailModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setUserDetailModalVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={600}
+      >
+        {selectedUser && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Họ và tên">{selectedUser.fullName}</Descriptions.Item>
+            <Descriptions.Item label="Email">{selectedUser.email}</Descriptions.Item>
+            <Descriptions.Item label="Ngày sinh">
+              {selectedUser.dateOfBirth ? new Date(selectedUser.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Địa chỉ">{selectedUser.address || 'Chưa cập nhật'}</Descriptions.Item>
+            <Descriptions.Item label="Điểm Elo">{selectedUser.eloScore || 'Chưa cập nhật'}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </Drawer>
   );
 };

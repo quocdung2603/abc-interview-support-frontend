@@ -10,6 +10,8 @@ import CareerCard from './CareerCard';
 import CreateCareerModal from './CreateCareerModal';
 import EditCareerModal from './EditCareerModal';
 import DetailCareerModal from './DetailCareerModal';
+import FloatButtonCareer from './FloatButtonCareer';
+import ChatModalCareer from './ChatModalCareer';
 
 const CareerTabs: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ const CareerTabs: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
   const [selectedCareer, setSelectedCareer] = useState<CareerPreference | null>(
     null
   );
@@ -187,6 +190,10 @@ const CareerTabs: React.FC = () => {
     setSelectedCareer(null);
   };
 
+  const handleToggleChatModal = () => {
+    setShowChatModal(!showChatModal);
+  };
+
   const handleDeleteCareer = async (careerId: number) => {
     const confirmed = window.confirm(
       '⚠️ Bạn có chắc chắn muốn xóa định hướng nghề nghiệp này?'
@@ -329,6 +336,18 @@ const CareerTabs: React.FC = () => {
         fields={fieldList}
         topics={topicList}
         onClose={handleCloseDetailModal}
+      />
+
+      {/* Chat Modal */}
+      <ChatModalCareer
+        isOpen={showChatModal}
+        onClose={() => setShowChatModal(false)}
+      />
+
+      {/* Float Button */}
+      <FloatButtonCareer
+        onClick={handleToggleChatModal}
+        isModalOpen={showChatModal}
       />
     </>
   );

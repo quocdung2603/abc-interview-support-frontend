@@ -279,6 +279,15 @@ const NewsApprovalFormDrawer: React.FC<PreviewDrawerProps> = ({
       if (values.decision === 'Approve') {
         await newsService.approveNews(newsId);
         message.success('Đã duyệt tin tức thành công!');
+        const eloUpdateData: any = {
+          userId: userId,
+          action: 'NEWS_APPROVED',
+          points: 30,
+          description: 'Tin tức được duyệt thành công! Cảm ơn bạn đã đóng góp.',
+        }
+        await userService.updateElo(eloUpdateData);
+        message.success('Đã cập nhật điểm ELO cho người dùng!');
+
       } else {
         await newsService.rejectNews(newsId);
         message.success('Đã từ chối tin tức thành công!');

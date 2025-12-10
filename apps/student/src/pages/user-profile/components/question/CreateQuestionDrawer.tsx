@@ -9,6 +9,7 @@ import {
   message,
 } from 'antd';
 import { Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
+import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 const { TextArea } = Input;
 
@@ -25,29 +26,26 @@ interface CreateQuestionDrawerProps {
 }
 
 export interface CreateQuestionData {
-  title: string;
-  content: string;
-  fieldId: number;
+  userId: number;
   topicId: number;
+  fieldId: number;
   levelId: number;
   questionTypeId: number;
-  answers?: AnswerData[];
+  content: string;
+  answer: string;
+  language: string;
 }
 
 export interface EditQuestionData {
   questionId?: number;
-  title: string;
-  content: string;
-  fieldId: number;
+  userId: number;
   topicId: number;
+  fieldId: number;
   levelId: number;
   questionTypeId: number;
-  answers?: AnswerData[];
-}
-
-export interface AnswerData {
   content: string;
-  isCorrect: boolean;
+  answer: string;
+  language: string;
 }
 
 const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
@@ -61,6 +59,7 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
   editMode = false,
   editData,
 }) => {
+  const { user: authUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -71,8 +70,8 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
   useEffect(() => {
     if (editMode && editData && open) {
       form.setFieldsValue({
-        title: editData.title,
         content: editData.content,
+        answer: editData.answer,
         fieldId: editData.fieldId,
         topicId: editData.topicId,
         levelId: editData.levelId,
@@ -109,17 +108,24 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
       setLoading(true);
       const values = await form.validateFields();
 
-      const questionData: Partial<CreateQuestionData> = {
-        title: values.title,
-        content: values.content,
-        fieldId: values.fieldId,
+      if (!authUser?.userId) {
+        message.error('Không thể xác định người dùng. Vui lòng đăng nhập lại!');
+        return;
+      }
+
+      const questionData: CreateQuestionData = {
+        userId: Number(authUser.userId),
         topicId: values.topicId,
+        fieldId: values.fieldId,
         levelId: values.levelId,
         questionTypeId: values.questionTypeId,
+        content: values.content,
+        answer: values.answer || '', // Get answer from form, default to empty string
+        language: 'Vietnamese',
       };
 
-      await onSubmit(questionData as CreateQuestionData);
-      message.success('Tạo câu hỏi thành công!');
+      await onSubmit(questionData);
+      message.success(editMode ? 'Cập nhật câu hỏi thành công!' : 'Tạo câu hỏi thành công!');
       handleClose();
     } catch (error) {
       console.error('Error creating question:', error);
@@ -158,7 +164,7 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
       icon: '📋',
     },
     {
-      title: 'Nội dung câu hỏi',
+      title: 'Nội dung & đáp án',
       icon: '❓',
     },
   ];
@@ -337,32 +343,11 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
                   Nội dung câu hỏi
                 </h4>
                 <p className="text-xs text-green-700 m-0">
-                  Điền nội dung chi tiết của câu hỏi
+                  Điền nội dung chi tiết câu hỏi và đáp án mẫu (tùy chọn)
                 </p>
               </div>
             </div>
           </div>
-
-          <Form.Item
-            label={
-              <span className="font-semibold">
-                <span className="text-red-500">* </span>Tiêu đề câu hỏi
-              </span>
-            }
-            name="title"
-            rules={[
-              { required: true, message: 'Vui lòng nhập tiêu đề!' },
-              { min: 10, message: 'Tiêu đề phải có ít nhất 10 ký tự!' },
-              { max: 200, message: 'Tiêu đề không được quá 200 ký tự!' },
-            ]}
-          >
-            <Input
-              placeholder="Nhập tiêu đề câu hỏi..."
-              size="large"
-              showCount
-              maxLength={200}
-            />
-          </Form.Item>
 
           <Form.Item
             label={
@@ -372,14 +357,33 @@ const CreateQuestionDrawer: React.FC<CreateQuestionDrawerProps> = ({
             }
             name="content"
             rules={[
-              { required: true, message: 'Vui lòng nhập nội dung!' },
-              { min: 20, message: 'Nội dung phải có ít nhất 20 ký tự!' },
+              { required: true, message: 'Vui lòng nhập nội dung câu hỏi!' },
+              { min: 10, message: 'Nội dung phải có ít nhất 10 ký tự!' },
               { max: 2000, message: 'Nội dung không được quá 2000 ký tự!' },
             ]}
           >
             <TextArea
               placeholder="Viết nội dung chi tiết câu hỏi..."
               rows={6}
+              showCount
+              maxLength={2000}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <span className="font-semibold">
+                Đáp án mẫu
+              </span>
+            }
+            name="answer"
+            rules={[
+              { max: 2000, message: 'Đáp án không được quá 2000 ký tự!' },
+            ]}
+          >
+            <TextArea
+              placeholder="Viết đáp án mẫu cho câu hỏi (tùy chọn)..."
+              rows={4}
               showCount
               maxLength={2000}
             />

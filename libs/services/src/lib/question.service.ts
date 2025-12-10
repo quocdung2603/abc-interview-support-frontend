@@ -311,7 +311,7 @@ export class QuestionService {
     const response = await this.apiClient.get('/questions', {
       params: {
         page: 0,
-        size: 100,
+        size: 1000,
       },
     });
     return response.data;
@@ -401,7 +401,7 @@ export class QuestionService {
       {
         params: {
           page: 0,
-          size: 100,
+          size: 10000,
         },
       }
     );

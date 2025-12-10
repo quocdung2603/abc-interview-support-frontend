@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { message } from 'antd';
 
 // Import types
 import { User, EloHistory, ExamResult, Field, Topic, Level, QuestionType, Post, News, Question } from '@abc-interview-support-frontend/types';
@@ -114,6 +115,13 @@ const UserProfile: React.FC = () => {
       setQuestionTypes(questionTypesRes.content || questionTypesRes || []);
     } catch (error) {
       console.error('Error loading filter options:', error);
+      // Show user-friendly error message
+      message.error('Không thể tải dữ liệu bộ lọc. Vui lòng thử lại sau.');
+      // Set empty arrays to prevent UI crashes
+      setFields([]);
+      setLevels([]);
+      setTopics([]);
+      setQuestionTypes([]);
     }
   }, []);
 

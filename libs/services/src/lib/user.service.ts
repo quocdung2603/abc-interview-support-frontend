@@ -76,6 +76,11 @@ export class UserService {
     );
     return response.data;
   }
+
+  async updateElo(data: any) {
+    const response = await this.apiClient.post('/users/elo', data);
+    return response.data;
+  }
 }
 
 /**

@@ -117,7 +117,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
@@ -171,7 +171,7 @@ const ExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     {
       title: 'Xác nhận',
       content: (
-        <ConfirmationStep watch={watch} />
+        <ConfirmationStep watch={watch} fields={fields} topics={topics} levels={levels} questionTypes={questionTypes} />
       ),
     },
   ];

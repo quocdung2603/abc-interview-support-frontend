@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
 import { Question, Answer } from '@abc-interview-support-frontend/types';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import ReactMarkdown from 'react-markdown';
+import { generateAIReviewPrompt } from './aiReviewPrompts';
 
 interface AIReviewModalProps {
   visible: boolean;
@@ -108,54 +110,8 @@ const AIReviewModal: React.FC<AIReviewModalProps> = ({
         })),
       };
 
-      // Create prompt for Gemini
-      const prompt = `Bạn là một chuyên gia đánh giá kết quả học tập và định hướng nghề nghiệp. Hãy phân tích kết quả bài kiểm tra sau và đưa ra nhận xét chi tiết, đánh giá năng lực và định hướng phát triển:
-
-**Thông tin bài kiểm tra:**
-- Tổng số câu hỏi: ${examData.totalQuestions}
-- Số câu trả lời đúng: ${examData.correctAnswers}
-- Số câu trả lời sai: ${examData.incorrectAnswers}
-- Điểm số: ${examData.scorePercentage}%
-- Thời gian hoàn thành: ${examData.timeSpent} phút
-
-**Chi tiết câu hỏi và câu trả lời:**
-${examData.questions.map((q, idx) => `
-Câu ${idx + 1}:
-- Nội dung: ${q.content}
-- Chủ đề: ${q.topic}
-- Lĩnh vực: ${q.field}
-- Cấp độ: ${q.level}
-- Loại câu hỏi: ${q.type}
-- Câu trả lời của thí sinh: ${q.userAnswer}
-- Đáp án đúng: ${q.correctAnswer}
-`).join('\n')}
-
-Hãy phân tích và đưa ra:
-
-1. **ĐÁNH GIÁ TỔNG QUAN** (2-3 câu): Nhận xét về kết quả tổng thể, điểm mạnh và điểm yếu
-
-2. **PHÂN TÍCH CHI TIẾT**:
-   - Phân tích theo chủ đề: Chủ đề nào làm tốt, chủ đề nào cần cải thiện
-   - Phân tích theo cấp độ: Đánh giá khả năng ở các mức độ khó khác nhau
-   - Phân tích theo loại câu hỏi: Loại câu hỏi nào làm tốt nhất
-
-3. **ĐIỂM MẠNH**: Liệt kê 2-3 điểm mạnh cụ thể dựa trên kết quả
-
-4. **ĐIỂM CẦN CẢI THIỆN**: Liệt kê 2-3 điểm cần cải thiện cụ thể và giải thích tại sao
-
-5. **LỘ TRÌNH HỌC TẬP**: 
-   - Đề xuất 3-4 hướng học tập ưu tiên
-   - Gợi ý tài nguyên học tập phù hợp
-   - Thời gian dự kiến để cải thiện
-
-6. **ĐỊNH HƯỚNG NGHỀ NGHIỆP**:
-   - Đánh giá mức độ sẵn sàng cho vị trí công việc dựa trên kết quả
-   - Gợi ý vị trí phù hợp với năng lực hiện tại
-   - Các kỹ năng cần bổ sung để đạt mục tiêu nghề nghiệp
-
-7. **KẾ HOẠCH HÀNH ĐỘNG**: 3-5 bước cụ thể để cải thiện trong 1-3 tháng tới
-
-Hãy viết bằng tiếng Việt, tone thân thiện, động viên và mang tính xây dựng. Sử dụng emoji phù hợp để dễ đọc hơn.`;
+      // Generate prompt using imported function
+      const prompt = generateAIReviewPrompt(examData);
 
       const aiResponse = await callGeminiAPI(prompt);
       setAiReview(aiResponse);
@@ -167,65 +123,7 @@ Hãy viết bằng tiếng Việt, tone thân thiện, động viên và mang t�
     }
   };
 
-  const formatReviewText = (text: string) => {
-    return text.split('\n').map((line, index) => {
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return (
-          <div
-            key={index}
-            style={{ fontWeight: '600', margin: '0.5rem 0', color: '#1e293b' }}
-          >
-            {line.replace(/\*\*/g, '')}
-          </div>
-        );
-      } else if (line.startsWith('•') || line.startsWith('-')) {
-        return (
-          <div
-            key={index}
-            style={{
-              margin: '0.25rem 0',
-              paddingLeft: '1rem',
-              color: '#64748b',
-            }}
-          >
-            {line}
-          </div>
-        );
-      } else if (
-        line.startsWith('🎯') ||
-        line.startsWith('⏱️') ||
-        line.startsWith('📊') ||
-        line.startsWith('🔍') ||
-        line.startsWith('🚀') ||
-        line.startsWith('💡')
-      ) {
-        return (
-          <div
-            key={index}
-            style={{
-              fontWeight: '600',
-              margin: '1rem 0 0.5rem 0',
-              color: '#0ea5e9',
-              fontSize: '1.1rem',
-            }}
-          >
-            {line}
-          </div>
-        );
-      } else if (line.trim() === '') {
-        return <div key={index} style={{ height: '0.5rem' }} />;
-      }
 
-      return (
-        <div
-          key={index}
-          style={{ margin: '0.25rem 0', color: '#374151', lineHeight: '1.6' }}
-        >
-          {line}
-        </div>
-      );
-    });
-  };
 
   return (
     <Modal
@@ -301,8 +199,142 @@ Hãy viết bằng tiếng Việt, tone thân thiện, động viên và mang t�
             borderRadius: '0.75rem',
             border: '1px solid #e2e8f0',
           }}
+          className="prose prose-sm max-w-none"
         >
-          {formatReviewText(aiReview)}
+          <ReactMarkdown
+            components={{
+              // Custom styling for markdown elements
+              p: ({ children }) => (
+                <p style={{ margin: '0.5rem 0', color: '#374151', lineHeight: '1.6' }}>
+                  {children}
+                </p>
+              ),
+              ul: ({ children }) => (
+                <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', listStyleType: 'decimal' }}>
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => (
+                <li style={{ margin: '0.25rem 0', color: '#64748b' }}>
+                  {children}
+                </li>
+              ),
+              strong: ({ children }) => (
+                <strong style={{ fontWeight: '600', color: '#1e293b' }}>
+                  {children}
+                </strong>
+              ),
+              em: ({ children }) => (
+                <em style={{ fontStyle: 'italic', color: '#64748b' }}>
+                  {children}
+                </em>
+              ),
+              code: ({ children }) => (
+                <code
+                  style={{
+                    background: '#e2e8f0',
+                    padding: '0.125rem 0.25rem',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.875rem',
+                    fontFamily: 'monospace',
+                    color: '#0f172a',
+                  }}
+                >
+                  {children}
+                </code>
+              ),
+              pre: ({ children }) => (
+                <pre
+                  style={{
+                    background: '#e2e8f0',
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    overflowX: 'auto',
+                    margin: '1rem 0',
+                  }}
+                >
+                  {children}
+                </pre>
+              ),
+              h1: ({ children }) => (
+                <h1
+                  style={{
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    margin: '1.5rem 0 0.75rem 0',
+                    color: '#0ea5e9',
+                  }}
+                >
+                  {children}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    margin: '1.25rem 0 0.5rem 0',
+                    color: '#0ea5e9',
+                  }}
+                >
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    margin: '1rem 0 0.5rem 0',
+                    color: '#0284c7',
+                  }}
+                >
+                  {children}
+                </h3>
+              ),
+              h4: ({ children }) => (
+                <h4
+                  style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    margin: '0.75rem 0 0.5rem 0',
+                    color: '#0369a1',
+                  }}
+                >
+                  {children}
+                </h4>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote
+                  style={{
+                    borderLeft: '4px solid #0ea5e9',
+                    paddingLeft: '1rem',
+                    fontStyle: 'italic',
+                    margin: '1rem 0',
+                    color: '#64748b',
+                  }}
+                >
+                  {children}
+                </blockquote>
+              ),
+              hr: () => (
+                <hr
+                  style={{
+                    border: 'none',
+                    borderTop: '1px solid #e2e8f0',
+                    margin: '1.5rem 0',
+                  }}
+                />
+              ),
+            }}
+          >
+            {aiReview}
+          </ReactMarkdown>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Descriptions, Tag } from 'antd';
 import { UseFormWatch } from 'react-hook-form';
-import { Exam } from '@abc-interview-support-frontend/types';
+import { Exam, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 
 // Extended interface to include UI-specific fields
 interface CreateFormFields extends Exam {
@@ -20,9 +20,13 @@ interface CreateFormFields extends Exam {
 
 interface ConfirmationStepProps {
   watch: UseFormWatch<CreateFormFields>;
+  fields: Field[];
+  topics: Topic[];
+  levels: Level[];
+  questionTypes: QuestionType[];
 }
 
-const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch }) => {
+const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch, fields, topics, levels, questionTypes }) => {
   const formData = watch();
 
   const getPositionLabel = (position: string) => {
@@ -36,15 +40,32 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch }) => {
     return labels[position] || position;
   };
 
-  const getTopicLabels = (topicIds: number[]) => {
-    const topicLabels: Record<number, string> = {
-      1: 'JavaScript',
-      2: 'React',
-      3: 'Node.js',
-      4: 'Database',
-      5: 'Algorithms',
-    };
-    return topicIds?.map(id => topicLabels[id]).filter(Boolean) || [];
+  const getFieldName = (fieldId: number) => {
+    if (!fieldId || fieldId === 0) return 'Chưa chọn';
+    const field = fields.find(f => f.id === fieldId);
+    return field?.name || `Field ${fieldId}`;
+  };
+
+  const getLevelName = (levelId: number) => {
+    if (!levelId || levelId === 0) return 'Chưa chọn';
+    const level = levels.find(l => l.id === levelId);
+    return level?.name || `Level ${levelId}`;
+  };
+
+  const getTopicNames = (topicIds: number[]) => {
+    if (!topicIds || topicIds.length === 0) return ['Chưa chọn'];
+    return topicIds.map(id => {
+      const topic = topics.find(t => t.id === id);
+      return topic?.name || `Topic ${id}`;
+    }).filter(Boolean);
+  };
+
+  const getQuestionTypeNames = (questionTypeIds: number[]) => {
+    if (!questionTypeIds || questionTypeIds.length === 0) return ['Chưa chọn'];
+    return questionTypeIds.map(id => {
+      const type = questionTypes.find(t => t.id === id);
+      return type?.name || `Type ${id}`;
+    }).filter(Boolean);
   };
 
   return (
@@ -57,10 +78,23 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch }) => {
           <Descriptions.Item label="Vị trí tuyển dụng">
             <Tag color="blue">{getPositionLabel(formData.position)}</Tag>
           </Descriptions.Item>
+          <Descriptions.Item label="Lĩnh vực">
+            <Tag color="purple">{getFieldName(formData.fieldId)}</Tag>
+          </Descriptions.Item>
+          <Descriptions.Item label="Trình độ">
+            <Tag color="orange">{getLevelName(formData.levelId)}</Tag>
+          </Descriptions.Item>
           <Descriptions.Item label="Chủ đề kiến thức">
             <div className="flex flex-wrap gap-1">
-              {getTopicLabels(formData.topicIds).map((topic) => (
+              {getTopicNames(formData.topicIds).map((topic) => (
                 <Tag key={topic} color="green">{topic}</Tag>
+              ))}
+            </div>
+          </Descriptions.Item>
+          <Descriptions.Item label="Loại câu hỏi">
+            <div className="flex flex-wrap gap-1">
+              {getQuestionTypeNames(formData.questionTypeIds).map((type) => (
+                <Tag key={type} color="cyan">{type}</Tag>
               ))}
             </div>
           </Descriptions.Item>
@@ -90,7 +124,7 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch }) => {
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Số lượng câu hỏi">
-            <strong>{formData.totalQuestions || 0}</strong> câu
+            <strong>{formData.selectedQuestions?.length || 0}</strong> câu
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -101,10 +135,10 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ watch }) => {
             Kỳ thi "{formData.title}"
           </h3>
           <p className="text-blue-700">
-            Sẽ được tạo với {formData.totalQuestions || 0} câu hỏi, thời gian {formData.duration} phút
+            Sẽ được tạo với {formData.selectedQuestions?.length || 0} câu hỏi, thời gian {formData.duration} phút
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            {getTopicLabels(formData.topicIds).map((topic) => (
+            {getTopicNames(formData.topicIds).map((topic) => (
               <Tag key={topic} color="blue">{topic}</Tag>
             ))}
           </div>

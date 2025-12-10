@@ -94,6 +94,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn lĩnh vực"
                 {...field}
+                value={field.value === 0 ? undefined : field.value}
                 className="rounded-lg"
               >
                 {fields.map((fieldItem) => (
@@ -123,6 +124,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn trình độ"
                 {...field}
+                value={field.value === 0 ? undefined : field.value}
                 className="rounded-lg"
               >
                 {levels.map((level) => (
@@ -155,8 +157,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn chủ đề"
                 {...field}
-                value={field.value?.map(String) || []}
-                onChange={(values) => field.onChange(values?.map(Number) || [])}
                 className="rounded-lg"
               >
                 {topics.map((topic) => (
@@ -189,8 +189,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn loại câu hỏi"
                 {...field}
-                value={field.value?.map(String) || []}
-                onChange={(values) => field.onChange(values?.map(Number) || [])}
                 className="rounded-lg"
               >
                 {questionTypes.map((type) => (
@@ -226,43 +224,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
             )}
           />
         </Form.Item>
-      </div>
-
-      <div>
-        <Form.Item
-          label="Số lượng câu hỏi"
-          name="totalQuestions"
-          rules={[
-            { required: true, message: 'Vui lòng nhập số lượng câu hỏi' },
-            { type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' },
-          ]}
-          className="mb-0"
-        >
-          <Controller
-            name="totalQuestions"
-            control={control}
-            rules={{
-              required: 'Vui lòng nhập số lượng câu hỏi',
-              min: { value: 1, message: 'Số lượng phải lớn hơn 0' }
-            }}
-            render={({ field }) => (
-              <Input
-                type="number"
-                size="large"
-                placeholder="10"
-                {...field}
-                className="rounded-lg"
-              />
-            )}
-          />
-        </Form.Item>
-        {errors.totalQuestions && (
-          <span className="text-red-500 text-sm mt-1 block">
-            {typeof errors.totalQuestions.message === 'string'
-              ? errors.totalQuestions.message
-              : 'Lỗi không xác định'}
-          </span>
-        )}
       </div>
     </div>
   );
