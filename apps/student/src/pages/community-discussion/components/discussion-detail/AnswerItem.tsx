@@ -157,7 +157,7 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
                 Phần trăm hữu ích
               </span>
               <div className="text-sm font-medium text-green-600">
-                {(answer.votePercentage * 100).toFixed(0)}%
+                {((answer.votePercentage >= 1 ? 1 : answer.votePercentage) * 100).toFixed(0)}%
               </div>
             </div>
           </div>

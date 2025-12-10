@@ -252,6 +252,16 @@ export class ExamService {
     );
     return response.data;
   }
+
+  async getAllExamResults(examId: string) {
+    const response = await this.apiClient.get(`/exams/${examId}/results`, {
+      params: {
+        page: 0,
+        size: 1000,
+      },
+    });
+    return response.data;
+  }
 }
 
 /**

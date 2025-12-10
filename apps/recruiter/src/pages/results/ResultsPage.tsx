@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StatisticsCards,
   ResultsFilters,
@@ -14,11 +14,14 @@ import type {
   StatisticsData,
   FiltersData,
 } from './components/types';
+import { examService } from '@abc-interview-support-frontend/services';
+import { message, Button } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 
 const ResultsPage: React.FC = () => {
   // State management
   const [filters, setFilters] = useState<FiltersData>({
-    selectedExam: 'all',
+    selectedExam: '',
     selectedStatus: 'all',
     searchText: '',
   });
@@ -26,112 +29,113 @@ const ResultsPage: React.FC = () => {
     useState<ResultsData | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
 
+  // New state for API integration
+  const [examOptions, setExamOptions] = useState<ExamOption[]>([]);
+  const [resultsData, setResultsData] = useState<ResultsData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
   // Mock verification state - replace with actual auth context
   const isVerified = true;
 
-  // Mock data
-  const examOptions: ExamOption[] = [
-    { id: 'all', title: 'Tất cả kỳ thi' },
-    { id: '1', title: 'Frontend Developer Q1/2024' },
-    { id: '2', title: 'Backend Developer' },
-    { id: '3', title: 'Fullstack Developer' },
-  ];
+  // Load exam options on component mount
+  useEffect(() => {
+    const loadExamOptions = async () => {
+      try {
+        const examsResponse = await examService.getAllExams();
+        const exams = examsResponse?.content || [];
 
-  const resultsData: ResultsData[] = [
-    {
-      id: '1',
-      name: 'Nguyễn Văn An',
-      email: 'an.nguyen@email.com',
-      phone: '0901234567',
-      examTitle: 'Frontend Developer Q1/2024',
-      score: 85,
-      rank: 1,
-      duration: 75,
-      correctAnswers: 21,
-      totalQuestions: 25,
-      accuracy: 84,
-      submittedAt: '2024-01-20T14:30:00',
-      status: 'passed',
-      topicScores: [
-        { name: 'JavaScript', score: 90 },
-        { name: 'React', score: 85 },
-        { name: 'HTML/CSS', score: 80 },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Trần Thị Bình',
-      email: 'binh.tran@email.com',
-      phone: '0901234568',
-      examTitle: 'Frontend Developer Q1/2024',
-      score: 78,
-      rank: 2,
-      duration: 85,
-      correctAnswers: 19,
-      totalQuestions: 25,
-      accuracy: 76,
-      submittedAt: '2024-01-20T15:45:00',
-      status: 'passed',
-      topicScores: [
-        { name: 'JavaScript', score: 80 },
-        { name: 'React', score: 75 },
-        { name: 'HTML/CSS', score: 78 },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Lê Minh Cường',
-      email: 'cuong.le@email.com',
-      phone: '0901234569',
-      examTitle: 'Frontend Developer Q1/2024',
-      score: 65,
-      rank: 3,
-      duration: 90,
-      correctAnswers: 16,
-      totalQuestions: 25,
-      accuracy: 64,
-      submittedAt: '2024-01-20T16:20:00',
-      status: 'passed',
-      topicScores: [
-        { name: 'JavaScript', score: 70 },
-        { name: 'React', score: 60 },
-        { name: 'HTML/CSS', score: 65 },
-      ],
-    },
-    {
-      id: '4',
-      name: 'Phạm Thu Dung',
-      email: 'dung.pham@email.com',
-      phone: '0901234570',
-      examTitle: 'Frontend Developer Q1/2024',
-      score: 45,
-      rank: 4,
-      duration: 88,
-      correctAnswers: 11,
-      totalQuestions: 25,
-      accuracy: 44,
-      submittedAt: '2024-01-20T17:10:00',
-      status: 'failed',
-      topicScores: [
-        { name: 'JavaScript', score: 50 },
-        { name: 'React', score: 40 },
-        { name: 'HTML/CSS', score: 45 },
-      ],
-    },
-  ];
+        const options: ExamOption[] = [
+          { id: '', title: 'Chọn kỳ thi...' },
+          ...exams.map((exam: any) => ({
+            id: exam.id.toString(),
+            title: exam.title,
+          })),
+        ];
+
+        setExamOptions(options);
+      } catch (error) {
+        console.error('Error loading exams:', error);
+        message.error('Không thể tải danh sách kỳ thi');
+      }
+    };
+
+    loadExamOptions();
+  }, []);
+
+  // Function to fetch exam results
+  const fetchExamResults = async (examId: string) => {
+    if (!examId) return;
+
+    setLoading(true);
+    try {
+      const response = await examService.getAllExamResults(examId);
+      const rawResults = response?.content || [];
+
+      // Process results: group by userId and take best score
+      const userBestResults = new Map<number, any>();
+
+      rawResults.forEach((result: any) => {
+        const userId = result.userId;
+        const existing = userBestResults.get(userId);
+
+        if (!existing || result.score > existing.score) {
+          userBestResults.set(userId, result);
+        }
+      });
+
+      // Convert to ResultsData format
+      const processedResults: ResultsData[] = Array.from(userBestResults.values()).map((result: any, index: number) => ({
+        id: result.id.toString(),
+        name: `User ${result.userId}`, // TODO: Get actual user name from user service
+        email: `user${result.userId}@example.com`, // TODO: Get actual email
+        phone: '', // TODO: Get actual phone
+        examTitle: `Exam ${result.examId}`, // TODO: Get actual exam title
+        score: result.score,
+        rank: index + 1,
+        duration: 0, // TODO: Calculate duration if available
+        correctAnswers: 0, // TODO: Calculate from score if possible
+        totalQuestions: 0, // TODO: Get from exam data
+        accuracy: result.score, // Assuming score is percentage
+        submittedAt: result.completedAt,
+        status: result.passStatus ? 'passed' : 'failed',
+        topicScores: [], // TODO: Get topic scores if available
+      }));
+
+      // Sort by passStatus (true first) then by score descending
+      processedResults.sort((a, b) => {
+        if (a.status === 'passed' && b.status === 'failed') return -1;
+        if (a.status === 'failed' && b.status === 'passed') return 1;
+        return b.score - a.score;
+      });
+
+      // Update ranks after sorting
+      processedResults.forEach((result, index) => {
+        result.rank = index + 1;
+      });
+
+      setResultsData(processedResults);
+      setHasSearched(true);
+    } catch (error) {
+      console.error('Error fetching exam results:', error);
+      message.error('Không thể tải kết quả thi');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Statistics calculation
   const statisticsData: StatisticsData = {
     totalCandidates: resultsData.length,
     passedCandidates: resultsData.filter((r) => r.status === 'passed').length,
-    averageScore: Math.round(
+    averageScore: resultsData.length > 0 ? Math.round(
       resultsData.reduce((sum, r) => sum + r.score, 0) / resultsData.length
-    ),
-    passRate: Math.round(
+    ) : 0,
+    passRate: resultsData.length > 0 ? Math.round(
       (resultsData.filter((r) => r.status === 'passed').length /
         resultsData.length) *
-        100
-    ),
+      100
+    ) : 0,
   };
 
   // Filtered data
@@ -168,6 +172,14 @@ const ResultsPage: React.FC = () => {
     }));
   };
 
+  const handleFilterResults = () => {
+    if (!filters.selectedExam) {
+      message.warning('Vui lòng chọn kỳ thi trước khi lọc');
+      return;
+    }
+    fetchExamResults(filters.selectedExam);
+  };
+
   // Show not verified state
   if (!isVerified) {
     return <NotVerifiedState />;
@@ -178,8 +190,6 @@ const ResultsPage: React.FC = () => {
       <ResultsPageHeader onExportData={handleExportData} />
 
       <div className="page-content">
-        <StatisticsCards data={statisticsData} />
-
         <ResultsFilters
           examOptions={examOptions}
           filters={filters}
@@ -189,21 +199,38 @@ const ResultsPage: React.FC = () => {
           }
           onSearchChange={(value) => handleFiltersChange('searchText', value)}
           onDateRangeChange={handleDateRangeChange}
+          onFilter={handleFilterResults}
+          loading={loading}
         />
 
-        <div className="content-card">
-          {filteredData.length > 0 ? (
-            <ResultsTable
-              data={filteredData}
-              onViewCandidate={handleViewCandidate}
-            />
-          ) : (
+        {hasSearched && (
+          <>
+            <StatisticsCards data={statisticsData} />
+
+            <div className="content-card">
+              {filteredData.length > 0 ? (
+                <ResultsTable
+                  data={filteredData}
+                  onViewCandidate={handleViewCandidate}
+                />
+              ) : (
+                <EmptyState
+                  title="Không tìm thấy kết quả"
+                  description="Không có thí sinh nào phù hợp với bộ lọc đã chọn."
+                />
+              )}
+            </div>
+          </>
+        )}
+
+        {!hasSearched && (
+          <div className="content-card">
             <EmptyState
-              title="Chưa có kết quả thi nào"
-              description="Kết quả thi sẽ hiển thị sau khi có thí sinh hoàn thành bài thi."
+              title="Chọn kỳ thi để xem kết quả"
+              description="Vui lòng chọn kỳ thi từ dropdown và nhấn nút 'Lọc' để xem kết quả của các thí sinh."
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <CandidateDetailDrawer

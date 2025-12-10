@@ -1,5 +1,5 @@
-import { Card, Space, Select, Input, DatePicker } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Card, Space, Select, Input, DatePicker, Button } from 'antd';
+import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { ExamOption, FiltersData } from './types';
 
 const { Option } = Select;
@@ -12,6 +12,8 @@ interface ResultsFiltersProps {
   onStatusChange: (value: string) => void;
   onSearchChange: (value: string) => void;
   onDateRangeChange: (dates: any) => void;
+  onFilter: () => void;
+  loading?: boolean;
 }
 
 const ResultsFilters: React.FC<ResultsFiltersProps> = ({
@@ -21,12 +23,14 @@ const ResultsFilters: React.FC<ResultsFiltersProps> = ({
   onStatusChange,
   onSearchChange,
   onDateRangeChange,
+  onFilter,
+  loading = false,
 }) => {
   return (
     <Card style={{ marginBottom: '16px' }}>
       <Space wrap>
         <Select
-          style={{ width: 200 }}
+          style={{ width: 250 }}
           placeholder="Chọn kỳ thi"
           value={filters.selectedExam}
           onChange={onExamChange}
@@ -37,6 +41,18 @@ const ResultsFilters: React.FC<ResultsFiltersProps> = ({
             </Option>
           ))}
         </Select>
+
+        <Button
+          type="primary"
+          icon={<FilterOutlined />}
+          onClick={onFilter}
+          loading={loading}
+          disabled={!filters.selectedExam}
+        >
+          {loading ? 'Đang lọc...' : 'Lọc'}
+        </Button>
+
+        <div style={{ width: '1px', height: '32px', backgroundColor: '#d9d9d9', margin: '0 8px' }} />
 
         <Select
           style={{ width: 150 }}

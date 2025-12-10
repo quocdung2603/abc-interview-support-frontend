@@ -154,6 +154,99 @@ const DiscussionDetails = (
 
   const bestAnswer = getBestAnswer();
 
+  const [questionCreated, setQuestionCreated] = useState(false);
+
+  // Auto-create question when discussion ends and has best answer
+  useEffect(() => {
+    const createQuestionFromBestAnswer = async () => {
+      if (!isDiscussionEnded || !bestAnswer || !post || post.postType !== 'QUESTION' || questionCreated) {
+        return;
+      }
+
+      // Check if question already exists for this post using sessionStorage
+      // This prevents duplicate creation within the same browser session
+      const questionCreatedKey = `question_created_${post.id}`;
+      if (sessionStorage.getItem(questionCreatedKey)) {
+        console.log('Question already created for this discussion in this session');
+        setQuestionCreated(true);
+        return;
+      }
+
+      try {
+        console.log('Creating question from best answer:', bestAnswer);
+
+        const questionData = {
+          userId: bestAnswer.userId,
+          topicId: post.topicId,
+          fieldId: post.fieldId,
+          levelId: post.levelId,
+          questionTypeId: 3, // Default question type
+          content: post.title,
+          answer: bestAnswer.content,
+          language: "Vietnamese"
+        };
+
+        console.log('Question data to create:', questionData);
+
+        // Check for duplicate questions before creating
+        console.log('Checking for duplicate questions...');
+        const allQuestionsResponse = await questionService.getAllQuestions();
+        const allQuestions = allQuestionsResponse?.content || [];
+
+        const duplicateQuestion = allQuestions.find((q: any) =>
+          q.userId === questionData.userId &&
+          q.topicId === questionData.topicId &&
+          q.fieldId === questionData.fieldId &&
+          q.levelId === questionData.levelId &&
+          q.questionTypeId === questionData.questionTypeId &&
+          q.content === questionData.content &&
+          q.answer === questionData.answer
+        );
+
+        if (duplicateQuestion) {
+          console.log('Duplicate question found, skipping creation:', duplicateQuestion);
+          sessionStorage.setItem(questionCreatedKey, 'true');
+          setQuestionCreated(true);
+          return;
+        }
+
+        console.log('No duplicate found, proceeding with creation...');
+
+        await questionService.createQuestion(questionData);
+
+        // Mark as created to prevent duplicates
+        sessionStorage.setItem(questionCreatedKey, 'true');
+        setQuestionCreated(true);
+
+        console.log('Question created successfully from best answer');
+        message.success('Đã tạo câu hỏi từ bình luận xuất sắc!');
+
+        const eloUpdateData: any = {
+          userId: bestAnswer.userId,
+          action: 'BEST_ANSWER_SELECTED',
+          points: 3 * Number(post.levelId), // ELO points based on level
+          description: 'Nhận điểm ELO vì bình luận được chọn làm câu trả lời xuất sắc!',
+        }
+        await userService.updateElo(eloUpdateData);
+        message.success('Đã cập nhật điểm ELO cho tác giả bình luận xuất sắc!');
+
+      } catch (error: any) {
+        console.error('Error creating question from best answer:', error);
+
+        // If question already exists (409 Conflict), mark as created
+        if (error.response?.status === 409) {
+          sessionStorage.setItem(questionCreatedKey, 'true');
+          setQuestionCreated(true);
+          console.log('Question already exists, marked as created');
+        }
+        // Don't show error message to user as this is background operation
+        // But log it for debugging
+      }
+    };
+
+    createQuestionFromBestAnswer();
+  }, [isDiscussionEnded, bestAnswer, post, questionCreated]);
+
   const handleVote = async (answerId: number, voteType: 'up' | 'down') => {
     if (!user) {
       message.warning('Bạn cần đăng nhập để vote');

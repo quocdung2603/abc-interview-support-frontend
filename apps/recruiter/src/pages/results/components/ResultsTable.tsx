@@ -73,9 +73,6 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       key: 'accuracy',
       render: (record: ResultsData) => (
         <div>
-          <div>
-            {record.correctAnswers}/{record.totalQuestions}
-          </div>
           <Progress percent={record.accuracy} size="small" />
         </div>
       ),
@@ -101,7 +98,6 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       key: 'action',
       render: (record: ResultsData) => (
         <Button icon={<EyeOutlined />} onClick={() => onViewCandidate(record)}>
-          Xem chi tiết
         </Button>
       ),
     },
