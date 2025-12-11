@@ -24,7 +24,7 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
       key: 'title',
       render: (title: string, record: any) => (
         <div>
-          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{title}</div>
+          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}> #{record.id}: {title}</div>
           <div
             style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}
           >

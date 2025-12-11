@@ -116,12 +116,6 @@ const NewsApprovalTable: React.FC<TableProps> = ({
       ),
     },
     {
-      title: 'Người đăng',
-      dataIndex: 'userId',
-      key: 'userId',
-      render: (userId: number) => <span>User {userId}</span>,
-    },
-    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',

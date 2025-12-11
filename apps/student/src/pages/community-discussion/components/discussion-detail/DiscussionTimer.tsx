@@ -30,30 +30,25 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
     const calculateTimeRemaining = () => {
       // Get current time
       const now = new Date();
-   
 
       const lockTime = post.lockTime;
 
-      // Parse lockTime as UTC
-      let endDate: Date;
-      if (typeof lockTime === 'string' && lockTime.includes('T')) {
-        const utcString = lockTime + (lockTime.includes('Z') ? '' : 'Z');
-        endDate = new Date(utcString);
-      } else {
-        endDate = new Date(lockTime);
-      }
+      // Parse lockTime - JavaScript will automatically handle UTC to local conversion
+      const endDate = new Date(lockTime);
 
-      // Calculate difference
-      const end = endDate.getTime();
-      const current = now.getTime();
-      const difference = end - current;
-
+      console.log('Timer calculation:', {
+        lockTime,
+        endDate: endDate.toISOString(),
+        endDateLocal: endDate.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
+        now: now.toISOString(),
+        nowLocal: now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+      });
 
       // Store endDate for UI display
       setEndDate(endDate);
 
       // Check if lockTime is a valid date
-      if (isNaN(end)) {
+      if (isNaN(endDate.getTime())) {
         console.warn('Invalid lockTime:', post.lockTime);
         setTimeRemaining({
           days: 0,
@@ -65,7 +60,7 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
         return;
       }
 
-      const timeDiff = end - current;
+      const timeDiff = endDate.getTime() - now.getTime();
 
       if (timeDiff <= 0) {
         setTimeRemaining({

@@ -276,6 +276,21 @@ const JobFormDrawer: React.FC<JobFormDrawerProps> = ({
         </div>
 
         <div className="mb-4">
+          <p className="text-[16px] text-[grey]">Mô tả công việc</p>
+          <Controller
+            name="content"
+            control={control}
+            render={({ field }) => (
+              <Input.TextArea
+                rows={4}
+                placeholder="Nhập mô tả công việc, yêu cầu..."
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
           <p className="text-[16px] text-[grey]">Ngày hết hạn (tùy chọn)</p>
           <Controller
             name="expiredAt"

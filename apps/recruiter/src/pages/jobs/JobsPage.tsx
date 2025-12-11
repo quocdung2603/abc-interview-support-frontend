@@ -42,33 +42,84 @@ const JobsPage: React.FC = () => {
     setOpenForm(true);
   };
 
-  const handleSaveJob = (payload: RecruitmentNews, mode: 'create' | 'update') => {
-    const now = new Date().toISOString().slice(0, 10);
-    if (mode === 'create') {
-      const newJob: RecruitmentNews = {
-        ...payload,
-        id: Number(crypto.randomUUID?.() ?? String(Date.now())),
-        newsType: 'RECRUITMENT',
-        status: 'PENDING',
-        createdAt: now,
-        userId: user?.userId ? Number(user.userId) : 1, // TODO: get from current user
-      };
-      setJobPosts((prev) => [newJob, ...prev]);
-      console.log(jobPosts);
-      message.success('Đã tạo tin tuyển dụng');
-    } else {
-      setJobPosts((prev) =>
-        prev.map((j) =>
-          j.id === payload.id ? { ...j, ...payload, updatedAt: now } : j
-        )
+  const handleSaveJob = async (payload: RecruitmentNews, mode: 'create' | 'update') => {
+    try {
+      if (mode === 'create') {
+        // Prepare data for API
+        const createData = {
+          userId: user?.userId ? Number(user.userId) : 1,
+          title: payload.title,
+          content: payload.content || '',
+          fieldId: payload.fieldId,
+          newsType: 'RECRUITMENT' as const,
+          companyName: payload.companyName,
+          location: payload.location,
+          salary: payload.salary,
+          experience: payload.experience || '',
+          position: payload.position,
+          workingHours: payload.workingHours,
+          applicationMethod: payload.applicationMethod,
+          examId: payload.examId,
+          expiredAt: payload.expiredAt,
+        };
+
+        // Call API to create news
+        await newsService.createNews(createData);
+        message.success('Đã tạo tin tuyển dụng thành công');
+
+        // Refresh job list
+        getNewsByUser(user?.userId || '');
+      } else {
+        // Update existing job
+        const updateData = {
+          userId: user?.userId ? Number(user.userId) : 1,
+          title: payload.title,
+          content: payload.content || '',
+          fieldId: payload.fieldId,
+          newsType: 'RECRUITMENT' as const,
+          companyName: payload.companyName,
+          location: payload.location,
+          salary: payload.salary,
+          experience: payload.experience || '',
+          position: payload.position,
+          workingHours: payload.workingHours,
+          applicationMethod: payload.applicationMethod,
+          examId: payload.examId,
+          expiredAt: payload.expiredAt,
+        };
+
+        // Call API to update news
+        await newsService.updateNews(payload.id, updateData);
+        message.success('Đã cập nhật tin tuyển dụng thành công');
+
+        // Refresh job list
+        getNewsByUser(user?.userId || '');
+      }
+
+      setOpenForm(false);
+    } catch (error: any) {
+      console.error('Error saving job:', error);
+      message.error(
+        error?.response?.data?.message ||
+        `Có lỗi xảy ra khi ${mode === 'create' ? 'tạo' : 'cập nhật'} tin tuyển dụng`
       );
-      message.success('Đã cập nhật tin tuyển dụng');
     }
-    setOpenForm(false);
   };
 
   const handleDeleteJob = async (jobId: number) => {
-    //api delete job
+    try {
+      await newsService.deleteNews(jobId);
+      message.success('Đã xóa tin tuyển dụng thành công');
+
+      // Refresh job list
+      getNewsByUser(user?.userId || '');
+    } catch (error: any) {
+      console.error('Error deleting job:', error);
+      message.error(
+        error?.response?.data?.message ||
+        'Có lỗi xảy ra khi xóa tin tuyển dụng'
+      );
+    }
   };
 
   const filteredData = useMemo(() => {

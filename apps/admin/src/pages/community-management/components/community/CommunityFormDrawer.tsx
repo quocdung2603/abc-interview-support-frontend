@@ -50,20 +50,33 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
     if (!dateTimeString) return '';
 
     try {
-      // If it's already in the right format (without seconds), return as is
-      if (dateTimeString.includes('T') && !dateTimeString.includes(':')) {
-        return dateTimeString;
+      // If it's already in ISO format (YYYY-MM-DDTHH:mm:ss.sssZ or similar)
+      // Parse it directly without timezone conversion
+      if (dateTimeString.includes('T')) {
+        // Extract just the date and time parts, ignore timezone
+        // Format: YYYY-MM-DDTHH:mm:ss.sssZ -> YYYY-MM-DDTHH:mm
+        const match = dateTimeString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+        if (match) {
+          const [, year, month, day, hours, minutes] = match;
+          return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
       }
 
-      // Parse the datetime string and format for datetime-local input
+      // Fallback: parse as Date object (will apply timezone conversion)
       const date = new Date(dateTimeString);
 
-      // Format as YYYY-MM-DDTHH:mm (without seconds for datetime-local)
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date:', dateTimeString);
+        return '';
+      }
+
+      // Get UTC values to preserve the original time
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
 
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     } catch (error) {
@@ -76,8 +89,18 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
   const convertToISOString = (dateTimeLocal: string): string => {
     if (!dateTimeLocal) return '';
     try {
+      // Parse datetime-local as local time (browser timezone)
+      // Format: YYYY-MM-DDTHH:mm
+      // new Date() will interpret this as local time and convert to UTC
       const date = new Date(dateTimeLocal);
-      if (isNaN(date.getTime())) return '';
+
+      // Validate the date
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateTimeLocal);
+        return '';
+      }
+
+      // Convert to ISO string (automatically converts to UTC)
       return date.toISOString();
     } catch (error) {
       console.error('Error converting to ISO string:', error);
@@ -105,6 +128,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
       setActiveTab('basic'); // Reset to basic tab when opening
       if (data) {
         // Editing existing post
+        const formattedLockTime = data.lockTime ? formatDateTimeForInput(data.lockTime) : '';
         const initialData = {
           userId: 1, // Fixed user ID
           fieldId: data.fieldId,
@@ -115,7 +139,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           title: data.title,
           content: data.content,
           isLocked: !!data.lockTime,
-          lockTime: data.lockTime || '',
+          lockTime: formattedLockTime,
         };
         form.setFieldsValue({
           fieldId: data.fieldId,
@@ -126,7 +150,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           title: data.title,
           content: data.content,
           isLocked: !!data.lockTime,
-          lockTime: data.lockTime || '',
+          lockTime: formattedLockTime,
         });
         setFormData(initialData);
       } else {
@@ -179,26 +203,30 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 
   const handleLockChange = (checked: boolean) => {
     console.log('Lock switch changed:', checked);
-    setFormData(prev => ({
-      ...prev,
-      isLocked: checked,
-      lockTime: checked ? (prev.lockTime || formatDateTimeForInput(new Date().toISOString())) : ''
-    }));
-    console.log('New lockTime value:', checked ? (formData.lockTime || formatDateTimeForInput(new Date().toISOString())) : '');
+
+    if (checked) {
+      // When enabling lock, set default time to current time if not already set
+      const currentLockTime = form.getFieldValue('lockTime');
+      const defaultTime = currentLockTime || formatDateTimeForInput(new Date().toISOString());
+
+      form.setFieldsValue({ lockTime: defaultTime });
+      setFormData(prev => ({
+        ...prev,
+        isLocked: checked,
+        lockTime: defaultTime
+      }));
+    } else {
+      // When disabling lock, clear the time
+      form.setFieldsValue({ lockTime: '' });
+      setFormData(prev => ({
+        ...prev,
+        isLocked: checked,
+        lockTime: ''
+      }));
+    }
   };
 
-  const handleLockTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedValue = e.target.value;
-    console.log('LockTime selected (raw):', selectedValue);
 
-    // Parse the datetime-local value to check if it's correct
-    const selectedDate = new Date(selectedValue);
-    console.log('Parsed date:', selectedDate);
-    console.log('Hours:', selectedDate.getHours());
-    console.log('Minutes:', selectedDate.getMinutes());
-
-    setFormData(prev => ({ ...prev, lockTime: selectedValue }));
-  };
 
   const handleSubmit = async () => {
     try {
@@ -219,6 +247,10 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
         return;
       }
 
+      // Get form values including lockTime
+      const formValues = form.getFieldsValue();
+      const lockTimeValue = formData.isLocked && formValues.lockTime ? convertToISOString(formValues.lockTime) : '';
+
       const postData = {
         userId: formData.userId,
         fieldId: formData.fieldId,
@@ -227,7 +259,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
         postType: formData.postType,
         title: formData.title,
         content: formData.content,
-        lockTime: formData.isLocked && formData.lockTime ? convertToISOString(formData.lockTime) : '',
+        lockTime: lockTimeValue,
       };
 
       console.log('Form values:', formData);
@@ -498,8 +530,6 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
                     <Input
                       type="datetime-local"
                       placeholder="Chọn thời gian khóa"
-                      onChange={handleLockTimeChange}
-                      value={formData.lockTime}
                     />
                   </Form.Item>
                 )}

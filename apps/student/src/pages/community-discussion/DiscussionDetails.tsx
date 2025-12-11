@@ -119,23 +119,18 @@ const DiscussionDetails = (
     const lockTime = post.lockTime;
     console.log('Checking discussion end - lockTime:', lockTime);
 
-    // Parse lockTime as UTC (same logic as DiscussionTimer)
-    let endDate: Date;
-    if (typeof lockTime === 'string' && lockTime.includes('T')) {
-      const utcString = lockTime + (lockTime.includes('Z') ? '' : 'Z');
-      endDate = new Date(utcString);
-    } else {
-      endDate = new Date(lockTime);
-    }
-
+    // Parse lockTime - JavaScript will automatically handle UTC to local conversion
+    const endDate = new Date(lockTime);
     const now = new Date();
     const hasEnded = now > endDate;
 
     console.log('Discussion end check:', {
       now: now.toISOString(),
+      nowLocal: now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
       endDate: endDate.toISOString(),
+      endDateLocal: endDate.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
       hasEnded,
-      timeDiff: endDate.getTime() - now.getTime()
+      timeDiff: (endDate.getTime() - now.getTime()) / 1000 / 60 + ' minutes'
     });
 
     return hasEnded;

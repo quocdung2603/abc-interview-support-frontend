@@ -44,7 +44,7 @@ const MockInterview = () => {
     try {
       const res = await examService.getAllExams();
       let exams = res.content || [];
-      exams = exams.filter((exam: Exam) => exam.userId !== 1 && exam.examType === 'VIRTUAL' && exam.status === 'PUBLISHED');
+      exams = exams.filter((exam: Exam) => exam.examType === 'VIRTUAL' && exam.status === 'PUBLISHED');
       setAvailableExams(exams);
     } catch (error) {
       setAvailableExams([]);

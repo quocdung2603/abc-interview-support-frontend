@@ -85,22 +85,19 @@ const TrendNewsPage = () => {
   const handleDeleteNews = async (id: number) => {
     try {
       await newsService.deleteNews(id);
-      setTrendNewsList((prev) => prev.filter((news) => news.id !== id));
       message.success('Đã xóa tin tức thành công');
+      // Refresh the news list
+      await getNewsByUser(user?.userId || '');
     } catch (error) {
       console.error('Error deleting news:', error);
       message.error('Có lỗi xảy ra khi xóa tin tức');
     }
   };
 
-  const handleSaveNews = (data: News, mode: 'create' | 'update') => {
-    if (mode === 'create') {
-      setTrendNewsList((prev) => [data, ...prev]);
-    } else {
-      setTrendNewsList((prev) =>
-        prev.map((j) => (j.id === data.id ? data : j))
-      );
-    }
+  const handleSaveNews = async (data: News, mode: 'create' | 'update') => {
+    // Refresh the news list after successful create/update
+    await getNewsByUser(user?.userId || '');
+    message.success(`${mode === 'create' ? 'Tạo' : 'Cập nhật'} tin tức thành công`);
     setOpenForm(false);
   };
 
