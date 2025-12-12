@@ -13,8 +13,9 @@ import { BasicInfoStep, ExamConfigStep, ConfirmationStep } from './mock-exam-for
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 // Extended interface to include UI-specific fields
-interface CreateFormFields extends Exam {
-  totalQuestions: number;
+interface CreateFormFields extends Omit<Exam, 'fieldId' | 'levelId'> {
+  fieldId?: number;
+  levelId?: number;
   candidates: number;
   startTime: string;
   endTime: string;
@@ -74,8 +75,8 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     examType: 'VIRTUAL',
     title: '',
     position: '',
-    fieldId: 0,
-    levelId: 0,
+    fieldId: undefined,
+    levelId: undefined,
     topicIds: [],
     questionTypeIds: [],
     questionCount: 1,
@@ -84,7 +85,6 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     language: 'vi',
     createdAt: '',
     createdBy: 0,
-    totalQuestions: 1,
     candidates: 1,
     startTime: '',
     endTime: '',
@@ -118,7 +118,7 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
     let fields: (keyof CreateFormFields)[] = [];
     switch (step) {
       case 0:
-        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration', 'totalQuestions'];
+        fields = ['title', 'position', 'fieldId', 'levelId', 'topicIds', 'questionTypeIds', 'duration'];
         break;
       case 1:
         // Step 1 (Cấu hình đề thi) không yêu cầu validation bắt buộc
@@ -133,10 +133,18 @@ const MockExamFormDrawer: React.FC<ExamFormDrawerProps> = ({
 
   const onSubmit: SubmitHandler<CreateFormFields> = async (data) => {
     try {
+      // Convert form data to match Exam interface
+      const submitData = {
+        ...data,
+        fieldId: data.fieldId || 0,
+        levelId: data.levelId || 0,
+        questionCount: data.questions?.length || 0, // Auto calculate from selected questions
+      };
+
       if (isEdit && initForm) {
-        onSave(data, 'update');
+        onSave(submitData, 'update');
       } else {
-        onSave(data, 'create');
+        onSave(submitData, 'create');
       }
       // Đóng form và reset step sau khi lưu thành công
       onFinish();

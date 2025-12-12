@@ -14,9 +14,9 @@ import type {
   StatisticsData,
   FiltersData,
 } from './components/types';
-import { examService } from '@abc-interview-support-frontend/services';
-import { message, Button } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
+import { examService, questionService } from '@abc-interview-support-frontend/services';
+import { message } from 'antd';
+import * as XLSX from 'xlsx';
 
 const ResultsPage: React.FC = () => {
   // State management
@@ -34,6 +34,7 @@ const ResultsPage: React.FC = () => {
   const [resultsData, setResultsData] = useState<ResultsData[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [selectedExamData, setSelectedExamData] = useState<any>(null);
 
   // Mock verification state - replace with actual auth context
   const isVerified = true;
@@ -69,6 +70,44 @@ const ResultsPage: React.FC = () => {
 
     setLoading(true);
     try {
+      // Fetch exam details
+      const examDetails = await examService.getExamById(examId);
+
+      // Fetch additional details for field, topic, level names
+      const [allFields, allTopics, allLevels] = await Promise.all([
+        questionService.getAllFields(),
+        questionService.getAllTopics(),
+        questionService.getAllLevels(),
+      ]);
+
+      const fields = allFields?.content || [];
+      const topics = allTopics?.content || [];
+      const levels = allLevels?.content || [];
+
+      // Find names from IDs
+      const field = fields.find((f: any) => f.id === examDetails.fieldId);
+      const level = levels.find((l: any) => l.id === examDetails.levelId);
+
+      // Handle multiple topics (topicIds is an array)
+      const topicIds = examDetails.topicIds || [];
+      const topicNames = topicIds
+        .map((topicId: number) => {
+          const topic = topics.find((t: any) => t.id === topicId);
+          return topic?.name;
+        })
+        .filter((name: string | undefined) => name) // Remove undefined
+        .join(', '); // Join with comma
+
+      // Enrich exam data with names
+      const enrichedExamData = {
+        ...examDetails,
+        fieldName: field?.name || 'N/A',
+        topicName: topicNames || 'N/A',
+        levelName: level?.name || 'N/A',
+      };
+
+      setSelectedExamData(enrichedExamData);
+
       const response = await examService.getAllExamResults(examId);
       const rawResults = response?.content || [];
 
@@ -156,7 +195,153 @@ const ResultsPage: React.FC = () => {
   };
 
   const handleExportData = () => {
-    console.log('Exporting results data...');
+    if (!hasSearched || !selectedExamData) {
+      message.warning('Vui lòng lọc kết quả bài kiểm tra trước khi xuất file');
+      return;
+    }
+
+    try {
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+
+      // Sheet 1: Thông tin bài kiểm tra
+      const examInfoData = [
+        ['THÔNG TIN BÀI KIỂM TRA'],
+        [],
+        ['Tên bài kiểm tra:', selectedExamData.title || 'N/A'],
+        ['Mô tả:', selectedExamData.description || 'N/A'],
+        ['Lĩnh vực:', selectedExamData.fieldName || 'N/A'],
+        ['Chủ đề:', selectedExamData.topicName || 'N/A'],
+        ['Cấp độ:', selectedExamData.levelName || 'N/A'],
+        ['Thời gian làm bài:', `${selectedExamData.duration || 0} phút`],
+        ['Số câu hỏi:', selectedExamData.questionCount || 0],
+        ['Điểm đạt:', selectedExamData.passingScore || 0],
+        ['Ngày tạo:', selectedExamData.createdAt ? new Date(selectedExamData.createdAt).toLocaleDateString('vi-VN') : 'N/A'],
+        [],
+        ['THỐNG KÊ TỔNG QUAN'],
+        [],
+        ['Tổng số thí sinh:', statisticsData.totalCandidates],
+        ['Số thí sinh đạt:', statisticsData.passedCandidates],
+        ['Điểm trung bình:', statisticsData.averageScore],
+        ['Tỷ lệ đạt:', `${statisticsData.passRate}%`],
+      ];
+      const examInfoSheet = XLSX.utils.aoa_to_sheet(examInfoData);
+
+      // Set column widths for exam info sheet
+      examInfoSheet['!cols'] = [
+        { wch: 25 },
+        { wch: 50 }
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, examInfoSheet, 'Thông tin bài kiểm tra');
+
+      // Sheet 2: Danh sách kết quả
+      const resultsHeaders = [
+        'STT',
+        'Họ và tên',
+        'Email',
+        'Điểm số',
+        'Xếp hạng',
+        'Độ chính xác (%)',
+        'Trạng thái',
+        'Thời gian nộp bài',
+      ];
+
+      const resultsRows = filteredData.map((result, index) => [
+        index + 1,
+        result.name,
+        result.email,
+        result.score,
+        result.rank,
+        result.accuracy,
+        result.status === 'passed' ? 'Đạt' : 'Không đạt',
+        result.submittedAt ? new Date(result.submittedAt).toLocaleString('vi-VN') : 'N/A',
+      ]);
+
+      const resultsData = [resultsHeaders, ...resultsRows];
+      const resultsSheet = XLSX.utils.aoa_to_sheet(resultsData);
+
+      // Set column widths for results sheet
+      resultsSheet['!cols'] = [
+        { wch: 5 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 20 },
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, resultsSheet, 'Danh sách kết quả');
+
+      // Sheet 3: Thông tin chi tiết thí sinh
+      const candidateInfoHeaders = [
+        'STT',
+        'ID',
+        'Họ và tên',
+        'Email',
+        'Số điện thoại',
+        'Điểm số',
+        'Xếp hạng',
+        'Số câu đúng',
+        'Tổng số câu',
+        'Độ chính xác (%)',
+        'Thời gian làm bài (phút)',
+        'Trạng thái',
+        'Thời gian nộp bài',
+      ];
+
+      const candidateInfoRows = filteredData.map((candidate, index) => [
+        index + 1,
+        candidate.id,
+        candidate.name,
+        candidate.email,
+        candidate.phone || 'N/A',
+        candidate.score,
+        candidate.rank,
+        candidate.correctAnswers,
+        candidate.totalQuestions,
+        candidate.accuracy,
+        candidate.duration,
+        candidate.status === 'passed' ? 'Đạt' : 'Không đạt',
+        candidate.submittedAt ? new Date(candidate.submittedAt).toLocaleString('vi-VN') : 'N/A',
+      ]);
+
+      const candidateInfoData = [candidateInfoHeaders, ...candidateInfoRows];
+      const candidateInfoSheet = XLSX.utils.aoa_to_sheet(candidateInfoData);
+
+      // Set column widths for candidate info sheet
+      candidateInfoSheet['!cols'] = [
+        { wch: 5 },
+        { wch: 10 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 20 },
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, candidateInfoSheet, 'Thông tin thí sinh');
+
+      // Generate filename with exam title and timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `KetQua_${selectedExamData.title || 'BaiKiemTra'}_${timestamp}.xlsx`;
+
+      // Write file
+      XLSX.writeFile(workbook, filename);
+
+      message.success('Đã xuất file thành công!');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      message.error('Không thể xuất file. Vui lòng thử lại.');
+    }
   };
 
   const handleFiltersChange = (key: keyof FiltersData, value: string) => {
@@ -187,7 +372,10 @@ const ResultsPage: React.FC = () => {
 
   return (
     <div className="container-center animate-fade-in-up">
-      <ResultsPageHeader onExportData={handleExportData} />
+      <ResultsPageHeader
+        onExportData={handleExportData}
+        hasSearched={hasSearched}
+      />
 
       <div className="page-content">
         <ResultsFilters

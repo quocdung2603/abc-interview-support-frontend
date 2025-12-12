@@ -7,8 +7,9 @@ import { Question, Field, Topic, Level, QuestionType, Exam, ExamQuestion } from 
 import QuestionListDrawerForm from './QuestionListDrawerForm';
 
 // Extended interface to include UI-specific fields
-interface CreateFormFields extends Exam {
-  totalQuestions: number;
+interface CreateFormFields extends Omit<Exam, 'fieldId' | 'levelId'> {
+  fieldId?: number;
+  levelId?: number;
   candidates: number;
   startTime: string;
   endTime: string;

@@ -8,6 +8,7 @@ import {
   QuestionType
 } from '@abc-interview-support-frontend/types';
 import { WarningOutlined, FileSearchOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 interface ExamDetailModalProps {
   visible: boolean;
@@ -87,17 +88,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
 
   const formatDateTime = (dateTime?: string) => {
     if (!dateTime) return '—';
-    try {
-      return new Date(dateTime).toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateTime;
-    }
+    return dayjs(dateTime).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getExamTypeLabel = (type: string) => {
@@ -145,15 +136,15 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
   // Get field name by ID
   const getFieldName = (fieldId?: number): string => {
     if (!fieldId) return '—';
-    const field = fields.find((f: Field) => f.id === fieldId);
-    return field?.name ;
+    const field = fields?.find((f: Field) => f.id === fieldId);
+    return field?.name || '—';
   };
 
   // Get level name by ID
   const getLevelName = (levelId?: number): string => {
     if (!levelId) return '—';
-    const level = levels.find((l: Level) => l.id === levelId);
-    return level?.name ;
+    const level = levels?.find((l: Level) => l.id === levelId);
+    return level?.name || '—';
   };
 
   // Get topic names by IDs
@@ -161,10 +152,10 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
     if (!topicIds) return '—';
     const ids = Array.isArray(topicIds) ? topicIds : JSON.parse(topicIds);
     const names = ids.map((id: number) => {
-      const topic = topics.find((t: Topic) => t.id === id);
+      const topic = topics?.find((t: Topic) => t.id === id);
       return topic?.name;
-    });
-    return names.join(', ');
+    }).filter(Boolean);
+    return names.length > 0 ? names.join(', ') : '—';
   };
 
   // Get question type names by IDs
@@ -172,10 +163,10 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
     if (!typeIds) return '—';
     const ids = Array.isArray(typeIds) ? typeIds : JSON.parse(typeIds);
     const names = ids.map((id: number) => {
-      const type = questionTypes.find((qt: QuestionType) => qt.id === id);
-      return  type?.name;
-    });
-    return names.join(', ');
+      const type = questionTypes?.find((qt: QuestionType) => qt.id === id);
+      return type?.name;
+    }).filter(Boolean);
+    return names.length > 0 ? names.join(', ') : '—';
   };
 
   return (
@@ -331,7 +322,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                 <div className="text-sm font-semibold text-gray-600 mb-1">
                   Lĩnh vực
                 </div>
-                  <Tag color="blue">{getFieldName(examDetail.fieldId)}</Tag>
+                <Tag color="blue">{getFieldName(examDetail.fieldId)}</Tag>
               </div>
             )}
             {examDetail.levelId && (
@@ -339,7 +330,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                 <div className="text-sm font-semibold text-gray-600 mb-1">
                   Cấp độ
                 </div>
-                  <Tag color="green">{getLevelName(examDetail.levelId)}</Tag>
+                <Tag color="green">{getLevelName(examDetail.levelId)}</Tag>
               </div>
             )}
           </div>

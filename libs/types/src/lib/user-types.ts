@@ -39,10 +39,10 @@ export interface RecruiterVerification {
 }
 
 export interface CompanyDocument {
-  documentId: number;
+  id: number;
   documentName: string; // VD: "BusinessLicense", "OperatingLicense"
   documentFilePath: any; // Đường dẫn file PDF trên cloud (VD: S3 URL)
-  createdAt: Date;
+  createdAt: Date | string;
 }
 
 export interface EloHistory {

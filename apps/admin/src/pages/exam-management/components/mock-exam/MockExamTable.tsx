@@ -20,8 +20,8 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
     switch (status) {
       case 'DRAFT':
         return 'Bản nháp';
-      case 'ACTIVE':
-        return 'Đang hoạt động';
+      case 'PUBLISHED':
+        return 'Đã xuất bản';
       case 'INACTIVE':
         return 'Không hoạt động';
       case 'COMPLETED':
@@ -35,12 +35,12 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
     switch (status) {
       case 'DRAFT':
         return 'orange';
-      case 'ACTIVE':
-        return 'green';
+      case 'PUBLISHED':
+        return 'blue';
       case 'INACTIVE':
         return 'red';
       case 'COMPLETED':
-        return 'blue';
+        return 'green';
       default:
         return 'default';
     }
@@ -60,7 +60,7 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
       title: 'Tiêu đề bài kiểm tra',
       dataIndex: 'title',
       key: 'title',
-      render: (title: string) => (
+      render: (title: string, record: any) => (
         <div
           style={{
             maxWidth: '200px',
@@ -69,7 +69,7 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
             whiteSpace: 'nowrap',
           }}
         >
-          {title}
+          #{record.id}: {title}
         </div>
       ),
     },

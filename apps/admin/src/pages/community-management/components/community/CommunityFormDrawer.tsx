@@ -8,8 +8,13 @@ import {
   message,
   Switch,
   Select,
-  Tabs,
+  Steps,
+  Card,
+  Typography,
+  Tag,
+  DatePicker,
 } from 'antd';
+import dayjs from 'dayjs';
 import {
   Post,
   Field,
@@ -20,7 +25,8 @@ import { communityService } from '@abc-interview-support-frontend/services';
 
 const { TextArea } = Input;
 const { Option } = Select;
-const { TabPane } = Tabs;
+const { Step } = Steps;
+const { Text } = Typography;
 
 interface FormDrawerProps {
   open: boolean;
@@ -43,67 +49,307 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic');
+  const [currentStep, setCurrentStep] = useState(0);
 
-  // Format datetime for datetime-local input (remove seconds)
-  const formatDateTimeForInput = (dateTimeString: string | undefined): string => {
-    if (!dateTimeString) return '';
+  // Check if this is a published post (only lockTime can be edited)
+  const isPublishedPost = data?.status === 'PUBLISHED';
 
-    try {
-      // If it's already in ISO format (YYYY-MM-DDTHH:mm:ss.sssZ or similar)
-      // Parse it directly without timezone conversion
-      if (dateTimeString.includes('T')) {
-        // Extract just the date and time parts, ignore timezone
-        // Format: YYYY-MM-DDTHH:mm:ss.sssZ -> YYYY-MM-DDTHH:mm
-        const match = dateTimeString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-        if (match) {
-          const [, year, month, day, hours, minutes] = match;
-          return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-      }
+  // Helper functions to get names from IDs
+  const getFieldName = (fieldId: number) => {
+    const field = fields.find(f => f.id === fieldId);
+    return field ? field.name : 'N/A';
+  };
 
-      // Fallback: parse as Date object (will apply timezone conversion)
-      const date = new Date(dateTimeString);
+  const getTopicName = (topicId: number) => {
+    const topic = topics.find(t => t.id === topicId);
+    return topic ? topic.name : 'N/A';
+  };
 
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid date:', dateTimeString);
-        return '';
-      }
+  const getLevelName = (levelId: number) => {
+    const level = levels.find(l => l.id === levelId);
+    return level ? level.name : 'N/A';
+  };
 
-      // Get UTC values to preserve the original time
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const hours = String(date.getUTCHours()).padStart(2, '0');
-      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    } catch (error) {
-      console.warn('Error formatting datetime:', error);
-      return '';
+  const getPostTypeText = (postType: string) => {
+    switch (postType) {
+      case 'DISCUSSION':
+        return 'Thảo luận';
+      case 'QUESTION':
+        return 'Câu hỏi';
+      default:
+        return postType;
     }
   };
 
-  // Convert datetime-local format to ISO string for API
-  const convertToISOString = (dateTimeLocal: string): string => {
-    if (!dateTimeLocal) return '';
-    try {
-      // Parse datetime-local as local time (browser timezone)
-      // Format: YYYY-MM-DDTHH:mm
-      // new Date() will interpret this as local time and convert to UTC
-      const date = new Date(dateTimeLocal);
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'DRAFT':
+        return 'Nháp';
+      case 'PUBLISHED':
+        return 'Đã xuất bản';
+      case 'LOCKED':
+        return 'Đã khóa';
+      default:
+        return status;
+    }
+  };
 
-      // Validate the date
-      if (isNaN(date.getTime())) {
-        console.error('Invalid date:', dateTimeLocal);
-        return '';
+  // Render step content based on current step
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Form.Item
+              label="Lĩnh vực"
+              name="fieldId"
+              rules={[
+                { required: true, message: 'Vui lòng chọn lĩnh vực' },
+              ]}
+            >
+              <Select
+                placeholder="Chọn lĩnh vực..."
+                onChange={handleFieldChange}
+                disabled={isPublishedPost}
+              >
+                {fields.map(field => (
+                  <Option key={field.id} value={field.id}>
+                    {field.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Chủ đề"
+              name="topicId"
+              rules={[
+                { required: true, message: 'Vui lòng chọn chủ đề' },
+              ]}
+            >
+              <Select
+                placeholder="Chọn chủ đề..."
+                onChange={handleTopicChange}
+                disabled={!formData.fieldId || isPublishedPost}
+              >
+                {topics
+                  .filter(topic => topic.fieldId === formData.fieldId)
+                  .map(topic => (
+                    <Option key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Cấp độ"
+              name="levelId"
+            >
+              <Select
+                placeholder="Chọn cấp độ (tùy chọn)..."
+                onChange={handleLevelChange}
+                allowClear
+                disabled={isPublishedPost}
+              >
+                {levels.map(level => (
+                  <Option key={level.id} value={level.id}>
+                    {level.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Loại bài viết"
+              name="postType"
+              rules={[
+                { required: true, message: 'Vui lòng chọn loại bài viết' },
+              ]}
+            >
+              <Select
+                placeholder="Chọn loại bài viết..."
+                onChange={handlePostTypeChange}
+                disabled={isPublishedPost}
+              >
+                <Option value="DISCUSSION">Thảo luận</Option>
+                <Option value="QUESTION">Câu hỏi</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Trạng thái"
+              name="status"
+              rules={[
+                { required: true, message: 'Vui lòng chọn trạng thái' },
+              ]}
+            >
+              <Select
+                placeholder="Chọn trạng thái..."
+                onChange={handleStatusChange}
+                disabled={isPublishedPost}
+              >
+                <Option value="DRAFT">Nháp</Option>
+                <Option value="PUBLISHED">Đã xuất bản</Option>
+                <Option value="LOCKED">Đã khóa</Option>
+              </Select>
+            </Form.Item>
+          </div>
+        );
+
+      case 1:
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Form.Item
+              label="Tiêu đề"
+              name="title"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tiêu đề bài viết' },
+                { min: 1, message: 'Tiêu đề không được để trống' },
+                { max: 200, message: 'Tiêu đề không được vượt quá 200 ký tự' },
+              ]}
+            >
+              <Input
+                placeholder="Nhập tiêu đề bài viết..."
+                onChange={handleTitleChange}
+                disabled={isPublishedPost}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Nội dung"
+              name="content"
+              rules={[
+                { required: true, message: 'Vui lòng nhập nội dung bài viết' },
+                { min: 1, message: 'Nội dung không được để trống' },
+              ]}
+            >
+              <TextArea
+                rows={8}
+                placeholder="Nhập nội dung bài viết..."
+                onChange={handleContentChange}
+                disabled={isPublishedPost}
+              />
+            </Form.Item>
+
+            <Form.Item label="Cài đặt khóa bài viết">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>Khóa bài viết:</span>
+                  <Switch
+                    checked={formData.isLocked}
+                    onChange={handleLockChange}
+                  />
+                </div>
+
+                {formData.isLocked && (
+                  <Form.Item
+                    name="lockTime"
+                    rules={[
+                      { required: true, message: 'Vui lòng chọn thời gian khóa' },
+                    ]}
+                    style={{ marginBottom: 0 }}
+                  >
+                    <DatePicker
+                      showTime={{
+                        format: 'HH:mm:ss',
+                        defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
+                      }}
+                      format="DD/MM/YYYY HH:mm:ss"
+                      placeholder="Chọn ngày và giờ khóa"
+                      style={{ width: '100%' }}
+                      onChange={handleLockTimeChange}
+                    />
+                  </Form.Item>
+                )}
+              </div>
+            </Form.Item>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Card title="Xác nhận thông tin bài viết" size="small">
+              <div style={{ display: 'grid', gap: '12px' }}>
+                <div>
+                  <Text strong>Lĩnh vực:</Text> {getFieldName(formData.fieldId || 0)}
+                </div>
+                <div>
+                  <Text strong>Chủ đề:</Text> {getTopicName(formData.topicId || 0)}
+                </div>
+                {formData.levelId && (
+                  <div>
+                    <Text strong>Cấp độ:</Text> {getLevelName(formData.levelId)}
+                  </div>
+                )}
+                <div>
+                  <Text strong>Loại bài viết:</Text> {getPostTypeText(formData.postType)}
+                </div>
+                <div>
+                  <Text strong>Trạng thái:</Text> {getStatusText(formData.status)}
+                </div>
+                <div>
+                  <Text strong>Tiêu đề:</Text> {formData.title}
+                </div>
+                <div>
+                  <Text strong>Nội dung:</Text>
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    maxHeight: '100px',
+                    overflow: 'hidden'
+                  }}>
+                    {formData.content}
+                  </div>
+                </div>
+                {formData.isLocked && (
+                  <div>
+                    <Text strong>Thời gian khóa:</Text> {formData.lockTime ? new Date(formData.lockTime).toLocaleString('vi-VN') : 'N/A'}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Parse datetime string and return dayjs object for DatePicker
+  const parseDateTimeForPicker = (dateTimeString: string | undefined) => {
+    if (!dateTimeString) return null;
+
+    try {
+      // Parse the date string (assuming it's in format: YYYY-MM-DDTHH:mm:ss)
+      const dayjsObj = dayjs(dateTimeString, 'YYYY-MM-DDTHH:mm:ss');
+
+      // Check if date is valid
+      if (!dayjsObj.isValid()) {
+        console.warn('Invalid date:', dateTimeString);
+        return null;
       }
 
-      // Convert to ISO string (automatically converts to UTC)
-      return date.toISOString();
+      return dayjsObj;
     } catch (error) {
-      console.error('Error converting to ISO string:', error);
+      console.warn('Error parsing datetime:', error);
+      return null;
+    }
+  };
+
+  // Convert dayjs object to local time string for API (format: YYYY-MM-DDTHH:mm:ss)
+  const convertToAPIFormat = (dayjsObj: dayjs.Dayjs | null): string => {
+    if (!dayjsObj || !dayjsObj.isValid()) return '';
+
+    try {
+      // Format: YYYY-MM-DDTHH:mm:ss (local time, no timezone conversion)
+      return dayjsObj.format('YYYY-MM-DDTHH:mm:ss');
+    } catch (error) {
+      console.error('Error converting to API format:', error);
       return '';
     }
   };
@@ -119,16 +365,18 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
     title: data?.title || '',
     content: data?.content || '',
     isLocked: !!data?.lockTime,
-    lockTime: formatDateTimeForInput(data?.lockTime),
+    lockTime: data?.lockTime || '',
   });
 
   // Reset/initialize form when data changes
   useEffect(() => {
     if (open) {
-      setActiveTab('basic'); // Reset to basic tab when opening
+      setCurrentStep(0); // Reset to first step when opening
       if (data) {
         // Editing existing post
-        const formattedLockTime = data.lockTime ? formatDateTimeForInput(data.lockTime) : '';
+        const lockTimeValue = data.lockTime || '';
+        const lockTimeDayjs = parseDateTimeForPicker(lockTimeValue);
+
         const initialData = {
           userId: 1, // Fixed user ID
           fieldId: data.fieldId,
@@ -139,8 +387,9 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           title: data.title,
           content: data.content,
           isLocked: !!data.lockTime,
-          lockTime: formattedLockTime,
+          lockTime: lockTimeValue,
         };
+
         form.setFieldsValue({
           fieldId: data.fieldId,
           topicId: data.topicId,
@@ -150,7 +399,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           title: data.title,
           content: data.content,
           isLocked: !!data.lockTime,
-          lockTime: formattedLockTime,
+          lockTime: lockTimeDayjs,
         });
         setFormData(initialData);
       } else {
@@ -205,19 +454,20 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
     console.log('Lock switch changed:', checked);
 
     if (checked) {
-      // When enabling lock, set default time to current time if not already set
+      // When enabling lock, set default time to current local time if not already set
       const currentLockTime = form.getFieldValue('lockTime');
-      const defaultTime = currentLockTime || formatDateTimeForInput(new Date().toISOString());
+      const defaultTime = currentLockTime || dayjs();
+      const defaultTimeString = defaultTime ? convertToAPIFormat(defaultTime) : '';
 
       form.setFieldsValue({ lockTime: defaultTime });
       setFormData(prev => ({
         ...prev,
         isLocked: checked,
-        lockTime: defaultTime
+        lockTime: defaultTimeString
       }));
     } else {
       // When disabling lock, clear the time
-      form.setFieldsValue({ lockTime: '' });
+      form.setFieldsValue({ lockTime: null });
       setFormData(prev => ({
         ...prev,
         isLocked: checked,
@@ -226,7 +476,49 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
     }
   };
 
+  const handleLockTimeChange = (value: dayjs.Dayjs | null) => {
+    const timeString = value ? convertToAPIFormat(value) : '';
+    console.log('Lock time changed:', timeString);
+    setFormData(prev => ({
+      ...prev,
+      lockTime: timeString
+    }));
+  };
 
+  // Step navigation functions
+  const nextStep = async () => {
+    try {
+      // Validate current step before proceeding
+      if (currentStep === 0) {
+        // Validate basic information
+        await form.validateFields(['fieldId', 'topicId', 'postType', 'status']);
+        if (!formData.fieldId) {
+          message.error('Vui lòng chọn lĩnh vực');
+          return;
+        }
+        if (!formData.topicId) {
+          message.error('Vui lòng chọn chủ đề');
+          return;
+        }
+      } else if (currentStep === 1) {
+        // Validate detail information
+        await form.validateFields(['title', 'content']);
+        if (formData.isLocked && !form.getFieldValue('lockTime')) {
+          message.error('Vui lòng chọn thời gian khóa');
+          return;
+        }
+      }
+
+      setCurrentStep(currentStep + 1);
+    } catch (error) {
+      // Validation failed, stay on current step
+      console.log('Validation failed:', error);
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(currentStep - 1);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -237,19 +529,18 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 
       if (!formData.fieldId) {
         message.error('Vui lòng chọn lĩnh vực');
-        setActiveTab('basic');
+        setCurrentStep(0);
         return;
       }
 
       if (!formData.topicId) {
         message.error('Vui lòng chọn chủ đề');
-        setActiveTab('basic');
+        setCurrentStep(0);
         return;
       }
 
-      // Get form values including lockTime
-      const formValues = form.getFieldsValue();
-      const lockTimeValue = formData.isLocked && formValues.lockTime ? convertToISOString(formValues.lockTime) : '';
+      // Get lockTime from formData state (already in correct format)
+      const lockTimeValue = formData.isLocked && formData.lockTime ? formData.lockTime : '';
 
       const postData = {
         userId: formData.userId,
@@ -267,9 +558,35 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 
       try {
         if (data) {
-          // Update existing post - TODO: Implement update API when available
-          console.log('Update post:', data.id, postData);
-          message.success('Cập nhật bài viết thành công!');
+          // Check if this is a published post and only lockTime is being changed
+          const isPublishedPost = data.status === 'PUBLISHED';
+          const originalLockTime = data.lockTime || '';
+          const newLockTime = lockTimeValue;
+
+          // Check if only lockTime has changed for published posts
+          const hasOtherChanges = (
+            formData.fieldId !== data.fieldId ||
+            formData.topicId !== data.topicId ||
+            formData.levelId !== data.levelId ||
+            formData.postType !== data.postType ||
+            formData.title !== data.title ||
+            formData.content !== data.content ||
+            formData.status !== data.status
+          );
+
+          if (isPublishedPost && !hasOtherChanges && originalLockTime !== newLockTime) {
+            // Only lockTime changed for published post - use setLockTime API
+            console.log('Update lockTime for published post:', data.id, { lockTime: newLockTime });
+            await communityService.setLockTime(data.id, newLockTime);
+            message.success('Cập nhật thời gian khóa thành công!');
+          } else if (!isPublishedPost) {
+            // Regular update for non-published posts - TODO: Implement update API when available
+            console.log('Update post:', data.id, postData);
+            message.success('Cập nhật bài viết thành công!');
+          } else {
+            // No changes or invalid operation for published post
+            message.info('Không có thay đổi nào được thực hiện.');
+          }
         } else {
           // Create new post
           const response = await communityService.createPost(postData);
@@ -314,9 +631,9 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
           );
 
           if (hasBasicErrors) {
-            setActiveTab('basic');
+            setCurrentStep(0);
           } else if (hasDetailErrors) {
-            setActiveTab('detail');
+            setCurrentStep(1);
           }
         }
       }
@@ -342,7 +659,7 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
 
   const handleClose = () => {
     form.resetFields();
-    setActiveTab('basic'); // Reset to basic tab
+    setCurrentStep(0); // Reset to first step
     onClose();
   };
 
@@ -362,182 +679,49 @@ const CommunityFormDrawer: React.FC<FormDrawerProps> = ({
         >
           <Button onClick={handleClose} disabled={loading}>Hủy</Button>
           <Space>
-            <Button type="primary" onClick={handleSubmit} loading={loading}>
-              {data ? 'Cập nhật' : 'Tạo mới'}
-            </Button>
+            {currentStep > 0 && (
+              <Button onClick={prevStep} disabled={loading}>
+                Quay lại
+              </Button>
+            )}
+            {currentStep < 2 ? (
+              <Button type="primary" onClick={nextStep} disabled={loading}>
+                Tiếp theo
+              </Button>
+            ) : (
+              <Button type="primary" onClick={handleSubmit} loading={loading}>
+                {data ? 'Cập nhật' : 'Tạo mới'}
+              </Button>
+            )}
           </Space>
         </div>
       }
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{
-          fieldId: data?.fieldId,
-          topicId: data?.topicId,
-          levelId: data?.levelId,
-          postType: data?.postType || 'DISCUSSION',
-          status: data?.status || 'DRAFT',
-          title: data?.title,
-          content: data?.content,
-          isLocked: !!data?.lockTime,
-          lockTime: data?.lockTime || '',
-        }}
-      >
-        <Tabs activeKey={activeTab} onChange={setActiveTab}>
-          <TabPane tab="Thông tin cơ bản" key="basic">
-            <Form.Item
-              label="Lĩnh vực"
-              name="fieldId"
-              rules={[
-                { required: true, message: 'Vui lòng chọn lĩnh vực' },
-              ]}
-            >
-              <Select
-                placeholder="Chọn lĩnh vực..."
-                onChange={handleFieldChange}
-              >
-                {fields.map(field => (
-                  <Option key={field.id} value={field.id}>
-                    {field.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+      <div style={{ padding: '20px 0' }}>
+        <Steps current={currentStep} style={{ marginBottom: '24px' }}>
+          <Step title="Thông tin cơ bản" />
+          <Step title="Thông tin chi tiết" />
+          <Step title="Xác nhận" />
+        </Steps>
 
-            <Form.Item
-              label="Chủ đề"
-              name="topicId"
-              rules={[
-                { required: true, message: 'Vui lòng chọn chủ đề' },
-              ]}
-            >
-              <Select
-                placeholder="Chọn chủ đề..."
-                onChange={handleTopicChange}
-                disabled={!formData.fieldId}
-              >
-                {topics
-                  .filter(topic => topic.fieldId === formData.fieldId)
-                  .map(topic => (
-                    <Option key={topic.id} value={topic.id}>
-                      {topic.name}
-                    </Option>
-                  ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Cấp độ"
-              name="levelId"
-            >
-              <Select
-                placeholder="Chọn cấp độ (tùy chọn)..."
-                onChange={handleLevelChange}
-                allowClear
-              >
-                {levels.map(level => (
-                  <Option key={level.id} value={level.id}>
-                    {level.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Loại bài viết"
-              name="postType"
-              rules={[
-                { required: true, message: 'Vui lòng chọn loại bài viết' },
-              ]}
-            >
-              <Select
-                placeholder="Chọn loại bài viết..."
-                onChange={handlePostTypeChange}
-              >
-                <Option value="DISCUSSION">Thảo luận</Option>
-                <Option value="QUESTION">Câu hỏi</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: 'Vui lòng chọn trạng thái' },
-              ]}
-            >
-              <Select
-                placeholder="Chọn trạng thái..."
-                onChange={handleStatusChange}
-              >
-                <Option value="DRAFT">Nháp</Option>
-                <Option value="PUBLISHED">Đã xuất bản</Option>
-                <Option value="LOCKED">Đã khóa</Option>
-              </Select>
-            </Form.Item>
-          </TabPane>
-
-          <TabPane tab="Thông tin chi tiết" key="detail">
-            <Form.Item
-              label="Tiêu đề"
-              name="title"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tiêu đề bài viết' },
-                { min: 1, message: 'Tiêu đề không được để trống' },
-                { max: 200, message: 'Tiêu đề không được vượt quá 200 ký tự' },
-              ]}
-            >
-              <Input
-                placeholder="Nhập tiêu đề bài viết..."
-                onChange={handleTitleChange}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Nội dung"
-              name="content"
-              rules={[
-                { required: true, message: 'Vui lòng nhập nội dung bài viết' },
-                { min: 1, message: 'Nội dung không được để trống' },
-              ]}
-            >
-              <TextArea
-                rows={8}
-                placeholder="Nhập nội dung bài viết..."
-                onChange={handleContentChange}
-              />
-            </Form.Item>
-
-            <Form.Item label="Cài đặt khóa bài viết">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div>
-                  <span style={{ marginRight: '8px' }}>Khóa bài viết:</span>
-                  <Switch
-                    checked={formData.isLocked}
-                    onChange={handleLockChange}
-                  />
-                </div>
-
-                {formData.isLocked && (
-                  <Form.Item
-                    name="lockTime"
-                    rules={[
-                      { required: true, message: 'Vui lòng chọn thời gian khóa' },
-                    ]}
-                    style={{ marginBottom: 0 }}
-                  >
-                    <Input
-                      type="datetime-local"
-                      placeholder="Chọn thời gian khóa"
-                    />
-                  </Form.Item>
-                )}
-              </div>
-            </Form.Item>
-          </TabPane>
-        </Tabs>
-      </Form>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            fieldId: data?.fieldId,
+            topicId: data?.topicId,
+            levelId: data?.levelId,
+            postType: data?.postType || 'DISCUSSION',
+            status: data?.status || 'DRAFT',
+            title: data?.title,
+            content: data?.content,
+            isLocked: !!data?.lockTime,
+            lockTime: data?.lockTime || '',
+          }}
+        >
+          {renderStepContent()}
+        </Form>
+      </div>
     </Drawer>
   );
 };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Drawer, Steps, Form, Select, Input, Button, message } from 'antd';
-import { Field, Topic, Level } from '@abc-interview-support-frontend/types';
+import { Field, Topic, Level, Post } from '@abc-interview-support-frontend/types';
 
 const { TextArea } = Input;
 
@@ -10,7 +10,10 @@ interface CreatePostDrawerProps {
   fields: Field[];
   topics: Topic[];
   levels: Level[];
+  mode: 'create' | 'edit';
+  editingPost?: Post;
   onSubmit: (data: CreatePostData) => Promise<void>;
+  onUpdate?: (postId: number, data: CreatePostData) => Promise<void>;
 }
 
 export interface CreatePostData {
@@ -29,7 +32,10 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
   fields,
   topics,
   levels,
+  mode,
+  editingPost,
   onSubmit,
+  onUpdate,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
@@ -39,6 +45,29 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
   const [fieldId, setFieldId] = useState<number | undefined>();
   const [topicId, setTopicId] = useState<number | undefined>();
   const [levelId, setLevelId] = useState<number | undefined>();
+
+  // Populate form when editing
+  useEffect(() => {
+    if (mode === 'edit' && editingPost && open) {
+      form.setFieldsValue({
+        fieldId: editingPost.fieldId,
+        topicId: editingPost.topicId,
+        levelId: editingPost.levelId,
+        postType: editingPost.postType,
+        title: editingPost.title,
+        content: editingPost.content,
+      });
+      setFieldId(editingPost.fieldId);
+      setTopicId(editingPost.topicId);
+      setLevelId(editingPost.levelId);
+    } else if (mode === 'create' && open) {
+      // Reset form for create mode
+      form.resetFields();
+      setFieldId(undefined);
+      setTopicId(undefined);
+      setLevelId(undefined);
+    }
+  }, [mode, editingPost, open, form]);
 
   const handleNext = async () => {
     try {
@@ -62,7 +91,7 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
       const values = await form.validateFields();
 
       const postData: CreatePostData = {
-        fieldId: values.fieldId,  
+        fieldId: values.fieldId,
         topicId: values.topicId,
         levelId: values.levelId,
         postType: 'DISCUSSION',
@@ -71,12 +100,17 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
         lockTime: null,
       };
 
-      await onSubmit(postData);
-      message.success('Tạo bài thảo luận thành công!');
+      if (mode === 'edit' && editingPost && onUpdate) {
+        await onUpdate(editingPost.id, postData);
+        message.success('Cập nhật bài thảo luận thành công!');
+      } else {
+        await onSubmit(postData);
+        message.success('Tạo bài thảo luận thành công!');
+      }
       handleClose();
     } catch (error) {
-      console.error('Error creating post:', error);
-      message.error('Không thể tạo bài thảo luận. Vui lòng thử lại!');
+      console.error('Error saving post:', error);
+      message.error(`Không thể ${mode === 'edit' ? 'cập nhật' : 'tạo'} bài thảo luận. Vui lòng thử lại!`);
     } finally {
       setLoading(false);
     }
@@ -106,8 +140,8 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
     <Drawer
       title={
         <div className="flex items-center gap-2">
-          <span className="text-xl">✍️</span>
-          <span>Tạo bài thảo luận mới</span>
+          <span className="text-xl">{mode === 'edit' ? '✏️' : '✍️'}</span>
+          <span>{mode === 'edit' ? 'Chỉnh sửa bài thảo luận' : 'Tạo bài thảo luận mới'}</span>
         </div>
       }
       placement="right"
@@ -133,7 +167,7 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
               </Button>
             ) : (
               <Button type="primary" onClick={handleSubmit} loading={loading}>
-                Tạo bài viết
+                {mode === 'edit' ? 'Cập nhật bài viết' : 'Tạo bài viết'}
               </Button>
             )}
           </div>
@@ -288,10 +322,6 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
             rules={[
               { required: true, message: 'Vui lòng nhập tiêu đề!' },
               {
-                min: 10,
-                message: 'Tiêu đề phải có ít nhất 10 ký tự!',
-              },
-              {
                 max: 200,
                 message: 'Tiêu đề không được quá 200 ký tự!',
               },
@@ -314,10 +344,6 @@ const CreatePostDrawer: React.FC<CreatePostDrawerProps> = ({
             name="content"
             rules={[
               { required: true, message: 'Vui lòng nhập nội dung!' },
-              {
-                min: 20,
-                message: 'Nội dung phải có ít nhất 20 ký tự!',
-              },
               {
                 max: 5000,
                 message: 'Nội dung không được quá 5000 ký tự!',

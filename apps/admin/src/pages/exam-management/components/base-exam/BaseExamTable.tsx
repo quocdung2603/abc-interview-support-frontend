@@ -30,8 +30,8 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, top
     switch (status) {
       case 'DRAFT':
         return 'Bản nháp';
-      case 'ACTIVE':
-        return 'Đang hoạt động';
+      case 'PUBLISHED':
+        return 'Đã xuất bản';
       case 'INACTIVE':
         return 'Không hoạt động';
       case 'COMPLETED':
@@ -45,14 +45,12 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, top
     switch (status) {
       case 'DRAFT':
         return 'orange';
-      case 'ACTIVE':
-        return 'green';
+      case 'PUBLISHED':
+        return 'blue';
       case 'INACTIVE':
         return 'red';
       case 'COMPLETED':
-        return 'blue';
-      case 'CANCELLED':
-        return 'gray';
+        return 'green';
       default:
         return 'default';
     }
@@ -72,7 +70,7 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, top
       title: 'Tiêu đề bài kiểm tra',
       dataIndex: 'title',
       key: 'title',
-      render: (title: string) => (
+      render: (title: string, record: any) => (
         <div
           style={{
             maxWidth: '200px',
@@ -81,7 +79,7 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, top
             whiteSpace: 'nowrap',
           }}
         >
-          {title}
+          #{record.id}: {title}
         </div>
       ),
     },

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NewsItem, Field, Topic, Level, User } from '@abc-interview-support-frontend/types';
 import CreateNewsButton from './CreateNewsButton';
 import NewsTable from './NewsTable';
 import CreateNewsDrawer, { CreateNewsData, EditNewsData } from './CreateNewsDrawer';
+import NewsFilter, { NewsFilters } from './NewsFilter';
 import { newsService } from '@abc-interview-support-frontend/services';
 import { message, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +28,27 @@ const NewsTabs: React.FC<NewsTabsProps> = ({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<EditNewsData | undefined>();
+  const [filters, setFilters] = useState<NewsFilters>({});
+  const [filteredNews, setFilteredNews] = useState<NewsItem[]>(news);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let filtered = [...news];
+
+    if (filters.newsType) {
+      filtered = filtered.filter(item => item.newsType === filters.newsType);
+    }
+    if (filters.fieldId) {
+      filtered = filtered.filter(item => item.fieldId === filters.fieldId);
+    }
+    if (filters.title) {
+      filtered = filtered.filter(item =>
+        item.title.toLowerCase().includes(filters.title!.toLowerCase())
+      );
+    }
+
+    setFilteredNews(filtered);
+  }, [news, filters]);
 
   const handleCreateNews = () => {
     setEditMode(false);
@@ -129,9 +150,15 @@ const NewsTabs: React.FC<NewsTabsProps> = ({
         <CreateNewsButton onClick={handleCreateNews} />
       </div>
 
+      {/* News Filter */}
+      <NewsFilter
+        fields={fields}
+        onFilterChange={setFilters}
+      />
+
       {/* News Table */}
       <NewsTable
-        news={news}
+        news={filteredNews}
         onViewNews={handleViewNews}
         onEditNews={handleEditNews}
         onDeleteNews={handleDeleteNews}

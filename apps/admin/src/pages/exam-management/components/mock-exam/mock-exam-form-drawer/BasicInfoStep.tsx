@@ -6,8 +6,9 @@ import { Exam, QuestionType, Topic, Field, Level, ExamQuestion } from '@abc-inte
 const { Option } = Select;
 
 // Extended interface to include UI-specific fields
-interface CreateFormFields extends Exam {
-  totalQuestions: number;
+interface CreateFormFields extends Omit<Exam, 'fieldId' | 'levelId'> {
+  fieldId?: number;
+  levelId?: number;
   candidates: number;
   startTime: string;
   endTime: string;
@@ -85,17 +86,23 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
           <Controller
             name="fieldId"
             control={control}
-            rules={{ required: 'Vui lòng chọn lĩnh vực' }}
+            rules={{
+              required: 'Vui lòng chọn lĩnh vực',
+              validate: (value) => value !== undefined || 'Vui lòng chọn lĩnh vực'
+            }}
             render={({ field }) => (
               <Select
                 size="large"
                 placeholder="Chọn lĩnh vực"
                 {...field}
                 className="rounded-lg"
+                showSearch
+                allowClear
+                optionFilterProp="children"
               >
-                {fields.map((field) => (
-                  <Option key={field.id} value={field.id}>
-                    {field.name}
+                {fields.map((fieldOption) => (
+                  <Option key={fieldOption.id} value={fieldOption.id}>
+                    {fieldOption.name}
                   </Option>
                 ))}
               </Select>
@@ -114,17 +121,23 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
           <Controller
             name="levelId"
             control={control}
-            rules={{ required: 'Vui lòng chọn trình độ' }}
+            rules={{
+              required: 'Vui lòng chọn trình độ',
+              validate: (value) => value !== undefined || 'Vui lòng chọn trình độ'
+            }}
             render={({ field }) => (
               <Select
                 size="large"
                 placeholder="Chọn trình độ"
                 {...field}
                 className="rounded-lg"
+                showSearch
+                allowClear
+                optionFilterProp="children"
               >
-                {levels.map((level) => (
-                  <Option key={level.id} value={level.id}>
-                    {level.name}
+                {levels.map((levelOption) => (
+                  <Option key={levelOption.id} value={levelOption.id}>
+                    {levelOption.name}
                   </Option>
                 ))}
               </Select>
@@ -152,13 +165,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn chủ đề"
                 {...field}
-                value={field.value?.map(String) || []}
-                onChange={(values) => field.onChange(values?.map(Number) || [])}
                 className="rounded-lg"
+                showSearch
+                allowClear
+                optionFilterProp="children"
               >
-                {topics.map((topic) => (
-                  <Option key={topic.id} value={topic.id}>
-                    {topic.name}
+                {topics.map((topicOption) => (
+                  <Option key={topicOption.id} value={topicOption.id}>
+                    {topicOption.name}
                   </Option>
                 ))}
               </Select>
@@ -186,13 +200,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
                 size="large"
                 placeholder="Chọn loại câu hỏi"
                 {...field}
-                value={field.value?.map(String) || []}
-                onChange={(values) => field.onChange(values?.map(Number) || [])}
                 className="rounded-lg"
+                showSearch
+                allowClear
+                optionFilterProp="children"
               >
-                {questionTypes.map((type) => (
-                  <Option key={type.id} value={type.id}>
-                    {type.name}
+                {questionTypes.map((typeOption) => (
+                  <Option key={typeOption.id} value={typeOption.id}>
+                    {typeOption.name}
                   </Option>
                 ))}
               </Select>
@@ -225,42 +240,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ control, errors, question
         </Form.Item>
       </div>
 
-      <div>
-        <Form.Item
-          label="Số lượng câu hỏi"
-          name="totalQuestions"
-          rules={[
-            { required: true, message: 'Vui lòng nhập số lượng câu hỏi' },
-            { type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' },
-          ]}
-          className="mb-0"
-        >
-          <Controller
-            name="totalQuestions"
-            control={control}
-            rules={{
-              required: 'Vui lòng nhập số lượng câu hỏi',
-              min: { value: 1, message: 'Số lượng phải lớn hơn 0' }
-            }}
-            render={({ field }) => (
-              <Input
-                type="number"
-                size="large"
-                placeholder="10"
-                {...field}
-                className="rounded-lg"
-              />
-            )}
-          />
-        </Form.Item>
-        {errors.totalQuestions && (
-          <span className="text-red-500 text-sm mt-1 block">
-            {typeof errors.totalQuestions.message === 'string'
-              ? errors.totalQuestions.message
-              : 'Lỗi không xác định'}
-          </span>
-        )}
-      </div>
     </div>
   );
 };

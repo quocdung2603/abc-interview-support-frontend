@@ -1,5 +1,6 @@
 import { Answer } from '@abc-interview-support-frontend/types';
 import React from 'react';
+import dayjs from 'dayjs';
 
 interface AnswersSectionProps {
   answers: Answer[];
@@ -10,12 +11,8 @@ export const AnswersSection: React.FC<AnswersSectionProps> = ({
   answers,
   onAnswerVote,
 }) => {
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
+  const formatDate = (date: string) => {
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   // Chỉ lấy câu trả lời mẫu
@@ -155,7 +152,7 @@ export const AnswersSection: React.FC<AnswersSectionProps> = ({
             {/* Vote buttons */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onAnswerVote(sampleAnswer.answerId, 'useful')}
+                onClick={() => onAnswerVote(sampleAnswer.id, 'useful')}
                 className="flex items-center gap-1 px-3 py-2 rounded-lg border border-green-200 hover:bg-green-50 transition-colors group"
               >
                 <svg
@@ -171,7 +168,7 @@ export const AnswersSection: React.FC<AnswersSectionProps> = ({
               </button>
 
               <button
-                onClick={() => onAnswerVote(sampleAnswer.answerId, 'unuseful')}
+                onClick={() => onAnswerVote(sampleAnswer.id, 'unuseful')}
                 className="flex items-center gap-1 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-50 transition-colors group"
               >
                 <svg

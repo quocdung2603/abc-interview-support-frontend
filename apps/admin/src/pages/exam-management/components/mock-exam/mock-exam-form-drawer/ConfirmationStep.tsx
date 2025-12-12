@@ -4,8 +4,9 @@ import { UseFormWatch } from 'react-hook-form';
 import { Exam, ExamQuestion } from '@abc-interview-support-frontend/types';
 
 // Extended interface to include UI-specific fields
-interface CreateFormFields extends Exam {
-  totalQuestions: number;
+interface CreateFormFields extends Omit<Exam, 'fieldId' | 'levelId'> {
+  fieldId?: number;
+  levelId?: number;
   candidates: number;
   startTime: string;
   endTime: string;

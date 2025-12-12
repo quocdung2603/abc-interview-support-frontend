@@ -3,6 +3,7 @@ import { Drawer, Card, Tag, Typography, Spin, message, Tabs, Descriptions } from
 import { RecruitmentNews, Field, User } from '@abc-interview-support-frontend/types';
 import { newsService, userService } from '@abc-interview-support-frontend/services';
 import type { TabsProps } from 'antd';
+import dayjs from 'dayjs';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -60,13 +61,7 @@ const RecruitmentNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
     }
   };
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getFieldName = (fieldId?: number) => {

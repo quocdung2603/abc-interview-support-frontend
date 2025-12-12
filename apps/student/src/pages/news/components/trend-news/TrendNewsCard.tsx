@@ -1,4 +1,5 @@
 import { News } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface TrendNewsCardProps {
   news: News;
@@ -7,11 +8,7 @@ interface TrendNewsCardProps {
 
 export const TrendNewsCard = ({ news, onClick }: TrendNewsCardProps) => {
   const formatDate = (date: string | Date) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(new Date(date));
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const handleClick = () => {

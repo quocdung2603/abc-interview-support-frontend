@@ -5,6 +5,7 @@ import {
   Topic,
 } from '@abc-interview-support-frontend/types';
 import React from 'react';
+import dayjs from 'dayjs';
 
 interface QuestionDetailHeaderProps {
   question: Question;
@@ -24,11 +25,7 @@ export const QuestionDetailHeader: React.FC<QuestionDetailHeaderProps> = ({
   onBack,
 }) => {
   const formatDate = (date: string) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(new Date(date));
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getLevelColor = (levelName: string) => {

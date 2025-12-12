@@ -100,6 +100,45 @@ export class CommunityService {
     return response.data;
   }
 
+  async updateDiscussionPost(
+    postId: number,
+    data: {
+      fieldId: number;
+      topicId: number;
+      levelId: number;
+      postType: 'DISCUSSION' | 'QUESTION';
+      title: string;
+      content: string;
+      lockTime: null;
+    }
+  ) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+
+    const response = await this.apiClient.put(`/posts/${postId}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  }
+
+  async deleteDiscussionPost(postId: number) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.delete(`/posts/${postId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  }
+
   async getPostComments(postId: number) {
     const token = this.getToken();
     if (!token) {
@@ -145,6 +184,58 @@ export class CommunityService {
     const response = await this.apiClient.post(
       `/comments/${commentId}/vote`,
       data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async approvePost(postId: number) {
+    const token = this.getToken();
+    console.log('access token', token);
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.put(
+      `/posts/${postId}/approve`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async rejectPost(postId: number) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.put(
+      `/posts/${postId}/reject`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async setLockTime(postId: number, lockTime: any) {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('Unauthorized: No token found');
+    }
+    const response = await this.apiClient.put(
+      `/posts/${postId}/lock`,
+      { lockTime },
       {
         headers: {
           Authorization: `Bearer ${token}`,

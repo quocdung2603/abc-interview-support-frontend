@@ -1,6 +1,7 @@
 import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 interface RecruitmentNewsDetailHeaderProps {
   news: RecruitmentNews;
@@ -10,13 +11,7 @@ export const RecruitmentNewsDetailHeader: React.FC<
   RecruitmentNewsDetailHeaderProps
 > = ({ news }) => {
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getJobType = () => {

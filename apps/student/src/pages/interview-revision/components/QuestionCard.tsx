@@ -5,6 +5,7 @@ import {
   Topic,
 } from '@abc-interview-support-frontend/types';
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 
 interface QuestionCardProps {
   question: Question;
@@ -26,11 +27,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const [showPreview, setShowPreview] = useState(false);
 
   const formatDate = (date: string) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(new Date(date));
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getLevelColor = (levelName: string) => {

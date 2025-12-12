@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Tag, Button } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Question } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface QuestionTableProps {
   questions: Question[];
@@ -26,19 +27,6 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
         return 'Lập trình';
       default:
         return type;
-    }
-  };
-
-  const getQuestionTypeColor = (type: string) => {
-    switch (type) {
-      case 'MULTIPLE_CHOICE':
-        return 'blue';
-      case 'ESSAY':
-        return 'green';
-      case 'CODING':
-        return 'purple';
-      default:
-        return 'default';
     }
   };
 
@@ -69,17 +57,7 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
   };
 
   const formatDate = (dateString: string | Date) => {
-    try {
-      return new Date(dateString).toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return String(dateString);
-    }
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const columns: ColumnsType<Question> = [

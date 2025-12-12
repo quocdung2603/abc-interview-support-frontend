@@ -4,7 +4,7 @@ import { Progress, Modal, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { QuestionInExam, Answer, Exam } from '@abc-interview-support-frontend/types';
 import { examService, userService } from '@abc-interview-support-frontend/services';
-import { ExamDetailHeader, ExamTimer, FillInTheBlankQuestion, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
+import { ExamDetailHeader, ExamTimer, MultipleChoiceQuestion, OpenEndedQuestion, QuestionControls, QuestionNavigator, SingleChoiceQuestion } from './components/mock-interview-detail';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 
 interface UserAnswer {
@@ -98,23 +98,39 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     initializeExam();
   }, [examId]);
 
-  // Handle answer changes
+  // Handle answer changes based on question type
   const handleAnswerChange = useCallback(
     (questionId: string, answer: string) => {
+      // Find the question to determine its type
+      const question = questions.find(q => q.id.toString() === questionId);
+      let processedAnswer = answer;
+
+      if (question) {
+        // For Single Choice (1) and Multiple Choice (2): store answer IDs
+        // For Open Ended (3): store answer content
+        if (question.questionTypeId === 1 || question.questionTypeId === 2) {
+          // Already storing answer IDs for choice questions
+          processedAnswer = answer;
+        } else if (question.questionTypeId === 3) {
+          // Store text content for open-ended questions
+          processedAnswer = answer;
+        }
+      }
+
       setUserAnswers((prev) => {
         const existingIndex = prev.findIndex((ua) => ua.questionId === parseInt(questionId));
         if (existingIndex >= 0) {
           // Update existing
           const newAnswers = [...prev];
-          newAnswers[existingIndex] = { questionId: parseInt(questionId), answerContent: answer };
+          newAnswers[existingIndex] = { questionId: parseInt(questionId), answerContent: processedAnswer };
           return newAnswers;
         } else {
           // Add new
-          return [...prev, { questionId: parseInt(questionId), answerContent: answer }];
+          return [...prev, { questionId: parseInt(questionId), answerContent: processedAnswer }];
         }
       });
     },
-    []
+    [questions]
   );
 
   // Navigation functions
@@ -168,6 +184,7 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
     const examIdNum = parseInt(examId || '0');
 
     try {
+      console.log('user answer', userAnswers);
       await examService.submitExamAnswers(userId, examIdNum, userAnswers);
       message.success('Bài kiểm tra đã được nộp thành công!');
       const eloUpdateData: any = {
@@ -293,11 +310,6 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {currentQuestion.questionText}
             </h3>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-yellow-800">
-                <span className="font-medium">Lưu ý:</span> Câu hỏi này chưa có đáp án lựa chọn. Vui lòng trả lời dựa trên kiến thức của bạn.
-              </p>
-            </div>
             <div className="space-y-3">
               <label className="block">
                 <span className="text-sm font-medium text-gray-700 mb-2 block">
@@ -337,13 +349,13 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
             answers={currentAnswers}
             selectedAnswers={
               typeof userAnswer === 'string' && userAnswer
-                ? userAnswer.split('|')
+                ? userAnswer.split(';')
                 : []
             }
             onAnswerChange={(answerIds) =>
               handleAnswerChange(
                 currentQuestion.id.toString(),
-                answerIds.join('|')
+                answerIds.join(';')
               )
             }
           />
@@ -353,18 +365,6 @@ const MockInterviewDetail: React.FC<MockInterviewDetailProps> = ({ examId: propE
         return (
           <OpenEndedQuestion
             question={currentQuestion}
-            userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
-            onAnswerChange={(answer) =>
-              handleAnswerChange(currentQuestion.id.toString(), answer)
-            }
-          />
-        );
-
-      case 4: // FillInTheBlank
-        return (
-          <FillInTheBlankQuestion
-            question={currentQuestion}
-            answers={currentAnswers}
             userAnswer={typeof userAnswer === 'string' ? userAnswer : ''}
             onAnswerChange={(answer) =>
               handleAnswerChange(currentQuestion.id.toString(), answer)

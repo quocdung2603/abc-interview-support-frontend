@@ -1,6 +1,7 @@
 import React from 'react';
 import { News, User } from '@abc-interview-support-frontend/types';
 import { Link } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 interface TrendNewsDetailHeaderProps {
   news: News;
@@ -12,13 +13,7 @@ export const TrendNewsDetailHeader: React.FC<TrendNewsDetailHeaderProps> = ({
   author,
 }) => {
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getAuthorName = () => {

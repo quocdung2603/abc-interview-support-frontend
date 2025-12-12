@@ -25,11 +25,13 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'Đang hoạt động';
-      case 'Inactive':
+      case 'DRAFT':
+        return 'Bản nháp';
+      case 'PUBLISHED':
+        return 'Đã xuất bản';
+      case 'INACTIVE':
         return 'Không hoạt động';
-      case 'Completed':
+      case 'COMPLETED':
         return 'Đã hoàn thành';
       default:
         return status;
@@ -38,22 +40,24 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'green';
-      case 'Inactive':
+      case 'DRAFT':
         return 'orange';
-      case 'Completed':
+      case 'PUBLISHED':
         return 'blue';
+      case 'INACTIVE':
+        return 'red';
+      case 'COMPLETED':
+        return 'green';
       default:
         return 'default';
     }
   };
-
+  
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
-      return `${hours}h ${mins}m`;
+      return `${hours}h : ${mins}m`;
     }
     return `${mins}m`;
   };

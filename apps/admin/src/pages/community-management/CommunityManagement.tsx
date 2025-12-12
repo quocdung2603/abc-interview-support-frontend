@@ -55,8 +55,9 @@ const CommunityManagement = () => {
   const getAllPosts = async () => {
     try {
       const res = await communityService.getAllPost();
-      console.log('Posts:', res.content || res);
-      setDataList((res.content || res || []) as Post[]);
+      let posts = res.content || res || [];
+      posts = posts.filter((post: Post) => post.status === 'PUBLISHED');
+      setDataList(posts as Post[]);
     } catch (error) {
       console.error('Error fetching posts:', error);
       setDataList([]);

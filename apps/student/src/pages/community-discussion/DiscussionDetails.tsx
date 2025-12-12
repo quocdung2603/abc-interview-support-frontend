@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Post, Field, Level, Topic, DiscussionAnswer } from '@abc-interview-support-frontend/types';
 import { questionService, communityService, userService } from '@abc-interview-support-frontend/services';
+import dayjs from 'dayjs';
 import DiscussionTimer from './components/discussion-detail/DiscussionTimer';
 import DiscussionQuestion from './components/discussion-detail/DiscussionQuestion';
 import VoteRemaining from './components/discussion-detail/VoteRemaining';
@@ -112,25 +113,24 @@ const DiscussionDetails = (
     currentPage * answersPerPage
   );
 
-  // Check if discussion has ended
+  // Check if discussion has ended using dayjs
   const isDiscussionEnded = (() => {
     if (!post || !post.lockTime) return false;
 
     const lockTime = post.lockTime;
     console.log('Checking discussion end - lockTime:', lockTime);
 
-    // Parse lockTime - JavaScript will automatically handle UTC to local conversion
-    const endDate = new Date(lockTime);
-    const now = new Date();
-    const hasEnded = now > endDate;
+    // Parse lockTime as local time (format: YYYY-MM-DDTHH:mm:ss)
+    const endDate = dayjs(lockTime, 'YYYY-MM-DDTHH:mm:ss');
+    const now = dayjs();
+    const hasEnded = now.isAfter(endDate);
 
     console.log('Discussion end check:', {
-      now: now.toISOString(),
-      nowLocal: now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
-      endDate: endDate.toISOString(),
-      endDateLocal: endDate.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
+      now: now.format('YYYY-MM-DD HH:mm:ss'),
+      endDate: endDate.format('YYYY-MM-DD HH:mm:ss'),
       hasEnded,
-      timeDiff: (endDate.getTime() - now.getTime()) / 1000 / 60 + ' minutes'
+      timeDiff: endDate.diff(now, 'minute') + ' minutes',
+      isEndDateValid: endDate.isValid()
     });
 
     return hasEnded;

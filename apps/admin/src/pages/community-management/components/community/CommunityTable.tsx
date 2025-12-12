@@ -7,6 +7,7 @@ import {
   Post,
   Topic,
 } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface TableProps {
   dataList: Post[];
@@ -19,15 +20,7 @@ interface TableProps {
 }
 
 const FormattedDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  };
-  return new Date(dateString).toLocaleDateString('vi-VN', options);
+  return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
 };
 
 const CommunityTable: React.FC<TableProps> = ({

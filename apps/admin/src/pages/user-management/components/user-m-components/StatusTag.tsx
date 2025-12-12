@@ -20,23 +20,24 @@ const StatusTag: React.FC<StatusTagProps> = ({ status, type }) => {
           return { color: 'default', text: status };
       }
     } else if (type.includes('elo-rank')) {
-      switch (status) {
-        case 'Newbie':
-          return { color: '#d9d9d9', text: 'Newbie' }; // xám nhạt (custom hex)
-        case 'Learner':
-          return { color: 'blue', text: 'Learner' }; // preset
-        case 'Contributor':
-          return { color: 'cyan', text: 'Contributor' }; // preset
-        case 'Solver':
-          return { color: 'green', text: 'Solver' }; // preset
-        case 'Expert':
-          return { color: 'gold', text: 'Expert' }; // preset
-        case 'Senior Expert':
-          return { color: 'orange', text: 'Senior Expert' }; // preset
-        case 'Master':
-          return { color: 'volcano', text: 'Master' }; // preset
-        case 'Legend':
-          return { color: 'purple', text: 'Legend' }; // preset
+      const normalizedStatus = status.toLowerCase().replace(/\s+/g, ''); // Normalize: lowercase + remove spaces
+      switch (normalizedStatus) {
+        case 'newbie':
+          return { color: '#d9d9d9', text: 'Newbie' };
+        case 'learner':
+          return { color: 'blue', text: 'Learner' };
+        case 'contributor':
+          return { color: 'cyan', text: 'Contributor' };
+        case 'solver':
+          return { color: 'green', text: 'Solver' };
+        case 'expert':
+          return { color: 'gold', text: 'Expert' };
+        case 'seniorexpert':
+          return { color: 'orange', text: 'Senior Expert' };
+        case 'master':
+          return { color: 'volcano', text: 'Master' };
+        case 'legend':
+          return { color: 'purple', text: 'Legend' };
         default:
           return { color: '#d9d9d9', text: status };
       }

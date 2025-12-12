@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { notification } from 'antd';
+import { message } from 'antd';
 import {
   MockExamPageHeader,
   MockExamPreviewDrawer,
@@ -52,10 +52,7 @@ const MockExamManagement = () => {
       setFormDrawerVisible(true);
     } catch (error) {
       console.error('Error fetching exam details:', error);
-      notification.error({
-        message: 'Lỗi khi tải thông tin bài kiểm tra',
-        description: 'Không thể tải chi tiết bài kiểm tra. Vui lòng thử lại.',
-      });
+      message.error('Lỗi khi tải thông tin bài kiểm tra. Vui lòng thử lại.');
     }
   };
 
@@ -72,6 +69,7 @@ const MockExamManagement = () => {
             await examService.addQuestionToExam(examId.toString(), data.questions[i].id, i + 1);
           }
         }
+        message.success('Tạo bài kiểm tra thành công!');
       } else {
         // Update mode: update exam -> remove all questions -> add new questions
         await examService.updateExam(data.id, data);
@@ -88,11 +86,13 @@ const MockExamManagement = () => {
             await examService.addQuestionToExam(data.id.toString(), data.questions[i].id, i + 1);
           }
         }
+        message.success('Cập nhật bài kiểm tra thành công!');
       }
       // Refresh data
       getAllExams("VIRTUAL");
     } catch (error) {
       console.error('Error saving exam:', error);
+      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
       throw error;
     }
   };
@@ -229,7 +229,6 @@ const MockExamManagement = () => {
         visible={formDrawerVisible}
         initForm={selectedExam ? {
           ...selectedExam,
-          totalQuestions: selectedExam.questionCount,
           candidates: 1,
           startTime: '',
           endTime: '',

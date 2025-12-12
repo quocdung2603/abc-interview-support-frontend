@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { message, Modal } from 'antd';
 import { User, Question, Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 import CreateQuestionButton from './CreateQuestionButton';
 import QuestionTable from './QuestionTable';
 import CreateQuestionDrawer, { CreateQuestionData, EditQuestionData } from './CreateQuestionDrawer';
+import QuestionFilter, { QuestionFilters } from './QuestionFilter';
 import { questionService } from '@abc-interview-support-frontend/services';
 
 interface QuestionTabsProps {
@@ -28,6 +29,35 @@ const QuestionTabs: React.FC<QuestionTabsProps> = ({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<EditQuestionData | undefined>();
+  const [filters, setFilters] = useState<QuestionFilters>({});
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>(questions);
+
+  useEffect(() => {
+    let filtered = [...questions];
+
+    if (filters.fieldId) {
+      filtered = filtered.filter(question => question.fieldId === filters.fieldId);
+    }
+    if (filters.topicId) {
+      filtered = filtered.filter(question => question.topicId === filters.topicId);
+    }
+    if (filters.levelId) {
+      filtered = filtered.filter(question => question.levelId === filters.levelId);
+    }
+    if (filters.questionTypeId) {
+      filtered = filtered.filter(question => question.questionTypeId === filters.questionTypeId);
+    }
+    if (filters.language) {
+      filtered = filtered.filter(question => question.language === filters.language);
+    }
+    if (filters.questionContent) {
+      filtered = filtered.filter(question =>
+        question.questionContent.toLowerCase().includes(filters.questionContent!.toLowerCase())
+      );
+    }
+
+    setFilteredQuestions(filtered);
+  }, [questions, filters]);
 
   const handleCreateQuestion = useCallback(() => {
     setEditMode(false);
@@ -117,9 +147,18 @@ const QuestionTabs: React.FC<QuestionTabsProps> = ({
         <CreateQuestionButton onClick={handleCreateQuestion} />
       </div>
 
+      {/* Question Filter */}
+      <QuestionFilter
+        fields={fields}
+        topics={topics}
+        levels={levels}
+        questionTypes={questionTypes}
+        onFilterChange={setFilters}
+      />
+
       {/* Questions table */}
       <QuestionTable
-        questions={questions}
+        questions={filteredQuestions}
         onViewQuestion={handleViewQuestion}
         onEditQuestion={handleEditQuestion}
         onDeleteQuestion={handleDeleteQuestion}

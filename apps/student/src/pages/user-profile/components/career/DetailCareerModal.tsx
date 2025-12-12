@@ -5,6 +5,7 @@ import {
   Topic,
   CareerPreference,
 } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface DetailCareerModalProps {
   isOpen: boolean;
@@ -50,12 +51,7 @@ const DetailCareerModal: React.FC<DetailCareerModalProps> = ({
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   return (

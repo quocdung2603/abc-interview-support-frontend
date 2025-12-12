@@ -43,8 +43,8 @@ const SingleChoiceQuestion: React.FC<SingleChoiceQuestionProps> = ({
                 type="radio"
                 name={`question-${question.id.toString()}`}
                 value={answer.id.toString()}
-                checked={selectedAnswer === answer.answerContent}
-                onChange={() => onAnswerChange(answer.answerContent)}
+                checked={selectedAnswer === answer.id.toString()}
+                onChange={() => onAnswerChange(answer.id.toString())}
                 style={radioStyles}
                 className="mt-1 mr-3"
               />

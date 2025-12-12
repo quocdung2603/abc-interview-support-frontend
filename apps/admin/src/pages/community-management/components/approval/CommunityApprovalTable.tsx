@@ -1,12 +1,13 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { EditOutlined } from '@ant-design/icons';
 import {
   Field,
   Level,
   Post,
   Topic,
 } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface TableProps {
   dataList: Post[];
@@ -19,15 +20,7 @@ interface TableProps {
 }
 
 const FormattedDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  };
-  return new Date(dateString).toLocaleDateString('vi-VN', options);
+  return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
 };
 
 const CommunityApprovalTable: React.FC<TableProps> = ({

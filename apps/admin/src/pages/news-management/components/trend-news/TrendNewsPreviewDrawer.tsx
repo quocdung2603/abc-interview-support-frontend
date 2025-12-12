@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Drawer, Card, Tag, Typography, Spin, message } from 'antd';
 import { News, Field } from '@abc-interview-support-frontend/types';
 import { newsService } from '@abc-interview-support-frontend/services';
+import dayjs from 'dayjs';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -43,13 +44,7 @@ const TrendNewsPreviewDrawer: React.FC<PreviewDrawerProps> = ({
     }
   };
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  return dayjs(date).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getFieldName = (fieldId?: number) => {

@@ -11,7 +11,6 @@ import {
 import { generateComparisonPrompt, AIComparisonResult, QuestionComparisonInput } from './aiComparisonPrompt';
 
 const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
 
 interface QuestionComparisonModalProps {
   visible: boolean;

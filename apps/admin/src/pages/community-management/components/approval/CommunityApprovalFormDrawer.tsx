@@ -3,6 +3,7 @@ import { Drawer, Tabs, Card, Descriptions, Spin, Alert, Tag, Select, Button, Inp
 import { LockOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { userService } from '@abc-interview-support-frontend/services';
 import { User, Post, Field, Topic, Level } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface CommunityPreviewDrawerProps {
   open: boolean;
@@ -71,7 +72,7 @@ const CommunityPreviewDrawer: React.FC<CommunityPreviewDrawerProps> = ({
   }, [approvalDecision]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN');
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getFieldName = (fieldId: number | undefined) => {

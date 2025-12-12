@@ -4,6 +4,7 @@ import {
 } from '@ant-design/icons';
 import { Field, Level, Post, Topic, User } from '@abc-interview-support-frontend/types';
 import { userService } from '@abc-interview-support-frontend/services';
+import dayjs from 'dayjs';
 
 interface DiscussionPostProps {
   post: Post;
@@ -40,14 +41,7 @@ const DiscussionPost: React.FC<DiscussionPostProps> = ({
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return dayjs(dateStr).format('DD/MM/YYYY HH:mm:ss');
   }
 
   const shorternContent = (content: string, maxLength: number) => {

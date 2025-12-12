@@ -3,6 +3,7 @@ import { Table, Tag, Button, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { NewsItem } from '@abc-interview-support-frontend/types';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 interface NewsTableProps {
   news: NewsItem[];
@@ -51,17 +52,7 @@ const NewsTable: React.FC<NewsTableProps> = ({ news, onViewNews, onEditNews, onD
   };
 
   const formatDate = (dateString: string | Date) => {
-    try {
-      return new Date(dateString).toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return String(dateString);
-    }
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const columns: ColumnsType<NewsItem> = [

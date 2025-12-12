@@ -1,34 +1,37 @@
 import React, { useState } from 'react';
 import { Card, Select, Input, Button, Space } from 'antd';
 import { FilterOutlined, ClearOutlined } from '@ant-design/icons';
-import { Field, Topic, Level } from '@abc-interview-support-frontend/types';
+import { Field, Topic, Level, QuestionType } from '@abc-interview-support-frontend/types';
 
 const { Option } = Select;
 
-interface ExamFilterProps {
+interface QuestionFilterProps {
   fields: Field[];
   topics: Topic[];
   levels: Level[];
-  onFilterChange: (filters: ExamFilters) => void;
+  questionTypes: QuestionType[];
+  onFilterChange: (filters: QuestionFilters) => void;
 }
 
-export interface ExamFilters {
-  examType?: string;
+export interface QuestionFilters {
   fieldId?: number;
-  topicIds?: number[];
+  topicId?: number;
   levelId?: number;
-  title?: string;
+  questionTypeId?: number;
+  language?: string;
+  questionContent?: string;
 }
 
-const ExamFilter: React.FC<ExamFilterProps> = ({
+const QuestionFilter: React.FC<QuestionFilterProps> = ({
   fields,
   topics,
   levels,
+  questionTypes,
   onFilterChange,
 }) => {
-  const [filters, setFilters] = useState<ExamFilters>({});
+  const [filters, setFilters] = useState<QuestionFilters>({});
 
-  const handleFilterChange = (key: keyof ExamFilters, value: any) => {
+  const handleFilterChange = (key: keyof QuestionFilters, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -40,34 +43,14 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
     onFilterChange(clearedFilters);
   };
 
-  const examTypeOptions = [
-    { value: 'VIRTUAL', label: 'Bài kiểm tra ảo' },
-    { value: 'PHYSICAL', label: 'Bài kiểm tra thực tế' },
+  const languageOptions = [
+    { value: 'VIETNAMESE', label: 'Tiếng Việt' },
+    { value: 'ENGLISH', label: 'Tiếng Anh' },
   ];
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
-            Loại bài kiểm tra
-          </label>
-          <Select
-            placeholder="Chọn loại"
-            allowClear
-            size="small"
-            className="w-full"
-            value={filters.examType}
-            onChange={(value) => handleFilterChange('examType', value)}
-          >
-            {examTypeOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
             Lĩnh vực
@@ -80,7 +63,7 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
             value={filters.fieldId}
             onChange={(value) => handleFilterChange('fieldId', value)}
           >
-            {fields?.map((field) => (
+            {fields.map((field) => (
               <Option key={field.id} value={field.id}>
                 {field.name}
               </Option>
@@ -95,13 +78,12 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
           <Select
             placeholder="Chọn chủ đề"
             allowClear
-            mode="multiple"
             size="small"
             className="w-full"
-            value={filters.topicIds}
-            onChange={(value) => handleFilterChange('topicIds', value)}
+            value={filters.topicId}
+            onChange={(value) => handleFilterChange('topicId', value)}
           >
-            {topics?.map((topic) => (
+            {topics.map((topic) => (
               <Option key={topic.id} value={topic.id}>
                 {topic.name}
               </Option>
@@ -121,7 +103,7 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
             value={filters.levelId}
             onChange={(value) => handleFilterChange('levelId', value)}
           >
-            {levels?.map((level) => (
+            {levels.map((level) => (
               <Option key={level.id} value={level.id}>
                 {level.name}
               </Option>
@@ -131,13 +113,53 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
 
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
-            Tiêu đề
+            Loại câu hỏi
+          </label>
+          <Select
+            placeholder="Chọn loại"
+            allowClear
+            size="small"
+            className="w-full"
+            value={filters.questionTypeId}
+            onChange={(value) => handleFilterChange('questionTypeId', value)}
+          >
+            {questionTypes.map((type) => (
+              <Option key={type.id} value={type.id}>
+                {type.name}
+              </Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+            Ngôn ngữ
+          </label>
+          <Select
+            placeholder="Chọn ngôn ngữ"
+            allowClear
+            size="small"
+            className="w-full"
+            value={filters.language}
+            onChange={(value) => handleFilterChange('language', value)}
+          >
+            {languageOptions.map((option) => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+            Nội dung câu hỏi
           </label>
           <Input
             placeholder="Tìm kiếm..."
             size="small"
-            value={filters.title}
-            onChange={(e) => handleFilterChange('title', e.target.value)}
+            value={filters.questionContent}
+            onChange={(e) => handleFilterChange('questionContent', e.target.value)}
             allowClear
             className="w-full"
           />
@@ -159,4 +181,4 @@ const ExamFilter: React.FC<ExamFilterProps> = ({
   );
 };
 
-export default ExamFilter;
+export default QuestionFilter;

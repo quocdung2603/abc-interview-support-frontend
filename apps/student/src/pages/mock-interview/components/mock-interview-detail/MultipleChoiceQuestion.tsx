@@ -14,10 +14,10 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
   selectedAnswers,
   onAnswerChange,
 }) => {
-  const handleAnswerToggle = (answerContent: string) => {
-    const updatedAnswers = selectedAnswers.includes(answerContent)
-      ? selectedAnswers.filter((content) => content !== answerContent)
-      : [...selectedAnswers, answerContent];
+  const handleAnswerToggle = (answerId: string) => {
+    const updatedAnswers = selectedAnswers.includes(answerId)
+      ? selectedAnswers.filter((id) => id !== answerId)
+      : [...selectedAnswers, answerId];
     onAnswerChange(updatedAnswers);
   };
 
@@ -44,18 +44,18 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
               key={answer.id.toString()}
               className="flex items-start cursor-pointer p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
               style={{
-                borderColor: selectedAnswers.includes(answer.answerContent)
+                borderColor: selectedAnswers.includes(answer.id.toString())
                   ? '#0ea5e9'
                   : '#e2e8f0',
-                backgroundColor: selectedAnswers.includes(answer.answerContent)
+                backgroundColor: selectedAnswers.includes(answer.id.toString())
                   ? '#f0f9ff'
                   : 'white',
               }}
             >
               <input
                 type="checkbox"
-                checked={selectedAnswers.includes(answer.answerContent)}
-                onChange={() => handleAnswerToggle(answer.answerContent)}
+                checked={selectedAnswers.includes(answer.id.toString())}
+                onChange={() => handleAnswerToggle(answer.id.toString())}
                 style={checkboxStyles}
                 className="mt-1 mr-3"
               />

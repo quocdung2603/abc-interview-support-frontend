@@ -2,14 +2,17 @@ import React from 'react';
 import { Table, Tag, Button, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Post } from '@abc-interview-support-frontend/types';
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 interface PostTableProps {
   posts: Post[];
   onViewPost: (postId: number) => void;
+  onEditPost: (postId: number) => void;
+  onDeletePost: (postId: number) => void;
 }
 
-const PostTable: React.FC<PostTableProps> = ({ posts, onViewPost }) => {
+const PostTable: React.FC<PostTableProps> = ({ posts, onViewPost, onEditPost, onDeletePost }) => {
   const getPostTypeLabel = (type: string) => {
     return type === 'DISCUSSION' ? 'Thảo luận' : 'Câu hỏi';
   };
@@ -28,17 +31,7 @@ const PostTable: React.FC<PostTableProps> = ({ posts, onViewPost }) => {
   };
 
   const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateString;
-    }
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const columns: ColumnsType<Post> = [
@@ -122,19 +115,45 @@ const PostTable: React.FC<PostTableProps> = ({ posts, onViewPost }) => {
     {
       title: 'Hành động',
       key: 'action',
-      width: 120,
+      width: 140,
       align: 'center',
       fixed: 'right',
       render: (_: any, record: Post) => (
-        <Tooltip title="Xem chi tiết">
-          <Button
-            type="link"
-            size="small"
-            onClick={() => onViewPost(record.id)}
-          >
-            <EyeOutlined />
-          </Button>
-        </Tooltip>
+        <div className="flex gap-2 justify-center">
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="link"
+              size="small"
+              onClick={() => onViewPost(record.id)}
+            >
+              <EyeOutlined />
+            </Button>
+          </Tooltip>
+          {record.status === 'DRAFT' && (
+            <>
+              <Tooltip title="Chỉnh sửa">
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => onEditPost(record.id)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <EditOutlined />
+                </Button>
+              </Tooltip>
+              <Tooltip title="Xóa">
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => onDeletePost(record.id)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <DeleteOutlined />
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </div>
       ),
     },
   ];

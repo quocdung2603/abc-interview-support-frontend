@@ -4,7 +4,6 @@ import { Exam, Field, Level, Topic } from '@abc-interview-support-frontend/types
 import { userService, examService } from '@abc-interview-support-frontend/services';
 
 const { Text } = Typography;
-const { TabPane } = Tabs;
 
 interface PreviewDrawerProps {
   visible: boolean;
@@ -124,94 +123,107 @@ const MockExamPreviewDrawer: React.FC<PreviewDrawerProps> = ({
           <div style={{ marginTop: '16px' }}>Đang tải...</div>
         </div>
       ) : examDetails ? (
-        <Tabs defaultActiveKey="1">
-          <TabPane tab="Thông tin bài kiểm tra" key="1">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Creator Info */}
-              <Card title="Thông tin người tạo" size="small">
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div>
-                    <Text strong>Tên:</Text> {creator?.fullName || 'N/A'}
-                  </div>
-                  <div>
-                    <Text strong>Email:</Text> {creator?.email || 'N/A'}
-                  </div>
-                  <div>
-                    <Text strong>Vai trò:</Text> {creator?.role || 'N/A'}
-                  </div>
-                </div>
-              </Card>
-
-              {/* Exam Info */}
-              <Card title="Thông tin bài kiểm tra" size="small">
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div>
-                    <Text strong>Tiêu đề:</Text> {examDetails.title}
-                  </div>
-                  <div>
-                    <Text strong>Vị trí:</Text> {examDetails.position}
-                  </div>
-                  <div>
-                    <Text strong>Lĩnh vực:</Text> {getFieldName(examDetails.fieldId)}
-                  </div>
-                  <div>
-                    <Text strong>Chủ đề:</Text>{' '}
-                    {examDetails.topicIds && examDetails.topicIds.length > 0 ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                        {examDetails.topicIds.map(topicId => (
-                          <Tag key={topicId} color="blue">
-                            {getTopicName(topicId)}
-                          </Tag>
-                        ))}
+        <Tabs
+          defaultActiveKey="1"
+          items={[
+            {
+              key: '1',
+              label: 'Thông tin bài kiểm tra',
+              children: (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Creator Info */}
+                  <Card title="Thông tin người tạo" size="small">
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                      <div>
+                        <Text strong>Tên:</Text> {creator?.fullName || 'N/A'}
                       </div>
-                    ) : 'N/A'}
-                  </div>
-                  <div>
-                    <Text strong>Cấp độ:</Text> {getLevelName(examDetails.levelId)}
-                  </div>
-                  <div>
-                    <Text strong>Thời gian:</Text> {examDetails.duration} phút
-                  </div>
-                  <div>
-                    <Text strong>Số câu hỏi:</Text> {examDetails.questionCount}
-                  </div>
-                  <div>
-                    <Text strong>Trạng thái:</Text> {examDetails.status}
-                  </div>
-                  <div>
-                    <Text strong>Ngày tạo:</Text> {new Date(examDetails.createdAt).toLocaleDateString('vi-VN')}
-                  </div>
+                      <div>
+                        <Text strong>Email:</Text> {creator?.email || 'N/A'}
+                      </div>
+                      <div>
+                        <Text strong>Vai trò:</Text> {creator?.role || 'N/A'}
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Exam Info */}
+                  <Card title="Thông tin bài kiểm tra" size="small">
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                      <div>
+                        <Text strong>Tiêu đề:</Text> {examDetails.title}
+                      </div>
+                      <div>
+                        <Text strong>Vị trí:</Text> {examDetails.position}
+                      </div>
+                      <div>
+                        <Text strong>Lĩnh vực:</Text> {getFieldName(examDetails.fieldId)}
+                      </div>
+                      <div>
+                        <Text strong>Chủ đề:</Text>{' '}
+                        {examDetails.topicIds && examDetails.topicIds.length > 0 ? (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                            {examDetails.topicIds.map(topicId => (
+                              <Tag key={topicId} color="blue">
+                                {getTopicName(topicId)}
+                              </Tag>
+                            ))}
+                          </div>
+                        ) : 'N/A'}
+                      </div>
+                      <div>
+                        <Text strong>Cấp độ:</Text> {getLevelName(examDetails.levelId)}
+                      </div>
+                      <div>
+                        <Text strong>Thời gian:</Text> {examDetails.duration} phút
+                      </div>
+                      <div>
+                        <Text strong>Số câu hỏi:</Text> {examDetails.questionCount}
+                      </div>
+                      <div>
+                        <Text strong>Trạng thái:</Text> {examDetails.status}
+                      </div>
+                      <div>
+                        <Text strong>Ngày tạo:</Text> {new Date(examDetails.createdAt).toLocaleDateString('vi-VN')}
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </Card>
-            </div>
-          </TabPane>
-
-          <TabPane tab={`Danh sách câu hỏi (${examDetails.questions?.length || 0})`} key="2">
-            <Card title="Danh sách câu hỏi trong bài kiểm tra" size="small">
-              <Table
-                columns={questionColumns}
-                dataSource={examDetails.questions || []}
-                rowKey="id"
-                pagination={{
-                  total: examDetails.questions?.length || 0,
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showTotal: (total, range) =>
-                    `${range[0]}-${range[1]} của ${total} câu hỏi`,
-                }}
-                size="small"
-              />
-            </Card>
-          </TabPane>
-
-          <TabPane tab="Danh sách người tham gia" key="3">
-            <Card title="Danh sách người tham gia" size="small">
-              <div style={{ textAlign: 'center', padding: '40px' }}>
-                <Text type="secondary">Chức năng đang được phát triển</Text>
-              </div>
-            </Card>
-          </TabPane>
-        </Tabs>
+              )
+            },
+            {
+              key: '2',
+              label: `Danh sách câu hỏi (${examDetails.questions?.length || 0})`,
+              children: (
+                <Card title="Danh sách câu hỏi trong bài kiểm tra" size="small">
+                  <Table
+                    columns={questionColumns}
+                    dataSource={examDetails.questions || []}
+                    rowKey="id"
+                    pagination={{
+                      total: examDetails.questions?.length || 0,
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} câu hỏi`,
+                    }}
+                    size="small"
+                  />
+                </Card>
+              )
+            },
+            {
+              key: '3',
+              label: 'Danh sách người tham gia',
+              children: (
+                <Card title="Danh sách người tham gia" size="small">
+                  <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <Text type="secondary">Chức năng đang được phát triển</Text>
+                  </div>
+                </Card>
+              )
+            },
+          ]}
+        />
       ) : (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Text type="secondary">Không có dữ liệu bài kiểm tra</Text>

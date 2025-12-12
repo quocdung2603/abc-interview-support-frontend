@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { examService } from '@abc-interview-support-frontend/services';
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import { message } from 'antd';
+import dayjs from 'dayjs';
 import AIReviewModal from './components/mock-interview-result/AIReviewModal';
 import AIReviewButton from './components/mock-interview-result/AIReviewButton';
 
@@ -86,7 +87,7 @@ const MockInterviewResult = () => {
   }, [id, user?.userId]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN');
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   const getPassStatusColor = (passed: boolean) => {
@@ -173,7 +174,7 @@ const MockInterviewResult = () => {
                 marginBottom: '0.5rem'
               }}
             >
-              {(examResult.score).toFixed(1)}%
+              {(examResult.score ?? 0).toFixed(1)}%
             </div>
             <p className="text-body" style={{ color: '#64748b' }}>
               Điểm số của bạn

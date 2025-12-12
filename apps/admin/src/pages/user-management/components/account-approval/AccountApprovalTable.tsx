@@ -99,15 +99,6 @@ const AccountApprovalTable: React.FC<TableProps> = ({
               onClick={() => onPreview(record)}
             />
           </Tooltip>
-          <Tooltip title="Duyệt yêu cầu">
-            <Button
-              type="text"
-              style={{ color: '#52c41a' }}
-              icon={<CheckCircleOutlined />}
-              size="small"
-              onClick={() => onPreview(record)}
-            />
-          </Tooltip>
         </Space>
       ),
     },

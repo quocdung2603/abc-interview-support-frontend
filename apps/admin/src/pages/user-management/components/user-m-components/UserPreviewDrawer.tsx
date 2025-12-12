@@ -1,5 +1,24 @@
 import React from 'react';
-import { Drawer } from 'antd';
+import {
+  Drawer,
+  Card,
+  Avatar,
+  Descriptions,
+  Statistic,
+  Row,
+  Col,
+  Divider,
+  Tag,
+  Space,
+} from 'antd';
+import {
+  UserOutlined,
+  MailOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  TrophyOutlined,
+  ClockCircleOutlined,
+} from '@ant-design/icons';
 import { User } from '@abc-interview-support-frontend/types';
 import StatusTag from './StatusTag';
 interface PreviewDrawerProps {
@@ -13,59 +32,152 @@ const UserPreviewDrawer: React.FC<PreviewDrawerProps> = ({
   onClose,
   data,
 }) => {
+  if (!data) return null;
+
   return (
     <Drawer
-      title="Xem trước bài đăng"
-      width={900}
+      title={
+        <Space>
+          <UserOutlined />
+          Chi tiết người dùng
+        </Space>
+      }
+      width={800}
       open={visible}
       onClose={onClose}
+      destroyOnClose
     >
-      {data && (
-        <div>
-          <div
-            className="text-heading-3"
-            style={{ marginBottom: 'var(--spacing-md)' }}
-          >
-            {data.fullName}
-          </div>
-
-          <div style={{ display: 'grid', gap: 'var(--spacing-md)' }}>
-            <div>
-              <strong>Email:</strong> {data.email}
-            </div>
-            <div>
-              <strong>Ngày sinh:</strong>{' '}
-              {new Date(data.dateOfBirth).toLocaleDateString('vi-VN')}
-            </div>
-            <div>
-              <strong>Địa chỉ:</strong> {data.address}
-            </div>
-            <div>
-              <strong>Tình trạng học tập:</strong>{' '}
-              <StatusTag
-                status={data.isStudying ? 'Đang học' : 'Đã tốt nghiệp'}
-                type={'is-studying'}
+      <div style={{ padding: '16px 0' }}>
+        {/* User Header Card */}
+        <Card style={{ marginBottom: 16 }}>
+          <Row align="middle" gutter={16}>
+            <Col>
+              <Avatar
+                size={64}
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor: '#1890ff',
+                  fontSize: '32px'
+                }}
               />
-            </div>
-            <div>
-              <strong>Trạng thái tài khoản:</strong>{' '}
-              <StatusTag status={data.status} type={'status-account'} />
-            </div>
-            <div>
-              <strong>Điểm xếp hạng:</strong>
-              {data.eloScore}
-            </div>
-            <div>
-              <strong>Bậc xếp hạng:</strong>{' '}
-              <StatusTag status={data.eloRank} type={'elo-rank'} />
-            </div>
-          </div>
-          <div>
-            <strong>Ngày tạo tài khoản:</strong>{' '}
-            {new Date(data.createdAt).toLocaleDateString('vi-VN')}
-          </div>
-        </div>
-      )}
+            </Col>
+            <Col flex="auto">
+              <div>
+                <h2 style={{ margin: 0, marginBottom: 4, fontSize: '20px' }}>
+                  {data.fullName}
+                </h2>
+                <Space>
+                  <StatusTag status={data.status} type="status-account" />
+                  <StatusTag status={data.eloRank} type="elo-rank" />
+                </Space>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Basic Information */}
+        <Card title="Thông tin cơ bản" style={{ marginBottom: 16 }}>
+          <Descriptions column={2} size="small">
+            <Descriptions.Item
+              label={
+                <Space>
+                  <MailOutlined />
+                  Email
+                </Space>
+              }
+            >
+              {data.email}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <CalendarOutlined />
+                  Ngày sinh
+                </Space>
+              }
+            >
+              {new Date(data.dateOfBirth).toLocaleDateString('vi-VN')}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <EnvironmentOutlined />
+                  Địa chỉ
+                </Space>
+              }
+              span={2}
+            >
+              {data.address}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <UserOutlined />
+                  Tình trạng học tập
+                </Space>
+              }
+            >
+              <StatusTag
+                status={data.isStudying ? 'false' : 'true'}
+                type="is-studying"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <ClockCircleOutlined />
+                  Ngày tạo tài khoản
+                </Space>
+              }
+            >
+              {new Date(data.createdAt).toLocaleDateString('vi-VN')}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+
+        {/* ELO Statistics */}
+        <Card title="Thống kê ELO" style={{ marginBottom: 16 }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Statistic
+                title="Điểm ELO"
+                value={data.eloScore}
+                prefix={<TrophyOutlined />}
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </Col>
+            <Col span={12}>
+              <Statistic
+                title="Xếp hạng"
+                value={data.eloRank}
+                valueStyle={{ color: '#52c41a' }}
+              />
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Account Status */}
+        <Card title="Trạng thái tài khoản">
+          <Row gutter={16}>
+            <Col span={12}>
+              <div>
+                <strong>Trạng thái:</strong>
+                <div style={{ marginTop: 8 }}>
+                  <StatusTag status={data.status} type="status-account" />
+                </div>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div>
+                <strong>Bậc xếp hạng:</strong>
+                <div style={{ marginTop: 8 }}>
+                  <StatusTag status={data.eloRank} type="elo-rank" />
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </Drawer>
   );
 };

@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import { Post } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi';
+
+// Initialize dayjs plugins
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 interface DiscussionTimerProps {
   post: Post;
@@ -28,27 +37,25 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
     if (!post.lockTime) return;
 
     const calculateTimeRemaining = () => {
-      // Get current time
-      const now = new Date();
+      // Get current time using dayjs
+      const now = dayjs();
 
-      const lockTime = post.lockTime;
-
-      // Parse lockTime - JavaScript will automatically handle UTC to local conversion
-      const endDate = new Date(lockTime);
+      // Parse lockTime as local time (format: YYYY-MM-DDTHH:mm:ss)
+      const lockTimeDayjs = dayjs(post.lockTime, 'YYYY-MM-DDTHH:mm:ss');
 
       console.log('Timer calculation:', {
-        lockTime,
-        endDate: endDate.toISOString(),
-        endDateLocal: endDate.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
-        now: now.toISOString(),
-        nowLocal: now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+        lockTime: post.lockTime,
+        lockTimeParsed: lockTimeDayjs.format('YYYY-MM-DD HH:mm:ss'),
+        now: now.format('YYYY-MM-DD HH:mm:ss'),
+        isValid: lockTimeDayjs.isValid(),
+        diff: lockTimeDayjs.diff(now, 'second') + ' seconds'
       });
 
       // Store endDate for UI display
-      setEndDate(endDate);
+      setEndDate(lockTimeDayjs.toDate());
 
-      // Check if lockTime is a valid date
-      if (isNaN(endDate.getTime())) {
+      // Check if lockTime is valid
+      if (!lockTimeDayjs.isValid()) {
         console.warn('Invalid lockTime:', post.lockTime);
         setTimeRemaining({
           days: 0,
@@ -60,9 +67,10 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
         return;
       }
 
-      const timeDiff = endDate.getTime() - now.getTime();
+      // Calculate time difference
+      const diffInMs = lockTimeDayjs.diff(now);
 
-      if (timeDiff <= 0) {
+      if (diffInMs <= 0) {
         setTimeRemaining({
           days: 0,
           hours: 0,
@@ -73,12 +81,13 @@ const DiscussionTimer: React.FC<DiscussionTimerProps> = ({ post }) => {
         return;
       }
 
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+      // Use dayjs duration to calculate time components
+      const durationObj = dayjs.duration(diffInMs);
+
+      const days = Math.floor(durationObj.asDays());
+      const hours = durationObj.hours();
+      const minutes = durationObj.minutes();
+      const seconds = durationObj.seconds();
 
       setTimeRemaining({
         days,

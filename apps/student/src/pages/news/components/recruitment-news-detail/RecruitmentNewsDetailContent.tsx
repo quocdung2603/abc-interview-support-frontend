@@ -1,5 +1,6 @@
 import { RecruitmentNews } from '@abc-interview-support-frontend/types';
 import React from 'react';
+import dayjs from 'dayjs';
 
 interface RecruitmentNewsDetailContentProps {
   news: RecruitmentNews;
@@ -9,11 +10,7 @@ export const RecruitmentNewsDetailContent: React.FC<
   RecruitmentNewsDetailContentProps
 > = ({ news }) => {
   const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(new Date(dateString));
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
   };
 
   return (

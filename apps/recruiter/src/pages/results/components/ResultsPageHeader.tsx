@@ -1,12 +1,13 @@
 import React from 'react';
-import { Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Space, Tooltip } from 'antd';
+import { FileExcelOutlined } from '@ant-design/icons';
 
 interface ResultPageHeaderProps {
   onExportData: () => void;
+  hasSearched?: boolean;
 }
 
-const ExamPageHeader: React.FC<ResultPageHeaderProps> = ({ onExportData }) => {
+const ExamPageHeader: React.FC<ResultPageHeaderProps> = ({ onExportData, hasSearched = false }) => {
   return (
     <div style={{ marginBottom: 'var(--spacing-xl)' }}>
       <div
@@ -28,20 +29,26 @@ const ExamPageHeader: React.FC<ResultPageHeaderProps> = ({ onExportData }) => {
             Theo dõi kết quả thi và xếp hạng thí sinh
           </div>
         </div>
-        <Button
-          type="primary"
-          size="large"
-          icon={<PlusOutlined />}
-          onClick={onExportData}
-          style={{
-            background:
-              'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
-            border: 'none',
-            minWidth: '140px',
-          }}
-        >
-          Tạo kì thi mới
-        </Button>
+        <Space size="middle">
+          <Tooltip title={!hasSearched ? "Vui lòng lọc kết quả bài kiểm tra trước" : ""}>
+            <Button
+              type="primary"
+              size="large"
+              icon={<FileExcelOutlined />}
+              onClick={onExportData}
+              disabled={!hasSearched}
+              style={{
+                background: hasSearched
+                  ? 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                  : undefined,
+                border: 'none',
+                minWidth: '140px',
+              }}
+            >
+              Xuất file Excel
+            </Button>
+          </Tooltip>
+        </Space>
       </div>
     </div>
   );
