@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Tag, Button, Tooltip } from 'antd';
+import { Table, Tag, Button, Tooltip, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Post } from '@abc-interview-support-frontend/types';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -122,34 +122,35 @@ const PostTable: React.FC<PostTableProps> = ({ posts, onViewPost, onEditPost, on
         <div className="flex gap-2 justify-center">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="link"
               size="small"
+              icon={<EyeOutlined />}
               onClick={() => onViewPost(record.id)}
-            >
-              <EyeOutlined />
-            </Button>
+            />
           </Tooltip>
           {record.status === 'DRAFT' && (
             <>
               <Tooltip title="Chỉnh sửa">
                 <Button
-                  type="link"
                   size="small"
                   onClick={() => onEditPost(record.id)}
                   className="text-blue-600 hover:text-blue-800"
-                >
-                  <EditOutlined />
-                </Button>
+                  icon={<EditOutlined />}
+                />
               </Tooltip>
               <Tooltip title="Xóa">
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() => onDeletePost(record.id)}
-                  className="text-red-600 hover:text-red-800"
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa bài thảo luận này?"
+                  onConfirm={() => onDeletePost(record.id)}
+                  okText="Có"
+                  cancelText="Không"
                 >
-                  <DeleteOutlined />
-                </Button>
+                  <Button
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    className="text-red-600 hover:text-red-800"
+                  />
+                </Popconfirm>
               </Tooltip>
             </>
           )}

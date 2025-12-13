@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PlusOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, Tooltip, Empty, Badge } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import RecruiterRegisForm from './RecruiterRegisForm';
 
 interface RegistrationRecord {
@@ -9,6 +11,32 @@ interface RegistrationRecord {
   companyName: string;
   contactEmail: string;
 }
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'pending':
+      return 'warning';
+    case 'approved':
+      return 'success';
+    case 'rejected':
+      return 'error';
+    default:
+      return 'default';
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'pending':
+      return 'Chờ duyệt';
+    case 'approved':
+      return 'Đã duyệt';
+    case 'rejected':
+      return 'Từ chối';
+    default:
+      return 'Không xác định';
+  }
+};
 
 const RecruiterRegistration = () => {
   const [registrations] = useState<RegistrationRecord[]>([
@@ -61,31 +89,97 @@ const RecruiterRegistration = () => {
     console.log('Edit registration:', record);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Chờ duyệt';
-      case 'approved':
-        return 'Đã duyệt';
-      case 'rejected':
-        return 'Từ chối';
-      default:
-        return 'Không xác định';
-    }
-  };
+  // Table columns configuration
+  const columns: ColumnsType<RegistrationRecord> = [
+    {
+      title: 'STT',
+      key: 'index',
+      width: 80,
+      align: 'center',
+      render: (_: any, __: RegistrationRecord, index: number) => index + 1,
+    },
+    {
+      title: 'Mã phiếu',
+      dataIndex: 'id',
+      key: 'id',
+      width: 120,
+      render: (id: string) => (
+        <span className="font-medium text-gray-900">{id}</span>
+      ),
+    },
+    {
+      title: 'Tên công ty',
+      dataIndex: 'companyName',
+      key: 'companyName',
+      width: 200,
+      render: (companyName: string) => (
+        <span className="text-gray-900">{companyName}</span>
+      ),
+    },
+    {
+      title: 'Email liên hệ',
+      dataIndex: 'contactEmail',
+      key: 'contactEmail',
+      width: 200,
+      render: (contactEmail: string) => (
+        <span className="text-gray-600">{contactEmail}</span>
+      ),
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 150,
+      render: (createdAt: string) => (
+        <div>
+          <div className="text-gray-900">
+            {new Date(createdAt).toLocaleDateString('vi-VN')}
+          </div>
+          <div className="text-xs text-gray-500">
+            {new Date(createdAt).toLocaleTimeString('vi-VN')}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Tình trạng',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      align: 'center',
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
+      width: 150,
+      align: 'center',
+      render: (_: any, record: RegistrationRecord) => (
+        <Space size="small">
+          <Tooltip title="Xem chi tiết">
+            <Button
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => handleViewRegistration(record)}
+            />
+          </Tooltip>
+          {record.status === 'pending' && (
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                icon={<EditOutlined />}
+                size="small"
+                onClick={() => handleEditRegistration(record)}
+              />
+            </Tooltip>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
   if (registrations.length === 0) {
     return (
@@ -93,19 +187,24 @@ const RecruiterRegistration = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Đăng ký nhà tuyển dụng</h2>
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={handleCreateRegistration}
             >
-              <PlusOutlined />
               Tạo đơn đăng ký
-            </button>
+            </Button>
           </div>
 
           <div className="text-center py-12">
-            <div className="text-4xl mb-4 opacity-30">[Danh sách trống]</div>
-            <p className="text-gray-500">Chưa có phiếu đăng ký nào</p>
-            <p className="text-gray-400 text-sm">Tạo phiếu đăng ký đầu tiên để bắt đầu</p>
+            <Empty
+              description={
+                <div>
+                  <p className="text-gray-500">Chưa có phiếu đăng ký nào</p>
+                  <p className="text-gray-400 text-sm">Tạo phiếu đăng ký đầu tiên để bắt đầu</p>
+                </div>
+              }
+            />
           </div>
         </div>
 
@@ -126,83 +225,54 @@ const RecruiterRegistration = () => {
           <p className="text-gray-600 text-sm mt-1">Quản lý các phiếu đăng ký nhà tuyển dụng của bạn</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-            Tổng {registrations.length} phiếu
-          </span>
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          <Badge
+            count={registrations.length}
+            showZero
+            style={{ backgroundColor: '#1890ff' }}
+          >
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+              Tổng phiếu
+            </span>
+          </Badge>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
             onClick={handleCreateRegistration}
           >
-            <PlusOutlined />
             Tạo đơn đăng ký
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">STT</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Mã phiếu</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Tên công ty</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Email liên hệ</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700">Ngày tạo</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-700">Tình trạng</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-700">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {registrations.map((item, index) => (
-              <tr
-                key={item.id}
-                className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-4 py-3 text-gray-900">{index + 1}</td>
-                <td className="px-4 py-3">
-                  <div className="text-gray-900 font-medium">{item.id}</div>
-                </td>
-                <td className="px-4 py-3 text-gray-900">{item.companyName}</td>
-                <td className="px-4 py-3 text-gray-600">{item.contactEmail}</td>
-                <td className="px-4 py-3">
-                  <div className="text-gray-900">
-                    {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(item.createdAt).toLocaleTimeString('vi-VN')}
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
-                    {getStatusText(item.status)}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      className="flex items-center gap-1 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md hover:bg-gray-300 transition-colors"
-                      onClick={() => handleViewRegistration(item)}
-                    >
-                      <EyeOutlined />
-                      Xem
-                    </button>
-                    {item.status === 'pending' && (
-                      <button
-                        className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
-                        onClick={() => handleEditRegistration(item)}
-                      >
-                        <EditOutlined />
-                        Sửa
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        dataSource={registrations}
+        rowKey="id"
+        pagination={{
+          defaultPageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} của ${total} mục`,
+          locale: {
+            items_per_page: '/ trang',
+            jump_to: 'Đến trang',
+            page: '',
+          },
+        }}
+        locale={{
+          emptyText: (
+            <div className="py-8 text-center">
+              <span className="text-4xl mb-2 block" role="img" aria-label="empty">
+                📝
+              </span>
+              <p className="text-gray-500">Không có dữ liệu phù hợp.</p>
+            </div>
+          ),
+        }}
+        scroll={{ x: 800 }}
+      />
 
       <RecruiterRegisForm
         visible={isModalVisible}

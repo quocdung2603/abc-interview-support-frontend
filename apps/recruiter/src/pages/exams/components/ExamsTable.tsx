@@ -87,7 +87,6 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
@@ -97,7 +96,6 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
             <>
               <Tooltip title="Chỉnh sửa">
                 <Button
-                  type="text"
                   icon={<EditOutlined />}
                   size="small"
                   onClick={() => onEdit(record)}
@@ -113,7 +111,6 @@ const ExamsTable: React.FC<ExamsTableProps> = ({
                   }
                 >
                   <Button
-                    type="text"
                     danger
                     icon={<DeleteOutlined />}
                     size="small"

@@ -6,6 +6,14 @@ import { BaseExamList, BaseInterviewHeader, ExamFilterForm } from './components/
 import { useAuth } from '@abc-interview-support-frontend/sso-utils';
 import { useNavigate } from 'react-router-dom';
 
+interface Registration {
+  id: number;
+  examId: number;
+  userId: number;
+  registrationStatus: string;
+  registeredAt: string;
+}
+
 interface ExamFormData {
   field: string;
   topic: string;
@@ -26,7 +34,7 @@ const BaseInterview = () => {
 
   const [availableExams, setAvailableExams] = useState<Exam[]>([]);
   const [registeredExams, setRegisteredExams] = useState<Exam[]>([]);
-  const [registeredExamIds, setRegisteredExamIds] = useState<Set<number>>(new Set());
+  const [registrations, setRegistrations] = useState<Map<number, Registration>>(new Map());
   const [searchCriteria, setSearchCriteria] = useState<Partial<ExamFormData>>(
     {}
   );
@@ -47,6 +55,7 @@ const BaseInterview = () => {
       let exams = res.content || [];
       // Filter for RECRUITER exams that are PUBLISHED or DRAFT
       exams = exams.filter((exam: Exam) => exam.examType === 'RECRUITER' && exam.status === 'PUBLISHED');
+      console.log('Fetched available exams:', exams);
       setAvailableExams(exams);
     } catch (error) {
       setAvailableExams([]);
@@ -59,15 +68,25 @@ const BaseInterview = () => {
 
     try {
       const res = await examService.getRegistrationByUser(user.userId.toString());
-      const registrations = res.content || [];
-      const examIds: Set<number> = new Set(registrations.map((reg: any) => Number(reg.examId)));
-      setRegisteredExamIds(examIds);
+      const allRegistrations: Registration[] = res.content || [];
+
+      // Filter only REGISTERED status (not CANCELLED)
+      const activeRegistrations = allRegistrations.filter(
+        (reg: Registration) => reg.registrationStatus === 'REGISTERED'
+      );
+
+      // Create map of examId -> registration for quick lookup
+      const registrationsMap = new Map<number, Registration>();
+      activeRegistrations.forEach((reg: Registration) => {
+        registrationsMap.set(reg.examId, reg);
+      });
+      setRegistrations(registrationsMap);
 
       // Get registered exams from available exams
-      const registered = availableExams.filter(exam => examIds.has(exam.id));
+      const registered = availableExams.filter(exam => registrationsMap.has(exam.id));
       setRegisteredExams(registered);
     } catch (error) {
-      setRegisteredExamIds(new Set());
+      setRegistrations(new Map());
       setRegisteredExams([]);
       console.error('Error fetching registered exams:', error);
     }
@@ -97,7 +116,7 @@ const BaseInterview = () => {
 
   // Filter available exams based on criteria and exclude registered ones
   const filteredAvailableExams = useMemo(() => {
-    let exams = availableExams.filter(exam => !registeredExamIds.has(exam.id));
+    let exams = availableExams.filter(exam => !registrations.has(exam.id));
 
     if (
       searchCriteria.fieldId ||
@@ -134,7 +153,7 @@ const BaseInterview = () => {
       });
     }
     return exams;
-  }, [availableExams, searchCriteria, registeredExamIds]);
+  }, [availableExams, searchCriteria, registrations]);
 
   useEffect(() => {
     getAllExams();
@@ -175,7 +194,15 @@ const BaseInterview = () => {
     setUnregisterLoading(prev => new Set(prev).add(examId));
 
     try {
-      await examService.CancelRegistration(examId);
+      // Find registration by examId to get registration id
+      const registration = registrations.get(Number(examId));
+      if (!registration) {
+        console.error('Registration not found for exam:', examId);
+        return;
+      }
+
+      // Call API with registration id (not examId)
+      await examService.CancelRegistration(registration.id.toString());
       // Refresh registered exams after successful unregistration
       await getRegisteredExams();
     } catch (error) {

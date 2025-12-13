@@ -57,7 +57,6 @@ const UserTable: React.FC<TableProps> = ({ dataList, onPreview, onLock }) => {
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
@@ -65,7 +64,6 @@ const UserTable: React.FC<TableProps> = ({ dataList, onPreview, onLock }) => {
           </Tooltip>
           <Tooltip title="Khóa tài khoản">
             <Button
-              type="text"
               danger
               icon={<LockOutlined />}
               size="small"

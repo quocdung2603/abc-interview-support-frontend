@@ -181,13 +181,13 @@ export class ExamService {
     return response.data;
   }
 
-  async CancelRegistration(examId: string) {
+  async CancelRegistration(registeredId: string) {
     const token = this.getToken();
     if (!token) {
       throw new Error('No authentication token found.');
     }
-    const response = await this.apiClient.delete(
-      `/exams/registrations/${examId}/cancel`,
+    const response = await this.apiClient.post(
+      `/exams/registrations/${registeredId}/cancel`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

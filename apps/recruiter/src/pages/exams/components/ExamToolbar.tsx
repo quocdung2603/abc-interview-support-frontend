@@ -214,7 +214,6 @@ const ExamToolbar: React.FC<ExamToolbarProps> = ({
           onChange={handleFieldChange}
           style={{ minWidth: '120px' }}
         >
-          <Option value={undefined}>Tất cả</Option>
           {fields.map((field) => (
             <Option key={field.id} value={field.id}>
               {field.name}
@@ -254,7 +253,6 @@ const ExamToolbar: React.FC<ExamToolbarProps> = ({
           onChange={handleLevelChange}
           style={{ minWidth: '120px' }}
         >
-          <Option value={undefined}>Tất cả</Option>
           {levels.map((level) => (
             <Option key={level.id} value={level.id}>
               {level.name}

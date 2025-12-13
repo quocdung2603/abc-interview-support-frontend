@@ -95,7 +95,7 @@ const BaseExamCard: React.FC<ExamCardProps> = ({
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-primary mb-1">
-            {exam.title}
+            #{exam.id}: {exam.title}
           </h3>
           {exam.position && (
             <p className="text-xs text-neutral-600 mb-1">{exam.position}</p>
@@ -109,7 +109,7 @@ const BaseExamCard: React.FC<ExamCardProps> = ({
         <div className="grid grid-cols-3 gap-1 pt-1">
           <div className="text-center p-1 bg-neutral-50 rounded border">
             <div className="text-xs font-bold text-primary">
-              {exam.questionCount}
+              {exam.questions?.length}
             </div>
             <div className="text-xs text-neutral-500">Câu hỏi</div>
           </div>

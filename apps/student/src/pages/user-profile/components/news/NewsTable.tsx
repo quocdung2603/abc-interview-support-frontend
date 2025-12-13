@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Tag, Button, Tooltip } from 'antd';
+import { Table, Tag, Button, Tooltip, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { NewsItem } from '@abc-interview-support-frontend/types';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
@@ -131,31 +131,34 @@ const NewsTable: React.FC<NewsTableProps> = ({ news, onViewNews, onEditNews, onD
       render: (_: any, record: NewsItem) => (
         <div className="flex gap-2 justify-center">
           <Tooltip title="Xem chi tiết">
-            <Button type="link" size="small" onClick={() => onViewNews(record.id)}>
-              <EyeOutlined />
-            </Button>
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => onViewNews(record.id)} />
           </Tooltip>
           {record.status === 'PENDING' && (
             <>
               <Tooltip title="Chỉnh sửa">
                 <Button
-                  type="link"
                   size="small"
+                  icon={<EditOutlined />}
                   onClick={() => onEditNews(record)}
                   className="text-blue-600"
-                >
-                  <EditOutlined />
-                </Button>
+                />
               </Tooltip>
               <Tooltip title="Xóa tin tức">
-                <Button
-                  type="link"
-                  size="small"
-                  danger
-                  onClick={() => onDeleteNews(record.id)}
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa tin tức này?"
+                  onConfirm={() => onDeleteNews(record.id)}
+                  okText="Có"
+                  cancelText="Không"
                 >
-                  <DeleteOutlined />
-                </Button>
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                  />
+                </Popconfirm>
               </Tooltip>
             </>
           )}

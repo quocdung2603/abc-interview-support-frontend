@@ -27,11 +27,6 @@ export const RecruitmentNewsCard = ({
   // Mock additional recruitment data - trong thực tế sẽ từ API
   const recruitmentData: RecruitmentNewsData = {
     ...news,
-    companyName: 'TechViet Solutions',
-    location: 'Hà Nội',
-    salary: '20-30 triệu',
-    jobType: 'Full-time',
-    urgency: 'high',
   };
 
   const formatDate = (date: string | Date) => {
@@ -41,17 +36,6 @@ export const RecruitmentNewsCard = ({
   const handleClick = () => {
     if (onClick) {
       onClick(news);
-    }
-  };
-
-  const getUrgencyBadge = (urgency: string) => {
-    switch (urgency) {
-      case 'high':
-        return <span className="badge-warning">Tuyển gấp</span>;
-      case 'medium':
-        return <span className="badge-accent">Ưu tiên</span>;
-      default:
-        return <span className="badge-secondary">Thông thường</span>;
     }
   };
 
@@ -65,7 +49,6 @@ export const RecruitmentNewsCard = ({
       <div className="p-3 pb-2">
         <div className="flex items-start justify-between mb-1">
           <div className="flex items-center gap-2">
-            {getUrgencyBadge(recruitmentData.urgency || 'low')}
             <span className="badge-primary">Tuyển dụng</span>
           </div>
           <time className="text-body-small text-neutral-500">
@@ -146,11 +129,6 @@ export const RecruitmentNewsCard = ({
             </span>
           </div>
         </div>
-
-        {/* Job Description Preview */}
-        <p className="text-body text-neutral-600 line-clamp-2 leading-relaxed">
-          {news.content}
-        </p>
       </div>
 
       {/* Card Footer */}
@@ -166,29 +144,6 @@ export const RecruitmentNewsCard = ({
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1 text-neutral-500">
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-              <span className="text-caption">156</span>
-            </div>
-
             <span className="text-caption font-medium text-accent transition-colors duration-200 hover:text-accent-dark">
               Xem chi tiết →
             </span>

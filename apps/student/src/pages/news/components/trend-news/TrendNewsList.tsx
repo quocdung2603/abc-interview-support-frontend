@@ -69,119 +69,116 @@ export const TrendNewsList = ({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {news.length > 0 && (
         <div className="mt-8 space-y-4">
-          {/* Page Info */}
-          <div className="text-center text-body text-neutral-600">
-            Trang {currentPage} của {totalPages} ({news.length} tin tức)
-          </div>
-
           {/* Pagination Controls */}
-          <div className="flex justify-center items-center space-x-2">
-            <button
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Đầu
-            </button>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Đầu
+              </button>
 
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ← Trước
-            </button>
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ← Trước
+              </button>
 
-            <div className="flex space-x-1">
-              {(() => {
-                const pages = [];
-                const maxVisiblePages = 5;
-                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+              <div className="flex space-x-1">
+                {(() => {
+                  const pages = [];
+                  const maxVisiblePages = 5;
+                  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-                // Adjust startPage if we're near the end
-                if (endPage - startPage + 1 < maxVisiblePages) {
-                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                }
-
-                // Add first page and ellipsis if needed
-                if (startPage > 1) {
-                  pages.push(
-                    <button
-                      key={1}
-                      onClick={() => handlePageChange(1)}
-                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                    >
-                      1
-                    </button>
-                  );
-                  if (startPage > 2) {
-                    pages.push(
-                      <span key="start-ellipsis" className="px-2 py-2 text-neutral-500">
-                        ...
-                      </span>
-                    );
+                  // Adjust startPage if we're near the end
+                  if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
                   }
-                }
 
-                // Add visible pages
-                for (let page = startPage; page <= endPage; page++) {
-                  pages.push(
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
+                  // Add first page and ellipsis if needed
+                  if (startPage > 1) {
+                    pages.push(
+                      <button
+                        key={1}
+                        onClick={() => handlePageChange(1)}
+                        className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                      >
+                        1
+                      </button>
+                    );
+                    if (startPage > 2) {
+                      pages.push(
+                        <span key="start-ellipsis" className="px-2 py-2 text-neutral-500">
+                          ...
+                        </span>
+                      );
+                    }
+                  }
+
+                  // Add visible pages
+                  for (let page = startPage; page <= endPage; page++) {
+                    pages.push(
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
                           ? 'bg-primary text-white'
                           : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                }
-
-                // Add last page and ellipsis if needed
-                if (endPage < totalPages) {
-                  if (endPage < totalPages - 1) {
-                    pages.push(
-                      <span key="end-ellipsis" className="px-2 py-2 text-neutral-500">
-                        ...
-                      </span>
+                          }`}
+                      >
+                        {page}
+                      </button>
                     );
                   }
-                  pages.push(
-                    <button
-                      key={totalPages}
-                      onClick={() => handlePageChange(totalPages)}
-                      className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                    >
-                      {totalPages}
-                    </button>
-                  );
-                }
 
-                return pages;
-              })()}
+                  // Add last page and ellipsis if needed
+                  if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                      pages.push(
+                        <span key="end-ellipsis" className="px-2 py-2 text-neutral-500">
+                          ...
+                        </span>
+                      );
+                    }
+                    pages.push(
+                      <button
+                        key={totalPages}
+                        onClick={() => handlePageChange(totalPages)}
+                        className="px-3 py-2 rounded-md text-sm font-medium transition-colors bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau →
+              </button>
+
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cuối
+              </button>
             </div>
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Sau →
-            </button>
-
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Cuối
-            </button>
-          </div>
+          )}
         </div>
       )}
     </div>

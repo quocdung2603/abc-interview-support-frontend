@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import {
   Field,
   Level,
@@ -139,8 +139,7 @@ const CommunityApprovalTable: React.FC<TableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
-              icon={<EditOutlined />}
+              icon={<EyeOutlined />}
               size="small"
               onClick={() => onEdit(record)}
             />

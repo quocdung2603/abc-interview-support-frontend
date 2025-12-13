@@ -68,7 +68,6 @@ const TrendNewsTable: React.FC<TableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
@@ -76,7 +75,6 @@ const TrendNewsTable: React.FC<TableProps> = ({
           </Tooltip>
           <Tooltip title="Xóa tin tức">
             <Button
-              type="text"
               danger
               icon={<DeleteOutlined />}
               size="small"

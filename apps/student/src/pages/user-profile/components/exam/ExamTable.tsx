@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Table, Tag, Button } from 'antd';
+import { Table, Tag, Button, Tooltip, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import ExamFilter from './ExamFilter';
-import { Exam } from '@abc-interview-support-frontend/types';
+import ExamFilter, { ExamFilters } from './ExamFilter';
+import { Exam, Field, Topic } from '@abc-interview-support-frontend/types';
 import { questionService } from '@abc-interview-support-frontend/services';
+import { EyeOutlined, FileDoneOutlined } from '@ant-design/icons';
 
 interface Props {
   exams: Exam[];
@@ -21,7 +22,7 @@ const parseJsonArray = (jsonString?: string | number[]): string[] => {
     return jsonString.map(String);
   }
   try {
-    const parsed = JSON.parse(jsonString);
+    const parsed: unknown = JSON.parse(jsonString);
     if (Array.isArray(parsed)) return parsed.map(String);
     if (parsed && typeof parsed === 'object') return Object.keys(parsed);
     if (typeof parsed === 'string')
@@ -50,21 +51,21 @@ const ExamTable: React.FC<Props> = ({
   onResult,
 }) => {
   // State cho options từ API
-  const [fieldOptions, setFieldOptions] = useState<string[]>([]);
-  const [topicOptions, setTopicOptions] = useState<string[]>([]);
+  const [fieldOptions, setFieldOptions] = useState<Field[]>([]);
+  const [topicOptions, setTopicOptions] = useState<Topic[]>([]);
 
   // Helper function to process API response
-  const processResponse = (res: unknown): string[] => {
+  const processResponse = (res: unknown): Field[] | Topic[] => {
     if (!Array.isArray(res)) return [];
-    const descriptions = res.map((item: unknown) => {
-      if (typeof item === 'string') return item;
-      if (item && typeof item === 'object' && 'description' in item) {
-        return String((item as { description: unknown }).description);
+    return res.map((item: unknown, index: number) => {
+      if (typeof item === 'string') {
+        return { id: index + 1, name: item };
       }
-      return String(item);
+      if (item && typeof item === 'object' && 'name' in item) {
+        return { id: (item as any).id || index + 1, name: String((item as any).name) };
+      }
+      return { id: index + 1, name: String(item) };
     });
-    // Remove duplicates
-    return [...new Set(descriptions)];
   };
 
   useEffect(() => {
@@ -76,8 +77,8 @@ const ExamTable: React.FC<Props> = ({
           questionService.getAllTopics(),
         ]);
 
-        setFieldOptions(processResponse(fieldsRes.content));
-        setTopicOptions(processResponse(topicsRes.content));
+        setFieldOptions(processResponse(fieldsRes.content) as Field[]);
+        setTopicOptions(processResponse(topicsRes.content) as Topic[]);
 
         console.log('Options set successfully');
       } catch (error) {
@@ -90,26 +91,20 @@ const ExamTable: React.FC<Props> = ({
 
   // State bộ lọc
   const [examType, setExamType] = useState<string>('');
-  const [field, setField] = useState<string>('');
-  const [topic, setTopic] = useState<string>('');
+  const [fieldId, setFieldId] = useState<number | undefined>(undefined);
+  const [topicIds, setTopicIds] = useState<number[]>([]);
   const [search, setSearch] = useState<string>('');
-
-  const resetFilters = () => {
-    setExamType('');
-    setField('');
-    setTopic('');
-    setSearch('');
-  };
 
   // Áp dụng lọc
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return (exams || []).filter((e: Exam) => {
       if (examType && e.examType !== examType) return false;
-      if (field && e.position !== field) return false;
-      if (topic) {
-        const topics = parseJsonArray(e.topicIds);
-        if (!topics.includes(topic)) return false;
+      if (fieldId && e.fieldId !== fieldId) return false;
+      if (topicIds.length > 0) {
+        const examTopicIds = parseJsonArray(e.topicIds).map(id => parseInt(id)).filter(id => !isNaN(id));
+        const hasMatchingTopic = topicIds.some(topicId => examTopicIds.includes(topicId));
+        if (!hasMatchingTopic) return false;
       }
 
       if (term) {
@@ -119,14 +114,7 @@ const ExamTable: React.FC<Props> = ({
       }
       return true;
     });
-  }, [exams, examType, field, topic, search]);
-
-  // Exam type options
-  const examTypeOptions = [
-    { value: '', label: 'Tất cả loại' },
-    { value: 'VIRTUAL', label: 'Phỏng vấn ảo' },
-    { value: 'RECRUITER', label: 'Kiểm tra sơ loại' },
-  ];
+  }, [exams, examType, fieldId, topicIds, search]);
 
   // Columns configuration
   const columns: ColumnsType<Exam> = [
@@ -187,7 +175,7 @@ const ExamTable: React.FC<Props> = ({
         const isVirtual = record.examType === 'VIRTUAL';
 
         return (
-          <div className="flex gap-2 justify-center">
+          <Space size="small">
             {isVirtual ? (
               <>
                 {rt === 'ONGOING' && (
@@ -197,31 +185,31 @@ const ExamTable: React.FC<Props> = ({
                 )}
                 {rt === 'DONE' && (
                   <>
-                    <Button
-                      type="primary"
-                      size="small"
-                      style={{ backgroundColor: '#9333ea' }}
-                      onClick={() => onResult?.(record.id)}
-                    >
-                      Kết quả
-                    </Button>
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => onDetails?.(record.id)}
-                    >
-                      Chi tiết
-                    </Button>
+                    <Tooltip title="Mở kết quả">
+                      <Button
+                        size="small"
+                        icon={<FileDoneOutlined />}
+                        onClick={() => onResult?.(record.id)}
+                      />
+                    </Tooltip>
+
+                    <Tooltip title="Xem chi tiết">
+                      <Button
+                        icon={<EyeOutlined />}
+                        size="small"
+                        onClick={() => onDetails?.(record.id)}
+                      />
+                    </Tooltip>
                   </>
                 )}
                 {rt === 'UPCOMING' && (
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={() => onDetails?.(record.id)}
-                  >
-                    Chi tiết
-                  </Button>
+                  <Tooltip title="Xem chi tiết">
+                    <Button
+                      icon={<EyeOutlined />}
+                      size="small"
+                      onClick={() => onDetails?.(record.id)}
+                    />
+                  </Tooltip>
                 )}
               </>
             ) : (
@@ -237,20 +225,24 @@ const ExamTable: React.FC<Props> = ({
                   </Button>
                 )}
                 {rt === 'DONE' && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    style={{ backgroundColor: '#9333ea' }}
-                  >
-                    Xem kết quả
-                  </Button>
+                  <Tooltip title="Mở kết quả">
+                    <Button
+                      size="small"
+                      icon={<FileDoneOutlined />}
+                      onClick={() => onResult?.(record.id)}
+                    />
+                  </Tooltip>
                 )}
-                <Button type="link" size="small">
-                  Chi tiết
-                </Button>
+                <Tooltip title="Xem chi tiết">
+                  <Button
+                    icon={<EyeOutlined />}
+                    size="small"
+                    onClick={() => onDetails?.(record.id)}
+                  />
+                </Tooltip>
               </>
             )}
-          </div>
+          </Space>
         );
       },
     },
@@ -266,18 +258,15 @@ const ExamTable: React.FC<Props> = ({
       </div>
 
       <ExamFilter
-        examType={examType}
-        onExamTypeChange={setExamType}
-        examTypeOptions={examTypeOptions}
-        field={field}
-        onFieldChange={setField}
-        fieldOptions={fieldOptions}
-        topic={topic}
-        onTopicChange={setTopic}
-        topicOptions={topicOptions}
-        search={search}
-        onSearchChange={setSearch}
-        onReset={resetFilters}
+        fields={fieldOptions}
+        topics={topicOptions}
+        levels={[]}
+        onFilterChange={(filters: ExamFilters) => {
+          setExamType(filters.examType || '');
+          setFieldId(filters.fieldId);
+          setTopicIds(filters.topicIds || []);
+          setSearch(filters.title || '');
+        }}
       />
 
       <Table

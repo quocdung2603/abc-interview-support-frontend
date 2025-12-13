@@ -103,15 +103,16 @@ export const InterviewQuestionDetail: React.FC = () => {
         // Create answer from questionAnswer
         if (questionData.questionAnswer) {
           const answer: Answer = {
-            answerId: questionData.id, // Use question id as answer id for simplicity
+            id: questionData.id, // Use question id as answer id for simplicity
             userId: questionData.userId,
             questionId: questionData.id,
-            questionVariantId: 1,
             answerContent: questionData.questionAnswer,
             isSampleAnswer: true,
             usefulVote: 0, // API doesn't provide, set to 0
             unusefulVote: 0,
-            createdAt: new Date(questionData.createdAt),
+            createdAt: questionData.createdAt,
+            questionTypeId: questionData.questionTypeId,
+            orderNumber: 1, // Sample answer order
           };
           setAnswers([answer]);
         } else {
@@ -181,7 +182,7 @@ export const InterviewQuestionDetail: React.FC = () => {
     // Mock vote handling - replace with actual API call
     setAnswers((prev) =>
       prev.map((answer) => {
-        if (answer.answerId === answerId) {
+        if (answer.id === answerId) {
           return {
             ...answer,
             usefulVote:

@@ -93,7 +93,6 @@ const AccountApprovalTable: React.FC<TableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}

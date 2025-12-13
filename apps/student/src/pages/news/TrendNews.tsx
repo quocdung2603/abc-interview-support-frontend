@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { TrendNewsHeader } from './components/trend-news/TrendNewsHeader';
 import { TrendNewsFilter } from './components/trend-news/TrendNewsFilter';
 import { TrendNewsList } from './components/trend-news/TrendNewsList';
-import { News } from '@abc-interview-support-frontend/types';
-import { newsService } from '@abc-interview-support-frontend/services';
+import { News, Field } from '@abc-interview-support-frontend/types';
+import { newsService, questionService } from '@abc-interview-support-frontend/services';
 
 export const TrendNews: React.FC = () => {
   const navigate = useNavigate();
   const [news, setNews] = useState<News[]>([]);
+  const [fields, setFields] = useState<Field[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [authorFilter, setAuthorFilter] = useState('');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [fieldId, setFieldId] = useState<number | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   const getNewsByType = async (newsType: string) => {
     try {
@@ -24,8 +25,20 @@ export const TrendNews: React.FC = () => {
     }
   }
 
+  const getFields = async () => {
+    try {
+      const res = await questionService.getAllFields();
+      const fields = res.content || [];
+      setFields(fields);
+    } catch (error) {
+      console.error('Error fetching fields:', error);
+      setFields([]);
+    }
+  }
+
   useEffect(() => {
     getNewsByType('NEWS');
+    getFields();
   }, []);
 
   // Filter and sort news - NEWS articles (API already filtered by type)
@@ -35,36 +48,44 @@ export const TrendNews: React.FC = () => {
       const isPublished = newsItem.status === 'PUBLISHED';
       const isNewsType = newsItem.newsType === 'NEWS';
 
-      // Filter by search term
-      const matchesSearch =
-        newsItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        newsItem.content.toLowerCase().includes(searchTerm.toLowerCase());
+      // Filter by search term (title only)
+      const matchesSearch = searchTerm === '' ||
+        newsItem.title.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Filter by author type (based on userId pattern)
-      let matchesAuthor = true;
-      if (authorFilter) {
-        const userIdStr = newsItem.userId.toString();
-        if (authorFilter === 'admin') {
-          matchesAuthor = userIdStr.startsWith('admin');
-        } else if (authorFilter === 'recruiter') {
-          matchesAuthor = userIdStr.startsWith('recruiter');
-        } else if (authorFilter === 'user') {
-          matchesAuthor = userIdStr.startsWith('user');
-        }
+      // Filter by fieldId
+      const matchesField = fieldId === undefined || newsItem.fieldId === fieldId;
+
+      // Filter by date range
+      let matchesDateRange = true;
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        const itemDate = new Date(newsItem.createdAt);
+        const startDate = new Date(dateRange[0]);
+        const endDate = new Date(dateRange[1]);
+        matchesDateRange = itemDate >= startDate && itemDate <= endDate;
       }
 
-      return isPublished && isNewsType && matchesSearch && matchesAuthor;
+      return isPublished && isNewsType && matchesSearch && matchesField && matchesDateRange;
     });
 
-    // Sort news
+    // Sort by newest first (default)
     filtered.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
-      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+      return dateB - dateA; // newest first
     });
 
+    console.log('Total news from API:', news.length);
+    console.log('Filtered news:', filtered.length);
+    console.log('Items per page:', 9);
+    console.log('Total pages:', Math.ceil(filtered.length / 9));
+
+    console.log('Total news from API:', news.length);
+    console.log('Filtered news:', filtered.length);
+    console.log('Items per page:', 9);
+    console.log('Total pages:', Math.ceil(filtered.length / 9));
+
     return filtered;
-  }, [news, searchTerm, authorFilter, sortBy]);
+  }, [news, searchTerm, fieldId, dateRange]);
 
   const handleNewsClick = (newsItem: News) => {
     // Navigate to news detail page with state
@@ -80,25 +101,30 @@ export const TrendNews: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header Section */}
-      <TrendNewsHeader/>
+      <div className='mb-6'>
+        <TrendNewsHeader />
+      </div>
 
       {/* Main Content */}
-      <div className="container-center section-padding">
+      <div className="container-center">
         {/* Filter Section */}
         <TrendNewsFilter
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          authorFilter={authorFilter}
-          onAuthorFilterChange={setAuthorFilter}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
+          fields={fields}
+          fieldId={fieldId}
+          onFieldChange={setFieldId}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
         />
 
         {/* News List Section */}
-        <TrendNewsList
-          news={filteredAndSortedNews}
-          onNewsClick={handleNewsClick}
-        />
+        <div className="my-6">
+          <TrendNewsList
+            news={filteredAndSortedNews}
+            onNewsClick={handleNewsClick}
+          />
+        </div>
       </div>
 
       {/* Call to Action Section */}

@@ -148,10 +148,12 @@ export const RecruitmentNews: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header Section */}
-      <RecruitmentNewsHeader/>
+      <div className='mb-6'>
+        <RecruitmentNewsHeader />
+      </div>
 
       {/* Main Content */}
-      <div className="container-center section-padding">
+      <div className="container-center">
         {/* Filter Section */}
         <RecruitmentNewsFilter
           searchTerm={searchTerm}
@@ -167,10 +169,12 @@ export const RecruitmentNews: React.FC = () => {
         />
 
         {/* News List Section */}
-        <RecruitmentNewsList
-          news={filteredAndSortedNews}
-          onNewsClick={handleNewsClick}
-        />
+        <div className='mt-6'>
+          <RecruitmentNewsList
+            news={filteredAndSortedNews}
+            onNewsClick={handleNewsClick}
+          />
+        </div>
       </div>
 
       {/* Call to Action Section */}

@@ -139,7 +139,6 @@ const CommunityTable: React.FC<TableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
@@ -147,7 +146,6 @@ const CommunityTable: React.FC<TableProps> = ({
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
             <Button
-              type="text"
               icon={<EditOutlined />}
               size="small"
               onClick={() => onEdit(record)}
@@ -155,7 +153,6 @@ const CommunityTable: React.FC<TableProps> = ({
           </Tooltip>
           <Tooltip title="Xóa cuộc thảo luận">
             <Button
-              type="text"
               danger
               icon={<DeleteOutlined />}
               size="small"

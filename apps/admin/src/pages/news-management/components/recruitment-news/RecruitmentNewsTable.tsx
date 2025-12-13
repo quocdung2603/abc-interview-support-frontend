@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, Button, Space, Tooltip, Tag } from 'antd';
 import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
-import { RecruitmentNews, Field, Topic } from '@abc-interview-support-frontend/types';
+import { RecruitmentNews, Field } from '@abc-interview-support-frontend/types';
 
 interface TableProps {
   dataList: RecruitmentNews[];
@@ -70,7 +70,6 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onPreview(record)}
@@ -78,7 +77,6 @@ const RecruitmentNewsTable: React.FC<TableProps> = ({
           </Tooltip>
           <Tooltip title="Xóa tin tức">
             <Button
-              type="text"
               danger
               icon={<DeleteOutlined />}
               size="small"

@@ -70,11 +70,6 @@ export const RecruitmentNewsList = ({
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-8 space-y-4">
-          {/* Page Info */}
-          <div className="text-center text-body text-neutral-600">
-            Trang {currentPage} của {totalPages} ({news.length} tin tức)
-          </div>
-
           {/* Pagination Controls */}
           <div className="flex justify-center items-center space-x-2">
             <button
@@ -132,8 +127,8 @@ export const RecruitmentNewsList = ({
                       key={page}
                       onClick={() => handlePageChange(page)}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === page
-                          ? 'bg-primary text-white'
-                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                        ? 'bg-primary text-white'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                         }`}
                     >
                       {page}

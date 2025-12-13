@@ -124,7 +124,6 @@ const ExamApprovalTable: React.FC<ExamApprovalTableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onView(record)}

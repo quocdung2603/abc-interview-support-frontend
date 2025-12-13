@@ -136,7 +136,6 @@ const BaseExamTable: React.FC<BaseExamTableProps> = ({ data, onView, fields, top
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onView(record)}

@@ -112,7 +112,6 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
               icon={<EyeOutlined />}
               size="small"
               onClick={() => onView(record)}
@@ -121,7 +120,6 @@ const MockExamTable: React.FC<MockExamTableProps> = ({
           {user && record.userId === Number.parseInt(user.userId) && (
             <Tooltip title="Chỉnh sửa">
               <Button
-                type="text"
                 icon={<EditOutlined />}
                 size="small"
                 onClick={() => onEdit(record)}

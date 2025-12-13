@@ -1,8 +1,9 @@
 import React from 'react';
-import { Table, Tag, Button } from 'antd';
+import { Table, Tag, Button, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Question } from '@abc-interview-support-frontend/types';
 import dayjs from 'dayjs';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 
 interface QuestionTableProps {
   questions: Question[];
@@ -131,27 +132,29 @@ const QuestionTable: React.FC<QuestionTableProps> = ({
       fixed: 'right',
       render: (_: any, record: Question) => (
         <div className="flex gap-2 justify-center">
-          <Button type="link" size="small" onClick={() => onViewQuestion(record.id)}>
-            Xem chi tiết
-          </Button>
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => onViewQuestion(record.id)}
+          />
           {record.status === 'PENDING' && (
             <>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => onEditQuestion(record)}
-                className="text-blue-600"
-              >
-                Chỉnh sửa
-              </Button>
-              <Button
-                type="link"
-                size="small"
-                danger
-                onClick={() => onDeleteQuestion(record.id)}
-              >
-                Xóa
-              </Button>
+              <Tooltip title="Chỉnh sửa">
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => onEditQuestion(record)}
+                  className="text-blue-600"
+                />
+              </Tooltip>
+              <Tooltip title="Xóa câu hỏi">
+                <Button
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => onDeleteQuestion(record.id)}
+                />
+              </Tooltip>
             </>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { Table, Button, Space, Popconfirm, Tag } from 'antd';
+import { Table, Button, Space, Popconfirm, Tag, Tooltip } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
@@ -96,28 +96,36 @@ const TrendNewsTable: React.FC<TrendNewsTableProps> = ({
       fixed: 'right' as const,
       render: (_: any, record: News) => (
         <Space size="small">
-          <Button
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => onPreview(record)}
-            title="Xem trước"
-          />
-          <Button
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => onEdit(record)}
-            title="Chỉnh sửa"
-          />
-          <Popconfirm
-            title="Xóa tin tức"
-            description="Bạn có chắc chắn muốn xóa tin tức này?"
-            onConfirm={() => onDelete(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okType="danger"
-          >
-            <Button icon={<DeleteOutlined />} size="small" danger title="Xóa" />
-          </Popconfirm>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => onPreview(record)}
+              title="Xem trước"
+            />
+          </Tooltip>
+          {record.status === 'PENDING' && (
+            <>
+              <Tooltip title="Chỉnh sửa">
+                <Button
+                icon={<EditOutlined />}
+                size="small"
+                onClick={() => onEdit(record)}
+                title="Chỉnh sửa"
+              />
+              </Tooltip>
+              <Popconfirm
+                title="Xóa tin tức"
+                description="Bạn có chắc chắn muốn xóa tin tức này?"
+                onConfirm={() => onDelete(record.id)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okType="danger"
+              >
+                <Button icon={<DeleteOutlined />} size="small" danger title="Xóa" />
+              </Popconfirm>
+            </>
+          )}
         </Space>
       ),
     },

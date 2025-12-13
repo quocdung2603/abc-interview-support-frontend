@@ -156,7 +156,7 @@ const CommunityDiscussion: React.FC = () => {
         </div>
 
         {/* Posts List */}
-        <div>
+        <div className='mb-6'>
           <PostsList
             posts={enrichedFilteredPosts}
             onPostClick={handlePostClick}
