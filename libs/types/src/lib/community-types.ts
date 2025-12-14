@@ -24,6 +24,10 @@ export interface DiscussionAnswer {
   voteCount: number;
   weightedVoteScore: number;
   votePercentage: number;
+  usefulVoteCount: number;
+  notUsefulVoteCount: number;
+  usefulPercentage: number;
+  notUsefulPercentage: number;
   editCount: number;
   createdAt: string;
   updatedAt: string | null;

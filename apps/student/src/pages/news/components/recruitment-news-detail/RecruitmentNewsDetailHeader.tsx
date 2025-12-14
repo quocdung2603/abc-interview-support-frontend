@@ -68,29 +68,6 @@ export const RecruitmentNewsDetailHeader: React.FC<
 
             <h1 className="text-heading-1 mb-3">{news.title}</h1>
           </div>
-
-          <div className="flex flex-col gap-2">
-            <button className="btn-secondary">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-              </svg>
-              Ứng tuyển ngay
-            </button>
-            <button className="btn-secondary">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-              </svg>
-              Lưu tin
-            </button>
-          </div>
         </div>
       </div>
     </div>

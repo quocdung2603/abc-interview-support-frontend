@@ -136,13 +136,13 @@ const DiscussionDetails = (
     return hasEnded;
   })();
 
-  // Find best answer (highest votePercentage) - only for QUESTION type
+  // Find best answer (highest usefulPercentage) - only for QUESTION type
   const getBestAnswer = () => {
     if (!isDiscussionEnded || answers.length === 0 || post?.postType !== 'QUESTION') return null;
 
     return answers.reduce((best, current) => {
-      const bestPercentage = best.votePercentage || 0;
-      const currentPercentage = current.votePercentage || 0;
+      const bestPercentage = best.usefulPercentage || 0;
+      const currentPercentage = current.usefulPercentage || 0;
       return currentPercentage > bestPercentage ? current : best;
     }, answers[0]); // Provide initial value
   };
@@ -502,7 +502,7 @@ const DiscussionDetails = (
               <BestAnswerResult
                 answer={{
                   ...bestAnswer,
-                  score: bestAnswer.votePercentage || 0,
+                  score: bestAnswer.usefulPercentage || 0,
                 }}
                 questionTitle={post.title}
               />

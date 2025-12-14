@@ -59,7 +59,7 @@ export class NewsService {
   }
 
   async getNewsByUser(userId: string) {
-    const response = await this.apiClient.get(`/news/user/${userId}`,{
+    const response = await this.apiClient.get(`/news/user/${userId}`, {
       params: {
         page: 0,
         size: 1000,
@@ -124,9 +124,17 @@ export class NewsService {
     return response.data;
   }
 
-  async voteNews(newsId: number, voteType: 'UPVOTE' | 'DOWNVOTE') {
+  async voteNews(newsId: number, voteType: 'USEFUL' | 'INTEREST') {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No access token found');
+    }
+
     const res = await this.apiClient.post(
-      `/news/${newsId}/vote?voteType=${voteType}`
+      `/news/${newsId}/vote?voteType=${voteType}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
     return res.data;
   }

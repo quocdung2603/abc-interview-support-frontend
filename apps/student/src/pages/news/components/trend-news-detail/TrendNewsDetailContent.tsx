@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { News, User } from '@abc-interview-support-frontend/types';
-import { Tag } from 'antd';
-import { questionService } from '@abc-interview-support-frontend/services';
+import { Tag, message } from 'antd';
+import { questionService, newsService } from '@abc-interview-support-frontend/services';
 
 interface TrendNewsDetailContentProps {
   news: News;
@@ -13,6 +13,9 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
   author
 }) => {
   const [fieldName, setFieldName] = useState<string>('Loading...');
+  const [usefulVotes, setUsefulVotes] = useState<number>(news.usefulVote || 0);
+  const [interestVotes, setInterestVotes] = useState<number>(news.interestVote || 0);
+  const [isVoting, setIsVoting] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchFieldName = async () => {
@@ -48,6 +51,38 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
       if (userIdStr.startsWith('user')) return 'ND';
     }
     return 'TG';
+  };
+
+  const handleUsefulVote = async () => {
+    if (isVoting) return;
+
+    try {
+      setIsVoting(true);
+      await newsService.voteNews(news.id, 'USEFUL');
+      setUsefulVotes(prev => prev + 1);
+      message.success('Đã vote hữu ích thành công!');
+    } catch (error) {
+      console.error('Error voting useful:', error);
+      message.error('Có lỗi xảy ra khi vote hữu ích. Vui lòng thử lại!');
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const handleInterestVote = async () => {
+    if (isVoting) return;
+
+    try {
+      setIsVoting(true);
+      await newsService.voteNews(news.id, 'INTEREST');
+      setInterestVotes(prev => prev + 1);
+      message.success('Đã vote thú vị thành công!');
+    } catch (error) {
+      console.error('Error voting interest:', error);
+      message.error('Có lỗi xảy ra khi vote thú vị. Vui lòng thử lại!');
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   return (
@@ -108,56 +143,57 @@ export const TrendNewsDetailContent: React.FC<TrendNewsDetailContentProps> = ({
 
                 {/* Action Buttons */}
                 <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-wrap gap-3">
-                  <button className="btn-primary flex items-center">
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="flex items-center gap-2">
+                    <span className="text-body text-neutral-600">
+                      {usefulVotes}
+                    </span>
+                    <button
+                      className="btn-primary flex items-center"
+                      onClick={handleUsefulVote}
+                      disabled={isVoting}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                    Yêu thích bài viết
-                  </button>
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                        />
+                      </svg>
+                      {isVoting ? 'Đang vote...' : 'Hữu ích'}
+                    </button>
+                  </div>
 
-                  <button className="btn-secondary flex items-center">
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="flex items-center gap-2">
+                    <span className="text-body text-neutral-600">
+                      {interestVotes}
+                    </span>
+                    <button
+                      className="btn-secondary flex items-center"
+                      onClick={handleInterestVote}
+                      disabled={isVoting}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                    Chia sẻ
-                  </button>
-
-                  <button className="btn-outline flex items-center">
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                      />
-                    </svg>
-                    In bài viết
-                  </button>
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.737 3h4.017c.163 0 .326.02.485.06L17 4m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                        />
+                      </svg>
+                      {isVoting ? 'Đang vote...' : 'Thú vị'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>

@@ -6,6 +6,7 @@ import {
   CaretDownOutlined,
 } from '@ant-design/icons';
 import { DiscussionAnswer } from '@abc-interview-support-frontend/types';
+import dayjs from 'dayjs';
 
 interface AuthorInfo {
   name: string;
@@ -68,26 +69,32 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
     return () => observer.disconnect();
   }, [expanded]);
 
+  const formatDate = (dateStr: string) => {
+    return dayjs(dateStr).format('DD/MM/YYYY HH:mm:ss');
+  }
+
   return (
     <div ref={rootRef} className="card-interactive p-4 mb-3">
       <div className="flex gap-4">
         {/* Voting section */}
         <div className="flex flex-col items-center gap-2 min-w-[48px] border-r border-r-gray-300 pr-3">
+          <span className='text-xs font-medium text-green-500'>{answer.usefulVoteCount}</span>
           <button
             onClick={handleUpvote}
-            className="p-2 rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600"
+            className="p-1 rounded-sm transition-colors bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600"
             title="Hữu ích"
           >
-            <CaretUpOutlined className="text-sm" />
+            <CaretUpOutlined className="text-lg" />
           </button>
 
           <button
             onClick={handleDownvote}
-            className="p-2 rounded-lg transition-colors bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600"
+            className="p-1 rounded-sm transition-colors bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600"
             title="Không hữu ích"
           >
-            <CaretDownOutlined className="text-sm" />
+            <CaretDownOutlined className="text-lg" />
           </button>
+          <span className='text-xs font-medium text-red-500'>{answer.notUsefulVoteCount}</span>
         </div>
 
         {/* Answer content */}
@@ -99,14 +106,14 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
               alt={author.name}
               className="w-9 h-9 rounded-full object-cover"
             />
-            <div className="flex flex-col items-center text-sm text-gray-500">
+            <div className="flex flex-col text-sm text-gray-500">
               <span className="flex items-center gap-2 font-medium text-gray-700">
                 <UserOutlined />
                 {author.name}
               </span>
               <span className="flex items-center gap-1">
                 <CalendarOutlined />
-                {answer.createdAt}
+                {formatDate(answer.createdAt)}
               </span>
             </div>
           </div>
@@ -145,19 +152,18 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, author, onVote }) => {
           <div className="text-center space-y-2">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Số lượt vote
-              </span>
-              <div className="text-sm font-bold text-gray-800">
-                {answer.voteCount}
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Phần trăm hữu ích
               </span>
               <div className="text-sm font-medium text-green-600">
-                {((answer.votePercentage >= 1 ? 1 : answer.votePercentage) * 100).toFixed(0)}%
+                {answer.usefulPercentage ?? 0}%
+              </div>
+            </div>
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Phần trăm không hữu ích
+              </span>
+              <div className="text-sm font-medium text-red-600">
+                {answer.notUsefulPercentage ?? 0}%
               </div>
             </div>
           </div>

@@ -1,5 +1,7 @@
 import { RecruitmentNews } from '@abc-interview-support-frontend/types';
-import React from 'react';
+import React, { useState } from 'react';
+import { message } from 'antd';
+import { newsService } from '@abc-interview-support-frontend/services';
 import dayjs from 'dayjs';
 
 interface RecruitmentNewsDetailContentProps {
@@ -9,8 +11,44 @@ interface RecruitmentNewsDetailContentProps {
 export const RecruitmentNewsDetailContent: React.FC<
   RecruitmentNewsDetailContentProps
 > = ({ news }) => {
+  const [usefulVotes, setUsefulVotes] = useState<number>(news.usefulVote || 0);
+  const [interestVotes, setInterestVotes] = useState<number>(news.interestVote || 0);
+  const [isVoting, setIsVoting] = useState<boolean>(false);
+
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
+  };
+
+  const handleUsefulVote = async () => {
+    if (isVoting) return;
+
+    try {
+      setIsVoting(true);
+      await newsService.voteNews(news.id, 'USEFUL');
+      setUsefulVotes(prev => prev + 1);
+      message.success('Đã vote hữu ích thành công!');
+    } catch (error) {
+      console.error('Error voting useful:', error);
+      message.error('Có lỗi xảy ra khi vote hữu ích. Vui lòng thử lại!');
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const handleInterestVote = async () => {
+    if (isVoting) return;
+
+    try {
+      setIsVoting(true);
+      await newsService.voteNews(news.id, 'INTEREST');
+      setInterestVotes(prev => prev + 1);
+      message.success('Đã vote thú vị thành công!');
+    } catch (error) {
+      console.error('Error voting interest:', error);
+      message.error('Có lỗi xảy ra khi vote thú vị. Vui lòng thử lại!');
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   return (
@@ -154,8 +192,63 @@ export const RecruitmentNewsDetailContent: React.FC<
             className="prose prose-custom max-w-none"
             dangerouslySetInnerHTML={{ __html: news.content }}
           />
+          <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-body text-neutral-600">
+                {usefulVotes}
+              </span>
+              <button
+                className="btn-primary flex items-center"
+                onClick={handleUsefulVote}
+                disabled={isVoting}
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                  />
+                </svg>
+                {isVoting ? 'Đang vote...' : 'Hữu ích'}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-body text-neutral-600">
+                {interestVotes}
+              </span>
+              <button
+                className="btn-secondary flex items-center"
+                onClick={handleInterestVote}
+                disabled={isVoting}
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.737 3h4.017c.163 0 .326.02.485.06L17 4m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                  />
+                </svg>
+                {isVoting ? 'Đang vote...' : 'Thú vị'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* 2 button  */}
     </div>
   );
 };
